@@ -1,0 +1,15 @@
+# Node.js 依賴目錄
+node_modules/
+
+# Vite 建構快取
+.vite/
+
+# 環境變數檔案
+.env.local
+.env.*.local
+
+# 日誌
+npm-debug.log*
+
+# 編輯器
+.DS_Store

@@ -1,0 +1,486 @@
+/**
+ * Scroll Reveals - 滾動顯示動畫
+ * 元素進入視窗時的顯示效果
+ * 配合 JavaScript Intersection Observer 使用
+ */
+
+/* ===== 滾動顯示基礎設定 ===== */
+
+/**
+ * 隱藏狀態（等待進入視窗）
+ * 在 JavaScript 檢測到元素進入視窗前保持隱藏
+ */
+.scroll-reveal {
+    opacity: 0;
+    transition: none;
+}
+
+/**
+ * 顯示狀態（已進入視窗）
+ * JavaScript 添加此類別時觸發動畫
+ */
+.scroll-reveal.revealed {
+    opacity: 1;
+}
+
+/* ===== 玻璃淡入顯示（Glass Fade In）===== */
+
+/**
+ * 從透明玻璃漸變為實體玻璃
+ * 適合卡片、面板等玻璃元素
+ */
+.scroll-reveal-glass-fade {
+    opacity: 0;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transform: translateY(40px);
+    transition: all 800ms var(--ease-out-expo);
+}
+
+.scroll-reveal-glass-fade.revealed {
+    opacity: 1;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    transform: translateY(0);
+}
+
+/* ===== 極光淡入顯示（Aurora Fade In）===== */
+
+/**
+ * 帶極光色彩的淡入效果
+ * 適合強調元素、特色內容
+ */
+.scroll-reveal-aurora-fade {
+    opacity: 0;
+    transform: translateY(50px);
+    filter: blur(15px) brightness(1.3) saturate(1.5);
+    transition: all 900ms var(--ease-out-expo);
+}
+
+.scroll-reveal-aurora-fade.revealed {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0) brightness(1) saturate(1);
+}
+
+/* ===== 從下方浮現（Float Up）===== */
+
+/**
+ * 元素從下方緩緩浮現
+ * 適合文字區塊、內容卡片
+ */
+.scroll-reveal-float-up {
+    opacity: 0;
+    transform: translateY(60px);
+    transition: all 700ms var(--ease-out-expo);
+}
+
+.scroll-reveal-float-up.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 從下方浮現變體 - 帶模糊 */
+.scroll-reveal-float-up-blur {
+    opacity: 0;
+    transform: translateY(60px);
+    filter: blur(10px);
+    transition: all 800ms var(--ease-out-expo);
+}
+
+.scroll-reveal-float-up-blur.revealed {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+}
+
+/* ===== 從左側滑入（Slide In Left）===== */
+
+/**
+ * 元素從左側滑入
+ * 適合側邊內容、導航項目
+ */
+.scroll-reveal-slide-left {
+    opacity: 0;
+    transform: translateX(-80px);
+    transition: all 700ms var(--ease-out-expo);
+}
+
+.scroll-reveal-slide-left.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ===== 從右側滑入（Slide In Right）===== */
+
+/**
+ * 元素從右側滑入
+ * 適合側邊內容、特色標籤
+ */
+.scroll-reveal-slide-right {
+    opacity: 0;
+    transform: translateX(80px);
+    transition: all 700ms var(--ease-out-expo);
+}
+
+.scroll-reveal-slide-right.revealed {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ===== 縮放淡入（Scale Fade In）===== */
+
+/**
+ * 元素從小到大縮放並淡入
+ * 適合圖標、徽章、按鈕
+ */
+.scroll-reveal-scale-in {
+    opacity: 0;
+    transform: scale(0.7);
+    transition: all 600ms var(--ease-out-back);
+}
+
+.scroll-reveal-scale-in.revealed {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* 縮放淡入變體 - 從大到小 */
+.scroll-reveal-scale-out {
+    opacity: 0;
+    transform: scale(1.3);
+    filter: blur(10px);
+    transition: all 700ms var(--ease-out-expo);
+}
+
+.scroll-reveal-scale-out.revealed {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+}
+
+/* ===== 旋轉淡入（Rotate Fade In）===== */
+
+/**
+ * 元素旋轉並淡入
+ * 適合裝飾元素、圖標
+ */
+.scroll-reveal-rotate-in {
+    opacity: 0;
+    transform: rotate(-20deg) scale(0.9);
+    transition: all 800ms var(--ease-out-back);
+}
+
+.scroll-reveal-rotate-in.revealed {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+/* ===== 3D 翻轉顯示（3D Flip）===== */
+
+/**
+ * 元素 3D 翻轉顯示
+ * 適合卡片、面板
+ */
+.scroll-reveal-flip-up {
+    opacity: 0;
+    transform: perspective(1000px) rotateX(-30deg);
+    transform-origin: center bottom;
+    transition: all 800ms var(--ease-out-expo);
+}
+
+.scroll-reveal-flip-up.revealed {
+    opacity: 1;
+    transform: perspective(1000px) rotateX(0deg);
+}
+
+/* ===== 玻璃碎片重組（Glass Shards Rebuild）===== */
+
+/**
+ * 玻璃碎片重組效果
+ * 適合重要內容區塊
+ */
+.scroll-reveal-glass-shards {
+    opacity: 0;
+    transform: scale(0.85) rotateX(20deg) translateY(40px);
+    filter: blur(25px);
+    transition: all 1000ms var(--ease-out-expo);
+}
+
+.scroll-reveal-glass-shards.revealed {
+    opacity: 1;
+    transform: scale(1) rotateX(0deg) translateY(0);
+    filter: blur(0);
+}
+
+/* ===== 極光掃過（Aurora Sweep）===== */
+
+/**
+ * 極光色彩掃過元素
+ * 創造動態的色彩變化
+ */
+.scroll-reveal-aurora-sweep {
+    position: relative;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 700ms var(--ease-out-expo);
+}
+
+.scroll-reveal-aurora-sweep::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-aurora-flow);
+    background-size: 200% 100%;
+    opacity: 0;
+    filter: blur(30px);
+    pointer-events: none;
+    z-index: -1;
+    transition: opacity 1000ms var(--ease-out-expo);
+}
+
+.scroll-reveal-aurora-sweep.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.scroll-reveal-aurora-sweep.revealed::before {
+    opacity: 0.15;
+    animation: aurora-sweep 2s ease-out forwards;
+}
+
+@keyframes aurora-sweep {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* ===== 光線掃過（Light Sweep）===== */
+
+/**
+ * 光線從一側掃過元素
+ * 創造動態的高光效果
+ */
+.scroll-reveal-light-sweep {
+    position: relative;
+    opacity: 0;
+    transform: translateY(30px);
+    overflow: hidden;
+    transition: all 700ms var(--ease-out-expo);
+}
+
+.scroll-reveal-light-sweep::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.scroll-reveal-light-sweep.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.scroll-reveal-light-sweep.revealed::before {
+    animation: light-sweep-reveal 1.5s ease-out 300ms;
+}
+
+@keyframes light-sweep-reveal {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 200%;
+    }
+}
+
+/* ===== 文字逐字顯示（Text Reveal）===== */
+
+/**
+ * 文字逐字符淡入
+ * 需配合 JavaScript 實現逐字符動畫
+ */
+.scroll-reveal-text {
+    opacity: 0;
+}
+
+.scroll-reveal-text.revealed {
+    opacity: 1;
+}
+
+.scroll-reveal-text span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 400ms var(--ease-out-expo);
+}
+
+.scroll-reveal-text.revealed span {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 為每個字符添加延遲（由 JavaScript 設定） */
+.scroll-reveal-text.revealed span:nth-child(1) { transition-delay: 0ms; }
+.scroll-reveal-text.revealed span:nth-child(2) { transition-delay: 50ms; }
+.scroll-reveal-text.revealed span:nth-child(3) { transition-delay: 100ms; }
+.scroll-reveal-text.revealed span:nth-child(4) { transition-delay: 150ms; }
+.scroll-reveal-text.revealed span:nth-child(5) { transition-delay: 200ms; }
+/* ... 可根據需要擴展 ... */
+
+/* ===== 交錯顯示（Staggered Reveal）===== */
+
+/**
+ * 群組元素的交錯顯示
+ * 適合列表、網格佈局
+ */
+.scroll-reveal-stagger {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 600ms var(--ease-out-expo);
+}
+
+.scroll-reveal-stagger.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 為群組中的每個元素添加延遲 */
+.scroll-reveal-stagger-group > *:nth-child(1) { transition-delay: 0ms; }
+.scroll-reveal-stagger-group > *:nth-child(2) { transition-delay: 100ms; }
+.scroll-reveal-stagger-group > *:nth-child(3) { transition-delay: 200ms; }
+.scroll-reveal-stagger-group > *:nth-child(4) { transition-delay: 300ms; }
+.scroll-reveal-stagger-group > *:nth-child(5) { transition-delay: 400ms; }
+.scroll-reveal-stagger-group > *:nth-child(6) { transition-delay: 500ms; }
+.scroll-reveal-stagger-group > *:nth-child(7) { transition-delay: 600ms; }
+.scroll-reveal-stagger-group > *:nth-child(8) { transition-delay: 700ms; }
+
+/* ===== 極光脈衝顯示（Aurora Pulse Reveal）===== */
+
+/**
+ * 帶極光脈衝的顯示效果
+ * 適合重點強調元素
+ */
+.scroll-reveal-aurora-pulse {
+    opacity: 0;
+    transform: scale(0.9);
+    filter: blur(10px);
+    box-shadow: 0 0 0 rgba(0, 229, 204, 0);
+    transition: all 800ms var(--ease-out-expo);
+}
+
+.scroll-reveal-aurora-pulse.revealed {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+    animation: aurora-pulse-reveal 2s ease-out;
+}
+
+@keyframes aurora-pulse-reveal {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(0, 229, 204, 0);
+    }
+    50% {
+        box-shadow:
+            0 0 30px rgba(0, 229, 204, 0.6),
+            0 0 60px rgba(0, 191, 255, 0.4);
+    }
+}
+
+/* ===== 工具類別 - 延遲控制 ===== */
+
+.scroll-reveal-delay-100 { transition-delay: 100ms; }
+.scroll-reveal-delay-200 { transition-delay: 200ms; }
+.scroll-reveal-delay-300 { transition-delay: 300ms; }
+.scroll-reveal-delay-400 { transition-delay: 400ms; }
+.scroll-reveal-delay-500 { transition-delay: 500ms; }
+.scroll-reveal-delay-600 { transition-delay: 600ms; }
+.scroll-reveal-delay-800 { transition-delay: 800ms; }
+.scroll-reveal-delay-1000 { transition-delay: 1000ms; }
+
+/* ===== 工具類別 - 速度控制 ===== */
+
+.scroll-reveal-fast { transition-duration: 400ms !important; }
+.scroll-reveal-normal { transition-duration: 700ms !important; }
+.scroll-reveal-slow { transition-duration: 1000ms !important; }
+
+/* ===== 響應式調整 ===== */
+
+/* 移動裝置簡化動畫 */
+@media (max-width: 767px) {
+    .scroll-reveal-glass-fade,
+    .scroll-reveal-aurora-fade,
+    .scroll-reveal-float-up-blur,
+    .scroll-reveal-scale-out,
+    .scroll-reveal-glass-shards {
+        filter: none !important;
+        transition-duration: 500ms;
+    }
+
+    .scroll-reveal-glass-fade.revealed,
+    .scroll-reveal-aurora-fade.revealed,
+    .scroll-reveal-scale-out.revealed,
+    .scroll-reveal-glass-shards.revealed {
+        filter: none !important;
+    }
+
+    /* 簡化 3D 效果 */
+    .scroll-reveal-flip-up {
+        transform: translateY(30px);
+    }
+
+    .scroll-reveal-flip-up.revealed {
+        transform: translateY(0);
+    }
+}
+
+/* 減少動作偏好設定 */
+@media (prefers-reduced-motion: reduce) {
+    /* 將所有滾動顯示動畫簡化為淡入 */
+    .scroll-reveal,
+    [class*="scroll-reveal-"] {
+        transition: opacity 300ms ease !important;
+        transform: none !important;
+        filter: none !important;
+    }
+
+    .scroll-reveal.revealed,
+    [class*="scroll-reveal-"].revealed {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+    }
+
+    /* 禁用所有動畫 */
+    .scroll-reveal-aurora-sweep.revealed::before,
+    .scroll-reveal-light-sweep.revealed::before,
+    .scroll-reveal-aurora-pulse.revealed {
+        animation: none !important;
+    }
+}
+
+/* ===== 效能優化提示 ===== */
+
+/* 提示瀏覽器優化滾動顯示的元素 */
+[class*="scroll-reveal-"] {
+    will-change: transform, opacity, filter;
+}
+
+/* 顯示完成後移除 will-change */
+[class*="scroll-reveal-"].revealed {
+    will-change: auto;
+}

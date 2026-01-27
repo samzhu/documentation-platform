@@ -1,0 +1,393 @@
+/**
+ * Asymmetric Layout - 不對稱佈局系統
+ * 打破傳統網格的對角線、Z 字型、階梯式佈局
+ * 創造更具動態感的視覺體驗
+ */
+
+/* ===== 對角線網格佈局（Diagonal Grid）===== */
+
+/**
+ * 對角線網格容器
+ * 元素沿對角線排列
+ */
+.layout-diagonal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--spacing-xl);
+    position: relative;
+}
+
+/* 對角線偏移（從左上到右下）*/
+.layout-diagonal-grid > *:nth-child(odd) {
+    transform: translateY(-20px);
+}
+
+.layout-diagonal-grid > *:nth-child(even) {
+    transform: translateY(20px);
+}
+
+/* 對角線偏移變體 - 強烈 */
+.layout-diagonal-grid.diagonal-strong > *:nth-child(odd) {
+    transform: translateY(-40px);
+}
+
+.layout-diagonal-grid.diagonal-strong > *:nth-child(even) {
+    transform: translateY(40px);
+}
+
+/* 對角線偏移變體 - 反向（從右上到左下）*/
+.layout-diagonal-grid.diagonal-reverse > *:nth-child(odd) {
+    transform: translateY(20px);
+}
+
+.layout-diagonal-grid.diagonal-reverse > *:nth-child(even) {
+    transform: translateY(-20px);
+}
+
+/* ===== Z 字型佈局（Zigzag Layout）===== */
+
+/**
+ * Z 字型佈局
+ * 元素以 Z 字形排列，左右交替
+ */
+.layout-zigzag {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2xl);
+}
+
+.layout-zigzag-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+    align-items: center;
+}
+
+/* Z 字型 - 奇數項（圖片在左）*/
+.layout-zigzag-item:nth-child(odd) .zigzag-image {
+    order: 1;
+}
+
+.layout-zigzag-item:nth-child(odd) .zigzag-content {
+    order: 2;
+}
+
+/* Z 字型 - 偶數項（圖片在右）*/
+.layout-zigzag-item:nth-child(even) .zigzag-image {
+    order: 2;
+}
+
+.layout-zigzag-item:nth-child(even) .zigzag-content {
+    order: 1;
+}
+
+/* Z 字型響應式調整 */
+@media (max-width: 767px) {
+    .layout-zigzag-item {
+        grid-template-columns: 1fr;
+    }
+
+    .layout-zigzag-item:nth-child(odd) .zigzag-image,
+    .layout-zigzag-item:nth-child(even) .zigzag-image {
+        order: 1;
+    }
+
+    .layout-zigzag-item:nth-child(odd) .zigzag-content,
+    .layout-zigzag-item:nth-child(even) .zigzag-content {
+        order: 2;
+    }
+}
+
+/* ===== 階梯式佈局（Staircase Layout）===== */
+
+/**
+ * 階梯式卡片排列
+ * 元素像階梯般逐漸偏移
+ */
+.layout-staircase {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    position: relative;
+}
+
+/* 階梯偏移 */
+.layout-staircase > *:nth-child(1) { transform: translateX(0); }
+.layout-staircase > *:nth-child(2) { transform: translateX(20px); }
+.layout-staircase > *:nth-child(3) { transform: translateX(40px); }
+.layout-staircase > *:nth-child(4) { transform: translateX(60px); }
+.layout-staircase > *:nth-child(5) { transform: translateX(80px); }
+.layout-staircase > *:nth-child(6) { transform: translateX(100px); }
+
+/* 階梯式變體 - 反向 */
+.layout-staircase.staircase-reverse > *:nth-child(1) { transform: translateX(100px); }
+.layout-staircase.staircase-reverse > *:nth-child(2) { transform: translateX(80px); }
+.layout-staircase.staircase-reverse > *:nth-child(3) { transform: translateX(60px); }
+.layout-staircase.staircase-reverse > *:nth-child(4) { transform: translateX(40px); }
+.layout-staircase.staircase-reverse > *:nth-child(5) { transform: translateX(20px); }
+.layout-staircase.staircase-reverse > *:nth-child(6) { transform: translateX(0); }
+
+/* 階梯式響應式調整 */
+@media (max-width: 767px) {
+    .layout-staircase > *,
+    .layout-staircase.staircase-reverse > * {
+        transform: none;
+    }
+}
+
+/* ===== 砌體佈局（Masonry Layout）===== */
+
+/**
+ * 瀑布流佈局
+ * 元素高度不同，像砌牆般排列
+ */
+.layout-masonry {
+    column-count: 3;
+    column-gap: var(--spacing-lg);
+}
+
+.layout-masonry-item {
+    break-inside: avoid;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* 砌石佈局響應式調整 */
+@media (max-width: 1023px) {
+    .layout-masonry {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 639px) {
+    .layout-masonry {
+        column-count: 1;
+    }
+}
+
+/* ===== 不規則網格（Irregular Grid）===== */
+
+/**
+ * 不規則網格佈局
+ * 部分元素佔據 2 個格子，創造動態感
+ */
+.layout-irregular-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-auto-rows: 200px;
+    gap: var(--spacing-lg);
+}
+
+/* 大卡片（佔 2x2）*/
+.layout-irregular-grid .grid-item-large {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+/* 寬卡片（佔 2x1）*/
+.layout-irregular-grid .grid-item-wide {
+    grid-column: span 2;
+}
+
+/* 高卡片（佔 1x2）*/
+.layout-irregular-grid .grid-item-tall {
+    grid-row: span 2;
+}
+
+/* 不規則網格響應式調整 */
+@media (max-width: 767px) {
+    .layout-irregular-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .layout-irregular-grid .grid-item-large,
+    .layout-irregular-grid .grid-item-wide,
+    .layout-irregular-grid .grid-item-tall {
+        grid-column: span 1;
+        grid-row: span 1;
+    }
+}
+
+/* ===== 圓弧佈局（Arc Layout）===== */
+
+/**
+ * 元素沿圓弧排列
+ * 創造流動感
+ */
+.layout-arc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    align-items: flex-end;
+}
+
+.layout-arc > *:nth-child(1) { transform: translateY(0); }
+.layout-arc > *:nth-child(2) { transform: translateY(-20px); }
+.layout-arc > *:nth-child(3) { transform: translateY(-30px); }
+.layout-arc > *:nth-child(4) { transform: translateY(-20px); }
+.layout-arc > *:nth-child(5) { transform: translateY(0); }
+
+/* 圓弧佈局變體 - 反向 */
+.layout-arc.arc-reverse {
+    align-items: flex-start;
+}
+
+.layout-arc.arc-reverse > *:nth-child(1) { transform: translateY(0); }
+.layout-arc.arc-reverse > *:nth-child(2) { transform: translateY(20px); }
+.layout-arc.arc-reverse > *:nth-child(3) { transform: translateY(30px); }
+.layout-arc.arc-reverse > *:nth-child(4) { transform: translateY(20px); }
+.layout-arc.arc-reverse > *:nth-child(5) { transform: translateY(0); }
+
+/* ===== 分割佈局（Split Layout）===== */
+
+/**
+ * 不對稱的左右分割
+ * 一側較寬，一側較窄
+ */
+.layout-split {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--spacing-xl);
+    align-items: start;
+}
+
+/* 分割佈局變體 - 反向 */
+.layout-split.split-reverse {
+    grid-template-columns: 1fr 2fr;
+}
+
+/* 分割佈局響應式調整 */
+@media (max-width: 767px) {
+    .layout-split,
+    .layout-split.split-reverse {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== 網格偏移（Grid Offset）===== */
+
+/**
+ * 網格元素的偏移系統
+ * 創造不對稱的視覺效果
+ */
+.grid-offset-1 { transform: translateX(20px); }
+.grid-offset-2 { transform: translateX(40px); }
+.grid-offset-3 { transform: translateX(60px); }
+.grid-offset-4 { transform: translateX(80px); }
+
+.grid-offset-y-1 { transform: translateY(20px); }
+.grid-offset-y-2 { transform: translateY(40px); }
+.grid-offset-y-3 { transform: translateY(60px); }
+.grid-offset-y-4 { transform: translateY(80px); }
+
+/* 反向偏移 */
+.grid-offset--1 { transform: translateX(-20px); }
+.grid-offset--2 { transform: translateX(-40px); }
+.grid-offset--3 { transform: translateX(-60px); }
+.grid-offset--4 { transform: translateX(-80px); }
+
+.grid-offset-y--1 { transform: translateY(-20px); }
+.grid-offset-y--2 { transform: translateY(-40px); }
+.grid-offset-y--3 { transform: translateY(-60px); }
+.grid-offset-y--4 { transform: translateY(-80px); }
+
+/* ===== 流動佈局（Flow Layout）===== */
+
+/**
+ * 元素像液體般自然流動
+ * 組合偏移和縮放創造動態感
+ */
+.layout-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+}
+
+.layout-flow > * {
+    transition: transform var(--transition-normal);
+}
+
+.layout-flow > *:nth-child(3n + 1) {
+    transform: translateY(-10px) scale(0.98);
+}
+
+.layout-flow > *:nth-child(3n + 2) {
+    transform: translateY(10px) scale(1.02);
+}
+
+.layout-flow > *:nth-child(3n + 3) {
+    transform: translateY(0) scale(1);
+}
+
+.layout-flow > *:hover {
+    transform: translateY(-15px) scale(1.05) !important;
+    z-index: 10;
+}
+
+/* ===== 懸浮網格（Floating Grid）===== */
+
+/**
+ * 元素像漂浮般輕微移動
+ * 創造動態的 3D 空間感
+ */
+.layout-floating-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-xl);
+    perspective: 1000px;
+}
+
+.layout-floating-grid > * {
+    transform-style: preserve-3d;
+    transition: transform var(--transition-normal);
+}
+
+.layout-floating-grid > *:nth-child(4n + 1) {
+    transform: translateZ(20px);
+}
+
+.layout-floating-grid > *:nth-child(4n + 2) {
+    transform: translateZ(-10px);
+}
+
+.layout-floating-grid > *:nth-child(4n + 3) {
+    transform: translateZ(10px);
+}
+
+.layout-floating-grid > *:nth-child(4n + 4) {
+    transform: translateZ(-20px);
+}
+
+.layout-floating-grid > *:hover {
+    transform: translateZ(40px) scale(1.03);
+    z-index: 10;
+}
+
+/* ===== 響應式工具類別 ===== */
+
+/* 移動裝置移除所有偏移和變換 */
+@media (max-width: 767px) {
+    .layout-diagonal-grid > *,
+    .layout-arc > *,
+    .layout-arc.arc-reverse > *,
+    .layout-flow > *,
+    .layout-floating-grid > * {
+        transform: none !important;
+    }
+
+    [class*="grid-offset"] {
+        transform: none;
+    }
+}
+
+/* 減少動作偏好設定 */
+@media (prefers-reduced-motion: reduce) {
+    .layout-flow > *,
+    .layout-floating-grid > * {
+        transition: none;
+    }
+
+    .layout-flow > *:hover,
+    .layout-floating-grid > *:hover {
+        transform: none !important;
+    }
+}

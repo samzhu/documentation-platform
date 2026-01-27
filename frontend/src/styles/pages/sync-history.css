@@ -1,0 +1,79 @@
+/**
+ * Sync History 頁面樣式
+ * Sync History Page Styles
+ *
+ * 用途：同步歷史記錄頁面的專屬樣式
+ * 包含歷史列表、狀態顯示等
+ */
+
+@layer components {
+    /* 同步按鈕動畫 */
+    .btn-sync {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .btn-sync.syncing svg {
+        animation: spin 1s linear infinite;
+    }
+
+    /* 同步歷史列表項目 */
+    .sync-history-item {
+        padding: var(--spacing-md);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        transition: background var(--transition-fast);
+    }
+
+    .sync-history-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .sync-history-item:last-child {
+        border-bottom: none;
+    }
+
+    /* 同步時間戳記 */
+    .sync-timestamp {
+        font-size: 0.875rem;
+        color: var(--ink-gray);  /* 墨灰 */
+        font-family: var(--font-mono);
+    }
+
+    /* 同步狀態徽章 */
+    .sync-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+    }
+
+    .sync-status-badge.success {
+        background: rgba(50, 215, 75, 0.15);
+        color: var(--ink-green);  /* 穩重綠 */
+    }
+
+    .sync-status-badge.failed {
+        background: rgba(255, 69, 58, 0.15);
+        color: var(--ink-red);  /* 警示紅 */
+    }
+
+    .sync-status-badge.running {
+        background: rgba(100, 210, 255, 0.15);
+        color: var(--ink-sky);  /* 天藍 */
+    }
+
+    /* 響應式調整 */
+    @media (max-width: 767px) {
+        .sync-history-item {
+            padding: var(--spacing-sm);
+        }
+
+        .sync-timestamp {
+            font-size: 0.8125rem;
+        }
+    }
+}

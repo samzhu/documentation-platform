@@ -1,0 +1,220 @@
+/**
+ * Search 組件樣式模組
+ * 搜尋相關組件的完整樣式定義，遵循 Apple Liquid Glass 設計語言
+ *
+ * 組件包含：
+ * - 搜尋模式按鈕（Pill 風格）
+ * - 提示框（Info 風格玻璃卡片）
+ * - 篩選列（Flex 佈局）
+ * - 搜尋結果卡片
+ * - 空白狀態
+ */
+
+/* ===== 搜尋模式容器與按鈕 ===== */
+
+/* 搜尋模式容器 - Flex 佈局 */
+.search-modes {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+/* 搜尋模式按鈕 - Liquid Glass Pill 風格 */
+.search-mode-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.08),
+        rgba(255, 255, 255, 0.04));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-full);  /* 膠囊形狀 */
+    color: var(--ink-gray);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.search-mode-btn:hover {
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.12),
+        rgba(255, 255, 255, 0.08));
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.15),
+        0 4px 10px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.search-mode-btn.active {
+    background: linear-gradient(135deg,
+        var(--btn-primary-bg-start),
+        var(--btn-primary-bg-end));
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow:
+        0 4px 12px rgba(59, 130, 246, 0.3),
+        0 8px 24px rgba(59, 130, 246, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.search-mode-btn:active {
+    transform: translateY(0);
+}
+
+/* ===== 提示框 ===== */
+
+/* 提示框 - Info 風格玻璃卡片 */
+.tips-box {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: linear-gradient(135deg,
+        rgba(56, 189, 248, 0.1),
+        rgba(56, 189, 248, 0.05));
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.tips-icon {
+    color: var(--ink-sky);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.tips-content {
+    font-size: 0.875rem;
+    color: var(--ink-gray);
+    line-height: 1.5;
+}
+
+/* ===== 篩選列 ===== */
+
+/* 篩選列 - Flex 佈局 */
+.filter-row {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+/* ===== 搜尋表單 ===== */
+
+.search-form {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+}
+
+/* ===== 搜尋結果 ===== */
+
+/* 結果計數 */
+.results-count {
+    font-size: 0.875rem;
+    color: var(--ink-gray);
+    margin-bottom: var(--spacing-md);
+}
+
+/* 搜尋結果列表 */
+.search-results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* 搜尋結果卡片 */
+.result-card {
+    padding: var(--spacing-lg);
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.result-score {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-sky);
+    white-space: nowrap;
+}
+
+.result-content {
+    font-size: 0.9375rem;
+    color: var(--ink-gray);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-sm);
+}
+
+.result-meta {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+/* ===== 空白狀態 ===== */
+
+/* 空白狀態圖標 */
+.empty-state-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.empty-state-icon svg {
+    color: var(--ink-fog);
+    opacity: 0.6;
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ink-black);
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p {
+    font-size: 0.9375rem;
+    color: var(--ink-gray);
+}
+
+/* ===== 響應式調整 ===== */
+
+@media (max-width: 767px) {
+    .search-modes {
+        gap: var(--spacing-xs);
+    }
+
+    .search-mode-btn {
+        padding: 6px 12px;
+        font-size: 0.8125rem;
+    }
+
+    .filter-row {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .search-form {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .result-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -1,0 +1,84 @@
+/**
+ * API Keys 頁面樣式
+ * API Keys Page Styles
+ *
+ * 用途：API Key 管理頁面的專屬樣式
+ * 包含新 Key 提示、Key 顯示、狀態管理等
+ */
+
+@layer components {
+    /* 新建 Key 提示框 */
+    .new-key-alert {
+        background: var(--color-warning-bg);
+        border: 1px solid rgba(255, 159, 10, 0.3);
+        margin-bottom: var(--spacing-lg);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+    }
+
+    .new-key-alert h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--ink-black);  /* 墨黑 */
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .new-key-alert .warning {
+        font-size: 0.875rem;
+        color: var(--color-warning-text);
+        margin-bottom: var(--spacing-md);
+        line-height: 1.6;
+    }
+
+    /* Key 顯示區塊 */
+    .key-display {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md);
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: var(--radius-sm);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .key-display code {
+        flex: 1;
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        word-break: break-all;
+        color: var(--ink-gray);  /* 墨灰 */
+    }
+
+    /* API Key 表格狀態徽章 */
+    .api-keys-page .status-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+
+    /* 過期日期顯示 */
+    .expiry-date {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        color: var(--ink-gray);  /* 墨灰 */
+    }
+
+    .expiry-date.expired {
+        color: var(--ink-red);  /* 警示紅 */
+    }
+
+    .expiry-date.expiring-soon {
+        color: var(--ink-amber);  /* 琥珀 */
+    }
+
+    /* 響應式調整 */
+    @media (max-width: 767px) {
+        .key-display {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .key-display code {
+            font-size: 0.8125rem;
+        }
+    }
+}

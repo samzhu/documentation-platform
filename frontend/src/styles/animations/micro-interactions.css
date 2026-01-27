@@ -1,0 +1,573 @@
+/**
+ * Micro Interactions - 微交互動畫
+ * 小型的互動反饋效果
+ * 包含點擊波紋、hover 反饋、狀態過渡等
+ */
+
+/* ===== 點擊波紋效果（Click Ripple）===== */
+
+/**
+ * 極光色彩波紋擴散
+ * 點擊時產生的視覺反饋
+ */
+.ripple-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(0, 229, 204, 0.5) 0%,
+        rgba(0, 191, 255, 0.3) 30%,
+        rgba(102, 126, 234, 0.2) 60%,
+        transparent 100%
+    );
+    transform: scale(0);
+    animation: ripple-expand 600ms var(--ease-out-expo);
+    pointer-events: none;
+}
+
+@keyframes ripple-expand {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* 波紋變體 - 快速 */
+.ripple-fast {
+    animation: ripple-expand-fast 400ms var(--ease-out-expo);
+}
+
+@keyframes ripple-expand-fast {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+/* 波紋變體 - 慢速 */
+.ripple-slow {
+    animation: ripple-expand-slow 900ms var(--ease-out-expo);
+}
+
+@keyframes ripple-expand-slow {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(5);
+        opacity: 0;
+    }
+}
+
+/* ===== Hover 浮起效果（Hover Lift）===== */
+
+/**
+ * hover 時輕微浮起
+ * 適合卡片、按鈕等互動元素
+ */
+.hover-lift {
+    transition: transform var(--transition-normal),
+                box-shadow var(--transition-normal);
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+/* Hover 浮起變體 - 微妙 */
+.hover-lift-subtle {
+    transition: transform var(--transition-fast);
+}
+
+.hover-lift-subtle:hover {
+    transform: translateY(-2px);
+}
+
+/* Hover 浮起變體 - 強烈 */
+.hover-lift-strong {
+    transition: transform var(--transition-normal),
+                box-shadow var(--transition-normal);
+}
+
+.hover-lift-strong:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+/* ===== Hover 發光效果（Hover Glow）===== */
+
+/**
+ * hover 時顯示極光光暈
+ * 創造吸引注意力的效果
+ */
+.hover-glow {
+    transition: box-shadow var(--transition-normal);
+}
+
+.hover-glow:hover {
+    box-shadow:
+        0 0 20px rgba(0, 229, 204, 0.4),
+        0 0 40px rgba(0, 191, 255, 0.3),
+        0 0 60px rgba(102, 126, 234, 0.2);
+}
+
+/* Hover 發光變體 - 強烈 */
+.hover-glow-strong:hover {
+    box-shadow:
+        0 0 30px rgba(0, 229, 204, 0.6),
+        0 0 60px rgba(0, 191, 255, 0.5),
+        0 0 90px rgba(102, 126, 234, 0.3);
+}
+
+/* ===== Hover 縮放效果（Hover Scale）===== */
+
+/**
+ * hover 時輕微縮放
+ * 適合圖片、圖標、徽章
+ */
+.hover-scale {
+    transition: transform var(--transition-fast);
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+/* Hover 縮放變體 - 微妙 */
+.hover-scale-subtle:hover {
+    transform: scale(1.02);
+}
+
+/* Hover 縮放變體 - 強烈 */
+.hover-scale-strong:hover {
+    transform: scale(1.1);
+}
+
+/* ===== Hover 旋轉效果（Hover Rotate）===== */
+
+/**
+ * hover 時輕微旋轉
+ * 適合圖標、裝飾元素
+ */
+.hover-rotate {
+    transition: transform var(--transition-normal);
+}
+
+.hover-rotate:hover {
+    transform: rotate(5deg);
+}
+
+/* Hover 旋轉變體 - 反方向 */
+.hover-rotate-reverse:hover {
+    transform: rotate(-5deg);
+}
+
+/* Hover 旋轉變體 - 大角度 */
+.hover-rotate-strong:hover {
+    transform: rotate(15deg);
+}
+
+/* ===== 點擊縮小效果（Click Shrink）===== */
+
+/**
+ * 點擊時輕微縮小
+ * 創造按壓反饋
+ */
+.click-shrink {
+    transition: transform var(--transition-fast);
+}
+
+.click-shrink:active {
+    transform: scale(0.95);
+}
+
+/* 點擊縮小變體 - 強烈 */
+.click-shrink-strong:active {
+    transform: scale(0.9);
+}
+
+/* ===== 搖晃效果（Shake）===== */
+
+/**
+ * 錯誤提示的搖晃動畫
+ * 適合表單驗證失敗等場景
+ */
+.shake {
+    animation: shake 400ms var(--ease-out-expo);
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+/* ===== 彈跳效果（Bounce）===== */
+
+/**
+ * 成功提示的彈跳動畫
+ * 適合操作成功反饋
+ */
+.bounce {
+    animation: bounce 600ms var(--ease-out-back);
+}
+
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* ===== 閃爍效果（Flash）===== */
+
+/**
+ * 吸引注意力的閃爍效果
+ * 適合通知、提醒
+ */
+.flash {
+    animation: flash 1000ms ease-in-out;
+}
+
+@keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* ===== 脈衝效果（Pulse）===== */
+
+/**
+ * 持續脈衝的提示效果
+ * 適合等待狀態、載入中
+ */
+.pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+/* ===== 心跳效果（Heartbeat）===== */
+
+/**
+ * 心跳般的脈動
+ * 適合提醒、通知徽章
+ */
+.heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    10% { transform: scale(1.1); }
+    20% { transform: scale(1); }
+    30% { transform: scale(1.1); }
+    40% { transform: scale(1); }
+}
+
+/* ===== 呼吸效果（Breathe）===== */
+
+/**
+ * 緩慢的呼吸般脈動
+ * 適合背景元素、裝飾
+ */
+.breathe {
+    animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.02);
+        opacity: 1;
+    }
+}
+
+/* ===== 極光波紋（Aurora Ripple）===== */
+
+/**
+ * 極光色彩的波紋效果
+ * 適合點擊反饋、特殊互動
+ */
+.aurora-ripple-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.aurora-ripple-effect::after {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(0, 229, 204, 0.6) 0%,
+        rgba(0, 191, 255, 0.4) 30%,
+        transparent 70%
+    );
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 600ms var(--ease-out-expo);
+}
+
+.aurora-ripple-effect:active::after {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 1;
+}
+
+/* ===== 玻璃閃爍（Glass Shimmer）===== */
+
+/**
+ * 玻璃表面的閃爍高光
+ * 適合按鈕、卡片的 hover 反饋
+ */
+.glass-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent);
+    transform: skewX(-20deg);
+    transition: left 600ms var(--ease-out-expo);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.glass-shimmer:hover::before {
+    left: 200%;
+}
+
+/* ===== Hover 邊框流動（Border Flow）===== */
+
+/**
+ * hover 時邊框色彩流動
+ * 創造動態的邊框效果
+ */
+.hover-border-flow {
+    position: relative;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+}
+
+.hover-border-flow::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: var(--gradient-aurora-flow);
+    background-size: 200% 100%;
+    border-radius: inherit;
+    opacity: 0;
+    z-index: -1;
+    transition: opacity var(--transition-normal);
+}
+
+.hover-border-flow:hover::before {
+    opacity: 1;
+    animation: border-flow 2s linear infinite;
+}
+
+@keyframes border-flow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+/* ===== 焦點環效果（Focus Ring）===== */
+
+/**
+ * 表單元素的焦點環
+ * 使用極光色彩增強可訪問性
+ */
+.focus-ring {
+    outline: none;
+    transition: box-shadow var(--transition-fast);
+}
+
+.focus-ring:focus {
+    box-shadow:
+        0 0 0 3px rgba(0, 229, 204, 0.3),
+        0 0 0 6px rgba(0, 191, 255, 0.15);
+}
+
+/* 焦點環變體 - 實心 */
+.focus-ring-solid:focus {
+    box-shadow:
+        0 0 0 3px rgba(0, 229, 204, 0.5);
+}
+
+/* ===== 載入動畫（Loading）===== */
+
+/**
+ * 載入中的脈動效果
+ * 適合按鈕、卡片的載入狀態
+ */
+.loading-pulse {
+    animation: loading-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.98);
+    }
+}
+
+/* 載入中的極光流動 */
+.loading-aurora {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-aurora::before {
+    content: '';
+    position: absolute;
+    inset: -100%;
+    background: var(--gradient-aurora);
+    background-size: 200% 200%;
+    opacity: 0.15;
+    filter: blur(40px);
+    animation: loading-aurora-flow 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes loading-aurora-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* ===== 成功動畫（Success）===== */
+
+/**
+ * 操作成功的確認動畫
+ * 適合表單提交、操作完成
+ */
+.success-check {
+    animation: success-check 600ms var(--ease-out-back);
+}
+
+@keyframes success-check {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ===== 工具類別 - 禁用所有互動動畫 ===== */
+
+.no-interactions,
+.no-interactions * {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* ===== 響應式調整 ===== */
+
+/* 移動裝置簡化動畫 */
+@media (max-width: 767px) {
+    /* 減少動畫時長 */
+    .ripple,
+    .glass-shimmer::before,
+    .loading-aurora::before {
+        animation-duration: 400ms;
+    }
+
+    /* 簡化 hover 效果（觸控裝置） */
+    .hover-lift:hover,
+    .hover-lift-strong:hover {
+        transform: none;
+    }
+
+    .hover-glow:hover,
+    .hover-glow-strong:hover {
+        box-shadow: none;
+    }
+}
+
+/* 減少動作偏好設定 */
+@media (prefers-reduced-motion: reduce) {
+    /* 禁用所有持續動畫 */
+    .pulse,
+    .heartbeat,
+    .breathe,
+    .loading-pulse,
+    .loading-aurora::before,
+    .hover-border-flow:hover::before {
+        animation: none !important;
+    }
+
+    /* 將過渡動畫簡化為淡入淡出 */
+    .shake,
+    .bounce,
+    .flash,
+    .success-check {
+        animation: simple-fade 300ms ease !important;
+    }
+
+    @keyframes simple-fade {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* 簡化 hover 效果 */
+    .hover-lift,
+    .hover-lift-subtle,
+    .hover-lift-strong,
+    .hover-scale,
+    .hover-scale-subtle,
+    .hover-scale-strong,
+    .hover-rotate,
+    .hover-rotate-reverse,
+    .hover-rotate-strong {
+        transition: opacity 200ms ease;
+    }
+
+    .hover-lift:hover,
+    .hover-scale:hover,
+    .hover-rotate:hover {
+        transform: none;
+    }
+}

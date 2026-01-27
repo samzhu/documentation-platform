@@ -1,0 +1,516 @@
+/**
+ * Glass Utilities - 玻璃效果工具類別
+ * 快速應用玻璃材質、模糊、陰影等效果的工具類別
+ * 可組合使用創造各種玻璃效果
+ */
+
+/* ===== 玻璃背景工具類別 ===== */
+
+/**
+ * 玻璃背景材質
+ * 不同透明度的玻璃背景
+ */
+
+/* 淺色玻璃 */
+.glass-bg-light {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.glass-bg-medium {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.glass-bg-strong {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.glass-bg-solid {
+    background: var(--glass-bg-solid);
+}
+
+/* 深色玻璃 */
+.glass-bg-dark {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.glass-bg-dark-medium {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.glass-bg-dark-strong {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* 極光色玻璃 */
+.glass-bg-aurora-teal {
+    background: rgba(0, 229, 204, 0.1);
+}
+
+.glass-bg-aurora-cyan {
+    background: rgba(0, 191, 255, 0.1);
+}
+
+.glass-bg-aurora-blue {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.glass-bg-aurora-purple {
+    background: rgba(157, 78, 221, 0.1);
+}
+
+.glass-bg-aurora-pink {
+    background: rgba(255, 110, 199, 0.1);
+}
+
+/* ===== 模糊工具類別 ===== */
+
+/**
+ * backdrop-filter 模糊強度
+ * 玻璃效果的核心
+ */
+.blur-xs {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.blur-sm {
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+}
+
+.blur-md {
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+}
+
+.blur-lg {
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+}
+
+.blur-xl {
+    backdrop-filter: blur(var(--blur-xl));
+    -webkit-backdrop-filter: blur(var(--blur-xl));
+}
+
+/* 飽和度增強（讓背景色彩更鮮豔）*/
+.blur-saturate {
+    backdrop-filter: blur(var(--blur-md)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--blur-md)) saturate(180%);
+}
+
+/* ===== 玻璃邊框工具類別 ===== */
+
+/**
+ * 玻璃材質的邊框
+ * 半透明的邊框創造玻璃感
+ */
+.glass-border-light {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-border {
+    border: 1px solid var(--glass-border);
+}
+
+.glass-border-strong {
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.glass-border-dark {
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+/* 極光色邊框 */
+.glass-border-aurora {
+    border: 1px solid rgba(0, 229, 204, 0.4);
+}
+
+/* 雙層邊框（內外邊框）*/
+.glass-border-double {
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* ===== 玻璃陰影工具類別 ===== */
+
+/**
+ * 玻璃材質的陰影效果
+ * 使用預定義的陰影層級
+ */
+.glass-shadow-sm {
+    box-shadow: var(--glass-shadow-sm);
+}
+
+.glass-shadow {
+    box-shadow: var(--glass-shadow);
+}
+
+.glass-shadow-lg {
+    box-shadow: var(--glass-shadow-lg);
+}
+
+.glass-shadow-hover {
+    box-shadow: var(--glass-shadow-hover);
+}
+
+/* 無陰影 */
+.glass-shadow-none {
+    box-shadow: none;
+}
+
+/* ===== 玻璃圓角工具類別 ===== */
+
+/**
+ * 統一的圓角系統
+ * 與玻璃效果搭配使用
+ */
+.glass-rounded-sm {
+    border-radius: var(--radius-sm);
+}
+
+.glass-rounded-md {
+    border-radius: var(--radius-md);
+}
+
+.glass-rounded-lg {
+    border-radius: var(--radius-lg);
+}
+
+.glass-rounded-xl {
+    border-radius: var(--radius-xl);
+}
+
+.glass-rounded-full {
+    border-radius: var(--radius-full);
+}
+
+/* 特定角落圓角 */
+.glass-rounded-top {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.glass-rounded-bottom {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.glass-rounded-left {
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+.glass-rounded-right {
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+
+/* ===== 玻璃高光工具類別 ===== */
+
+/**
+ * 玻璃表面的高光效果
+ * 使用偽元素創造高光
+ */
+.glass-highlight {
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-highlight::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.8),
+        transparent);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* 角落高光 */
+.glass-highlight-corner::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 40%;
+    background: radial-gradient(
+        ellipse at top left,
+        rgba(255, 255, 255, 0.15),
+        transparent 70%
+    );
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ===== 組合類別 - 完整玻璃效果 ===== */
+
+/**
+ * 快速應用完整玻璃效果
+ * 組合背景、模糊、邊框、陰影
+ */
+
+/* 標準玻璃 */
+.glass-standard {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
+}
+
+/* 深色玻璃 */
+.glass-dark-standard {
+    background: var(--glass-dark-bg);
+    backdrop-filter: blur(var(--blur-xl)) saturate(200%);
+    -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(200%);
+    border: 1px solid var(--glass-dark-border);
+    border-radius: var(--radius-xl);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 實心玻璃（高透明度）*/
+.glass-solid-standard {
+    background: var(--glass-bg-solid);
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+    border: 1px solid var(--glass-border-inner);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow-lg);
+}
+
+/* 微妙玻璃（低透明度）*/
+.glass-subtle-standard {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: var(--radius-md);
+    box-shadow: var(--glass-shadow-sm);
+}
+
+/* ===== 玻璃狀態工具類別 ===== */
+
+/**
+ * Hover、Active 等狀態的玻璃效果
+ */
+.glass-hover-lift {
+    transition: all var(--transition-normal);
+}
+
+.glass-hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+.glass-hover-brighten {
+    transition: all var(--transition-normal);
+}
+
+.glass-hover-brighten:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.glass-active-press {
+    transition: all var(--transition-fast);
+}
+
+.glass-active-press:active {
+    transform: scale(0.98);
+}
+
+/* ===== 玻璃內容間距 ===== */
+
+/**
+ * 玻璃容器內的內容間距
+ */
+.glass-p-sm {
+    padding: var(--spacing-sm);
+}
+
+.glass-p-md {
+    padding: var(--spacing-md);
+}
+
+.glass-p-lg {
+    padding: var(--spacing-lg);
+}
+
+.glass-p-xl {
+    padding: var(--spacing-xl);
+}
+
+/* ===== 玻璃容器尺寸 ===== */
+
+/**
+ * 預定義的玻璃容器尺寸
+ */
+.glass-container-sm {
+    max-width: 400px;
+}
+
+.glass-container-md {
+    max-width: 600px;
+}
+
+.glass-container-lg {
+    max-width: 800px;
+}
+
+.glass-container-xl {
+    max-width: 1000px;
+}
+
+/* ===== 玻璃過渡動畫 ===== */
+
+/**
+ * 玻璃效果的過渡動畫
+ */
+.glass-transition-fast {
+    transition: all var(--transition-fast);
+}
+
+.glass-transition-normal {
+    transition: all var(--transition-normal);
+}
+
+.glass-transition-slow {
+    transition: all var(--transition-slow);
+}
+
+/* ===== 玻璃層疊效果 ===== */
+
+/**
+ * 多層玻璃堆疊效果
+ */
+.glass-layer-1 {
+    position: relative;
+    z-index: 1;
+}
+
+.glass-layer-2 {
+    position: relative;
+    z-index: 2;
+}
+
+.glass-layer-3 {
+    position: relative;
+    z-index: 3;
+}
+
+/* ===== 響應式玻璃效果 ===== */
+
+/**
+ * 響應式調整玻璃效果
+ */
+
+/* 移動裝置簡化模糊（提升性能）*/
+@media (max-width: 767px) {
+    .blur-lg,
+    .blur-xl {
+        backdrop-filter: blur(var(--blur-md));
+        -webkit-backdrop-filter: blur(var(--blur-md));
+    }
+
+    .blur-saturate {
+        backdrop-filter: blur(var(--blur-sm));
+        -webkit-backdrop-filter: blur(var(--blur-sm));
+    }
+
+    .glass-standard,
+    .glass-solid-standard {
+        backdrop-filter: blur(var(--blur-sm));
+        -webkit-backdrop-filter: blur(var(--blur-sm));
+    }
+}
+
+/* 不支援 backdrop-filter 的降級方案 */
+@supports not (backdrop-filter: blur(10px)) {
+    .blur-xs,
+    .blur-sm,
+    .blur-md,
+    .blur-lg,
+    .blur-xl,
+    .blur-saturate,
+    .glass-standard,
+    .glass-solid-standard,
+    .glass-subtle-standard {
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .glass-dark-standard {
+        background: rgba(30, 30, 32, 0.95);
+    }
+}
+
+/* Dark Mode 適配 */
+@media (prefers-color-scheme: dark) {
+    /* 淺色玻璃變為深色 */
+    .glass-bg-light {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-bg-medium {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .glass-bg-strong {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .glass-bg-solid {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* 邊框調整 */
+    .glass-border-light,
+    .glass-border {
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .glass-border-strong {
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* 標準玻璃 Dark Mode */
+    .glass-standard {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .glass-solid-standard {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .glass-subtle-standard {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* 減少動作偏好設定 */
+@media (prefers-reduced-motion: reduce) {
+    .glass-hover-lift,
+    .glass-hover-brighten,
+    .glass-active-press,
+    .glass-transition-fast,
+    .glass-transition-normal,
+    .glass-transition-slow {
+        transition: none;
+    }
+
+    .glass-hover-lift:hover {
+        transform: none;
+    }
+
+    .glass-active-press:active {
+        transform: none;
+    }
+}

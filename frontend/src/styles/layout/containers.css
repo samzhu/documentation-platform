@@ -1,0 +1,101 @@
+/**
+ * Containers 容器佈局
+ * 應用程式主要容器和內容區域
+ */
+
+/* ===== 應用程式容器 ===== */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ===== 主內容區容器（包含 Header 和內容）===== */
+.app-main {
+    position: relative;
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: calc(100% - var(--sidebar-width));
+}
+
+/* 主內容區淺色覆蓋層 */
+.app-main::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    bottom: 0;
+    background: var(--color-bg-overlay);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ===== 內容區（在 Header 下方） ===== */
+.app-content {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    padding: var(--spacing-xl);
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* 保留舊版 main-content 相容性 */
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    padding: var(--spacing-xl);
+    position: relative;
+}
+
+/* 主內容區淺色覆蓋層（舊版相容） */
+.main-content::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    bottom: 0;
+    background: var(--color-bg-overlay);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.main-content > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== 頁面樣式 ===== */
+.page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ===== 響應式 ===== */
+@media (max-width: 767px) {
+    .app-main {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .app-main::before {
+        left: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .main-content::before {
+        left: 0;
+    }
+
+    .app-content {
+        padding: var(--spacing-md);
+    }
+}

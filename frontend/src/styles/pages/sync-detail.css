@@ -1,0 +1,79 @@
+/**
+ * Sync Detail 頁面樣式
+ * Sync Detail Page Styles
+ *
+ * 用途：同步詳情頁面的專屬樣式
+ * 包含同步資訊網格、狀態顯示等
+ */
+
+@layer components {
+    /* 同步資訊網格 */
+    .sync-detail .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    /* 資訊項目 */
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ink-cloud);  /* 雲灰 */
+    }
+
+    .info-value {
+        font-size: 0.9375rem;
+        color: var(--ink-black);  /* 墨黑 */
+    }
+
+    /* 同步統計數字 */
+    .sync-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-md);
+        margin-top: var(--spacing-lg);
+    }
+
+    .sync-stat-item {
+        text-align: center;
+        padding: var(--spacing-md);
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: var(--radius-md);
+    }
+
+    .sync-stat-value {
+        display: block;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--ink-black);  /* 墨黑 */
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .sync-stat-label {
+        display: block;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ink-cloud);  /* 雲灰 */
+    }
+
+    /* 響應式調整 */
+    @media (max-width: 767px) {
+        .sync-detail .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sync-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+}

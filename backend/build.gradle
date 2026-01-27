@@ -1,0 +1,116 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.0.2'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'io.github.samzhu'
+version = '0.0.1-SNAPSHOT'
+description = 'Self-hosted documentation management platform with Web UI.'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springAiVersion', "2.0.0-M2")
+}
+
+dependencies {
+	// Lombok - 減少樣板代碼
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	// Spring Boot 核心
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// OAuth2 Resource Server（JWT 驗證）與 Client（前端登入流程）
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// Spring AI - 向量儲存與嵌入模型
+	implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
+	implementation 'org.springframework.ai:spring-ai-starter-model-google-genai-embedding'
+
+	// 文件解析相關
+	implementation 'org.jsoup:jsoup:1.22.1'
+	implementation 'org.htmlunit:htmlunit:4.21.0'
+	implementation 'com.vladsch.flexmark:flexmark:0.64.8'
+	implementation 'com.vladsch.flexmark:flexmark-html2md-converter:0.64.8'
+	implementation 'org.asciidoctor:asciidoctorj:3.0.1'
+
+	// TSID 生成器（取代 UUID，具有時間排序特性）
+	implementation 'com.github.f4b6a3:tsid-creator:5.2.6'
+
+	// Apache Commons Compress for tar.gz extraction
+	implementation 'org.apache.commons:commons-compress:1.28.0'
+
+	// 開發工具
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+
+	// PostgreSQL 驅動
+	runtimeOnly 'org.postgresql:postgresql'
+
+	// 測試依賴
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	testImplementation 'org.springframework.ai:spring-ai-spring-boot-testcontainers'
+	testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+	testImplementation 'org.testcontainers:testcontainers-postgresql'
+	testImplementation 'com.squareup.okhttp3:mockwebserver:5.3.2'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+	}
+}
+
+// ==================== 測試配置（使用 JUnit 5 @Tag 區分） ====================
+// 單元測試：./gradlew test
+// 整合測試：./gradlew integrationTest
+// 所有測試：./gradlew test integrationTest
+
+tasks.named('test') {
+	useJUnitPlatform {
+		// 預設排除整合測試
+		excludeTags 'integration'
+	}
+}
+
+// 整合測試（需要網路、Docker 或外部服務）
+tasks.register('integrationTest', Test) {
+	description = '執行整合測試（@Tag("integration")）'
+	group = 'verification'
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	useJUnitPlatform {
+		includeTags 'integration'
+	}
+	shouldRunAfter test
+	testLogging {
+		events "passed", "skipped", "failed"
+		showStandardStreams = true
+	}
+}
+

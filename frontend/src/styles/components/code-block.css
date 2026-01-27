@@ -1,0 +1,128 @@
+/**
+ * 程式碼區塊組件
+ * Code Block Component
+ *
+ * 用途：顯示程式碼、指令、配置檔案等
+ * 支援語法高亮與複製功能
+ */
+
+@layer components {
+    /* 程式碼區塊容器 */
+    .code-block {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+        overflow-x: auto;
+    }
+
+    .code-block code {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        line-height: 1.6;
+        color: var(--ink-black);  /* 墨黑 */
+    }
+
+    .code-block pre {
+        margin: 0;
+        overflow: visible;
+    }
+
+    /* 帶複製按鈕的程式碼區塊 */
+    .code-block-wrapper {
+        position: relative;
+    }
+
+    .code-block-wrapper .copy-btn {
+        position: absolute;
+        top: var(--spacing-sm);
+        right: var(--spacing-sm);
+    }
+
+    /* 複製按鈕 - Dark Mode Liquid Glass 風格 */
+    .copy-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        overflow: hidden;
+        box-shadow:
+            0 1px 4px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        font-size: 0.8125rem;
+        color: var(--ink-gray);  /* 墨灰 */
+    }
+
+    /* 複製按鈕玻璃反光效果 */
+    .copy-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 10%;
+        right: 10%;
+        height: 50%;
+        background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.6),
+            transparent);
+        border-radius: 0 0 50% 50%;
+        pointer-events: none;
+    }
+
+    .copy-btn:hover {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+        box-shadow:
+            0 2px 8px rgba(0, 0, 0, 0.25),
+            0 4px 12px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .copy-btn:active {
+        transform: translateY(0);
+    }
+
+    /* 複製按鈕圖示 */
+    .copy-btn svg {
+        width: 14px;
+        height: 14px;
+        margin-right: 4px;
+    }
+
+    /* 已複製狀態 */
+    .copy-btn.copied {
+        background: linear-gradient(135deg, rgba(50, 215, 75, 0.2), rgba(50, 215, 75, 0.15));
+        border-color: rgba(50, 215, 75, 0.3);
+        color: var(--ink-green);  /* 穩重綠 */
+    }
+
+    /* 內聯程式碼 */
+    .meta-value code,
+    .inline-code {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: var(--ink-gray);  /* 淺灰文字 */
+    }
+
+    /* 響應式調整 */
+    @media (max-width: 767px) {
+        .code-block {
+            padding: var(--spacing-sm);
+            font-size: 0.8125rem;
+        }
+
+        .code-block code {
+            font-size: 0.8125rem;
+        }
+    }
+}

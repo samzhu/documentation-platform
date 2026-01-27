@@ -1,0 +1,95 @@
+/**
+ * Tables 表格組件
+ * 資料表格樣式
+ */
+
+/* ===== 表格容器 ===== */
+.table-container {
+    overflow-x: auto;
+}
+
+/* ===== 通用表格樣式 ===== */
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table th,
+.table td {
+    padding: var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 表頭 - Dark Mode 深色背景 */
+.table th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-cloud);  /* 中灰文字 */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* 表格內容 - 使用墨灰色值 */
+.table td {
+    color: var(--ink-gray);  /* 墨灰 - 9.7:1 對比度 */
+}
+
+.table th:first-child {
+    border-radius: var(--radius-sm) 0 0 0;
+}
+
+.table th:last-child {
+    border-radius: 0 var(--radius-sm) 0 0;
+}
+
+.table tbody tr {
+    transition: background var(--transition-fast);
+}
+
+.table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== 資料表格 ===== */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 資料表格表頭 - Dark Mode 深色背景 */
+.data-table th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-cloud);  /* 中灰文字 */
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* 資料表格內容 - 使用墨灰 */
+.data-table td {
+    color: var(--ink-gray);  /* 墨灰 - 9.7:1 對比度 */
+}
+
+.data-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* 表格內按鈕 */
+.data-table td .btn {
+    white-space: nowrap;
+}

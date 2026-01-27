@@ -1,0 +1,87 @@
+/**
+ * 認證頁面樣式
+ * Authentication Page Styles
+ *
+ * 用途：登入、回調等認證相關頁面的專屬樣式
+ */
+
+@layer components {
+    /* 認證容器 */
+    .auth-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: var(--spacing-lg);
+        background: var(--bg-space-gradient);
+        background-attachment: fixed;
+    }
+
+    /* 認證卡片 */
+    .auth-card {
+        max-width: 440px;
+        width: 100%;
+        background: var(--color-surface-white);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-2xl);
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 16px 64px rgba(0, 0, 0, 0.3);
+    }
+
+    .auth-card h2 {
+        font-family: var(--font-display);
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--ink-black);  /* 墨黑 */
+        text-align: center;
+        margin-bottom: var(--spacing-xl);
+    }
+
+    /* Logo 區塊 */
+    .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--color-text-inverse);
+        text-align: center;
+        margin-bottom: var(--spacing-md);
+    }
+
+    /* 認證按鈕容器 */
+    .auth-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    /* 認證訊息 */
+    .auth-message {
+        text-align: center;
+        padding: var(--spacing-lg);
+        color: var(--ink-gray);  /* 墨灰 */
+    }
+
+    .auth-message.error {
+        color: var(--ink-red);  /* 警示紅 */
+    }
+
+    .auth-message.success {
+        color: var(--ink-green);  /* 穩重綠 */
+    }
+
+    /* 響應式調整 */
+    @media (max-width: 767px) {
+        .auth-container {
+            padding: var(--spacing-md);
+        }
+
+        .auth-card {
+            padding: var(--spacing-lg);
+        }
+
+        .auth-card h2 {
+            font-size: 1.5rem;
+        }
+    }
+}

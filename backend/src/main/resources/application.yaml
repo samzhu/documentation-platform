@@ -1,0 +1,169 @@
+# =============================================================================
+# Documentation Platform - 基礎共用配置
+# =============================================================================
+# 此檔案包進 Docker Image，包含所有環境共用的配置
+# 環境特定配置透過 profile 檔案覆蓋
+# =============================================================================
+
+spring:
+  application:
+    name: Documentation Platform
+
+  profiles:
+    # 預設 profiles（可被 spring.profiles.active 覆蓋）
+    # 本地開發: 自動使用 local,dev
+    default: local,dev
+
+  threads:
+    virtual:
+      enabled: true  # Java 21+ Virtual Threads
+
+  # ----- OAuth2 Resource Server 配置 -----
+  # OAuth2 Client 配置請使用 oauth2 profile（見 application-oauth2.yaml）
+  security:
+    oauth2:
+      # Resource Server 配置（驗證 JWT）
+      resourceserver:
+        jwt:
+          issuer-uri: ${platform-oauth2-issuer-uri:https://auth-dev.omnihubs.cloud/}
+
+  # ----- 資料庫配置 -----
+  # 使用統一屬性名稱，各環境可覆蓋
+  datasource:
+    url: ${platform-db-url:jdbc:postgresql://localhost:5432/mydatabase}
+    username: ${platform-db-username:myuser}
+    password: ${platform-db-password:secret}
+
+  # ----- SQL 初始化配置 -----
+  sql:
+    init:
+      mode: always
+      platform: postgresql
+
+  # ----- Spring AI 配置 -----
+  ai:
+    # Google GenAI Embedding 配置
+    google:
+      genai:
+        embedding:
+          # 從統一屬性名稱讀取（本地: secrets.properties, GCP: Secret Manager）
+          api-key: ${platform-google-api-key:}
+          text:
+            options:
+              model: gemini-embedding-001
+              # 指定輸出維度（gemini-embedding-001 預設 3072，需設為 768 與資料庫一致）
+              dimensions: 768
+
+    # PgVector 向量儲存配置
+    vectorstore:
+      pgvector:
+        dimensions: 768
+        distance-type: COSINE_DISTANCE
+        index-type: HNSW
+
+# ----- Actuator 配置 -----
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
+# ----- Platform 功能開關配置 -----
+platform:
+  # ----- 已知函式庫文件路徑對應表 -----
+  # 用於自動帶入 GitHub 函式庫的文件路徑
+  # 支援兩種格式：
+  # 1. 簡單格式：直接是路徑字串（適用於無版本差異的函式庫）
+  # 2. 版本範圍格式：包含 default 和 versions（適用於有版本差異的函式庫）
+  known-docs-paths:
+    # Spring Boot: 4.x 與 3.x 目錄結構不同
+    spring-projects/spring-boot:
+      default: "documentation/spring-boot-docs/src/docs/antora"  # 4.x 預設
+      versions:
+        "3.*": "spring-boot-project/spring-boot-docs/src/docs/antora"  # 3.x
+    spring-projects/spring-framework: "framework-docs/modules/ROOT/pages"
+    facebook/react: "docs"
+    vuejs/vue: "docs"
+    kubernetes/kubernetes: "website/content/en/docs"
+    docker/docs: "content"
+    microsoft/TypeScript: "doc"
+    golang/go: "doc"
+
+  features:
+    web-ui: true            # 啟用 Web UI 介面
+    api-key-auth: false     # API Key 認證（生產環境建議開啟）
+    semantic-search: true   # 語意搜尋功能
+    code-examples: true     # 程式碼範例功能
+    migration-guides: false # 遷移指南功能（P2 延後）
+    sync-scheduling: false  # 同步排程功能（預設關閉）
+    concurrency-limit: true # 併發限制功能（生產環境建議開啟）
+
+  # ----- 搜尋配置 -----
+  search:
+    hybrid:
+      # alpha: 關鍵字搜尋權重（0-1），預設 0.3 表示 30% 關鍵字、70% 語意
+      # 使用 RRF（Reciprocal Rank Fusion）演算法融合搜尋結果
+      alpha: 0.3
+      # 語意搜尋的最低相似度閾值（0-1）
+      min-similarity: 0.5
+
+  # ----- 同步排程配置 -----
+  sync:
+    cron: "0 0 2 * * *"  # 每天凌晨 2 點執行
+
+  # ----- GitHub 內容取得配置 -----
+  github:
+    fetch:
+      # 連線超時（毫秒）
+      connect-timeout-ms: 10000
+      # 讀取超時（毫秒）
+      read-timeout-ms: 30000
+      # Archive 策略（優先級 1：下載 tarball，最快、無 Rate Limit）
+      archive:
+        enabled: true
+        priority: 1
+      # Git Tree API 策略（優先級 2：1 次 API 呼叫取得目錄結構）
+      git-tree:
+        enabled: true
+        priority: 2
+      # Contents API 策略（優先級 3：遞迴呼叫，作為最終 fallback）
+      contents-api:
+        enabled: true
+        priority: 3
+        rate-limit:
+          delay-ms: 100              # 每次請求間隔（毫秒）
+          max-requests-per-sync: 500  # 單次同步最大請求數
+          retry-count: 3             # 失敗重試次數
+          retry-delay-ms: 1000       # 重試間隔（毫秒）
+          rate-limit-wait-ms: 60000  # 遇到 Rate Limit 時等待（毫秒）
+
+  # ----- 併發限制配置 -----
+  security:
+    concurrency:
+      default-limit: 10  # 每個 API Key 同時請求上限
+      anonymous-limit: 5 # 匿名請求同時上限
+
+  # ----- CORS 配置 -----
+  cors:
+    allowed-origins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    allowed-headers:
+      - "*"
+    allow-credentials: true
+
+# ----- 日誌配置 -----
+logging:
+  level:
+    root: INFO

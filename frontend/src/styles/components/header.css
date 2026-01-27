@@ -1,0 +1,194 @@
+/**
+ * Header 頁首組件
+ * Liquid Glass 風格的頁首導航
+ */
+
+/* ===== 頁首 - Dark Mode Liquid Glass 風格 ===== */
+.header {
+    position: relative;
+    z-index: 10;
+    background: rgba(24, 24, 27, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-md) var(--spacing-xl);
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+/* Header 頂部邊緣高光 */
+.header-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.9) 20%,
+        rgba(255, 255, 255, 0.95) 50%,
+        rgba(255, 255, 255, 0.9) 80%,
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
+.header-content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+}
+
+/* 頁首標題 - 使用墨黑 */
+.header-title {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 600;
+    color: var(--ink-black);  /* 墨黑 */
+    letter-spacing: -0.02em;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+/* ===== Header 圖標按鈕 - Dark Mode ===== */
+/* 頁首圖標按鈕 - 深色玻璃風格 */
+.header-icon-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--ink-gray);  /* 淺灰文字 */
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    overflow: hidden;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 按鈕頂部高光 - 圓形按鈕特殊處理 */
+.header-icon-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 50%;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.7) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+    );
+    border-radius: 50% 50% 50% 50% / 100% 100% 0 0;
+    pointer-events: none;
+}
+
+/* 邊緣光暈 */
+.header-icon-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+        ellipse at top,
+        rgba(255, 255, 255, 0.4) 0%,
+        transparent 60%
+    );
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.header-icon-btn:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--ink-black);  /* 淺色文字 */
+    transform: scale(1.08) translateY(-1px);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.25),
+        0 8px 24px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.header-icon-btn:hover::before {
+    opacity: 1;
+}
+
+.header-icon-btn:active {
+    transform: scale(1) translateY(0);
+}
+
+.header-icon-btn svg {
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== 使用者頭像 - Liquid Glass 風格 ===== */
+.header-avatar {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background: var(--color-accent-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-inverse);
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow:
+        0 2px 8px rgba(0, 122, 255, 0.35),
+        0 4px 16px rgba(88, 86, 214, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    overflow: hidden;
+}
+
+/* 頭像頂部高光 */
+.header-avatar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.35) 0%,
+        transparent 100%
+    );
+    border-radius: var(--radius-full) var(--radius-full) 0 0;
+    pointer-events: none;
+}
+
+.header-avatar:hover {
+    transform: scale(1.08);
+    box-shadow:
+        0 4px 12px rgba(0, 122, 255, 0.4),
+        0 8px 24px rgba(88, 86, 214, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.header-avatar span {
+    position: relative;
+    z-index: 1;
+}

@@ -1,0 +1,83 @@
+/**
+ * 狀態組件
+ * States Component
+ *
+ * 用途：載入中、錯誤訊息、空狀態提示
+ * 全局通用的狀態顯示組件
+ */
+
+@layer components {
+    /* 載入中狀態 */
+    .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-2xl);
+        color: var(--ink-gray);  /* 墨灰 */
+        font-size: 0.9375rem;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: var(--ink-sky);  /* 天藍 */
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    /* 錯誤狀態 */
+    .error {
+        padding: var(--spacing-lg);
+        background: var(--color-error-bg);
+        border: 1px solid rgba(255, 69, 58, 0.3);
+        color: var(--color-error-text);
+        border-radius: var(--radius-md);
+        font-size: 0.9375rem;
+        line-height: 1.6;
+    }
+
+    .error-title {
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+        color: var(--ink-black);  /* 墨黑 */
+    }
+
+    /* 空狀態 */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-2xl);
+        text-align: center;
+        color: var(--ink-gray);  /* 墨灰 */
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: var(--spacing-md);
+        opacity: 0.5;
+    }
+
+    .empty-state-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--ink-black);  /* 墨黑 */
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .empty-state-description {
+        font-size: 0.9375rem;
+        color: var(--ink-gray);  /* 墨灰 */
+        max-width: 400px;
+    }
+
+    /* 旋轉動畫 */
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+}

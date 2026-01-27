@@ -1,0 +1,273 @@
+/**
+ * Foundation - 玻璃效果核心庫
+ * 三層景深玻璃效果系統（前景、中景、背景）
+ * 極光折射設計系統的核心視覺效果
+ */
+
+/* ===== 三層玻璃基礎類別 ===== */
+
+/**
+ * 多層玻璃卡片 - 三層景深效果
+ * 使用 ::before（背景層）、自身（中景層）、::after（前景層）
+ */
+.glass-layered {
+    position: relative;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+    transform-style: preserve-3d;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+/* 背景層 - 深空陰影與強烈模糊 */
+.glass-layered::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: var(--glass-bg-dark);
+    backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+    border-radius: inherit;
+    transform: translateZ(-20px);
+    filter: drop-shadow(0 0 40px rgba(0, 229, 204, 0.4));
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* 前景層 - 極光高光與邊緣發光 */
+.glass-layered::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.25) 0%,
+        transparent 40%,
+        rgba(0, 229, 204, 0.1) 100%);
+    border-radius: inherit;
+    transform: translateZ(10px);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    pointer-events: none;
+}
+
+/* hover 時激活三層效果 */
+.glass-layered:hover {
+    transform: translateY(-8px) rotateX(2deg);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+.glass-layered:hover::before {
+    opacity: 1;
+}
+
+.glass-layered:hover::after {
+    opacity: 1;
+}
+
+/* ===== 單層玻璃效果（輕量版）===== */
+
+.glass-simple {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
+    transition: all var(--transition-normal);
+}
+
+.glass-simple:hover {
+    background: var(--glass-bg-hover);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+/* ===== 折射效果基礎類別 ===== */
+
+/* 色彩折射 - 極光色彩透過玻璃折射 */
+.glass-refract-aurora {
+    position: relative;
+}
+
+.glass-refract-aurora::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-aurora);
+    opacity: 0.08;
+    filter: blur(40px);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 邊緣高光 - 玻璃邊緣的光線折射 */
+.glass-edge-glow {
+    position: relative;
+    border: 1px solid var(--glass-border);
+}
+
+.glass-edge-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.8),
+        transparent);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.glass-edge-glow::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 40%;
+    background: radial-gradient(
+        ellipse at top left,
+        rgba(255, 255, 255, 0.15),
+        transparent 70%
+    );
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ===== 深色玻璃效果（側邊欄、模態框）===== */
+
+.glass-dark {
+    background: var(--glass-dark-bg);
+    backdrop-filter: blur(var(--blur-xl)) saturate(200%);
+    -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(200%);
+    border: 1px solid var(--glass-dark-border);
+    border-radius: var(--radius-xl);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ===== 玻璃模糊強度變體 ===== */
+
+.glass-blur-light {
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+}
+
+.glass-blur-medium {
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+}
+
+.glass-blur-strong {
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+}
+
+.glass-blur-ultra {
+    backdrop-filter: blur(var(--blur-xl));
+    -webkit-backdrop-filter: blur(var(--blur-xl));
+}
+
+/* ===== 極光玻璃效果 - 帶色彩流動 ===== */
+
+.glass-aurora {
+    position: relative;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* 極光色彩流動背景 */
+.glass-aurora::before {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: var(--gradient-aurora);
+    background-size: 200% 200%;
+    animation: aurora-flow 8s ease infinite;
+    opacity: 0.06;
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.glass-aurora:hover::before {
+    animation-duration: 3s;
+    opacity: 0.12;
+}
+
+/* ===== 瀏覽器相容性 - backdrop-filter 降級方案 ===== */
+
+@supports not (backdrop-filter: blur(10px)) {
+    .glass-layered,
+    .glass-simple,
+    .glass-dark,
+    .glass-aurora {
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .glass-dark {
+            background: rgba(30, 30, 32, 0.95);
+        }
+    }
+}
+
+/* ===== Dark Mode 適配 ===== */
+
+@media (prefers-color-scheme: dark) {
+    .glass-layered,
+    .glass-simple,
+    .glass-aurora {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .glass-layered:hover,
+    .glass-simple:hover {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .glass-layered::after {
+        background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.15) 0%,
+            transparent 40%,
+            rgba(0, 229, 204, 0.08) 100%);
+    }
+}
+
+/* ===== 性能優化提示 ===== */
+
+/* 提示瀏覽器優化 backdrop-filter 的元素 */
+.glass-layered,
+.glass-simple,
+.glass-dark,
+.glass-aurora {
+    will-change: transform, box-shadow;
+}
+
+/* 移動裝置簡化（避免性能問題） */
+@media (max-width: 767px) {
+    .glass-layered::before {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .glass-blur-ultra {
+        backdrop-filter: blur(var(--blur-lg));
+        -webkit-backdrop-filter: blur(var(--blur-lg));
+    }
+}

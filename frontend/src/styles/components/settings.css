@@ -1,0 +1,203 @@
+/**
+ * Settings 組件樣式
+ *
+ * 提供 Settings 頁面專用的樣式：
+ * - Feature Flags 列表與狀態顯示
+ * - 同步設定網格與資訊展示
+ * - 系統資訊卡片（Dark Mode 玻璃材質）
+ *
+ * 設計語言：Apple Liquid Glass (Dark Mode)
+ * 文字色彩：墨玉色彩系統（符合 WCAG AA）
+ */
+
+@layer components {
+    /* ========================================
+     * Feature Flags 區塊
+     * ======================================== */
+
+    /* Feature 列表容器 - 垂直排列 */
+    .feature-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    /* Feature 項目 - 玻璃材質背景（Dark Mode） */
+    .feature-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.05);  /* Dark Mode 玻璃背景 */
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all var(--transition-fast);
+    }
+
+    .feature-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Feature 資訊容器 */
+    .feature-info {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    /* Feature 名稱 - 墨黑 */
+    .feature-name {
+        font-weight: 600;
+        color: var(--ink-black);
+    }
+
+    /* Feature 描述 - 墨灰 */
+    .feature-desc {
+        font-size: 0.875rem;
+        color: var(--ink-gray);
+    }
+
+    /* Feature 狀態容器 */
+    .feature-status {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    /* 啟用狀態 - 亮綠 */
+    .feature-enabled {
+        color: var(--ink-green);
+    }
+
+    /* 停用狀態 - 霧灰 */
+    .feature-disabled {
+        color: var(--ink-fog);
+    }
+
+    /* ========================================
+     * 同步設定區塊
+     * ======================================== */
+
+    /* 設定網格 - 垂直排列 */
+    .settings-grid {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    /* 設定項目 - 玻璃材質背景 */
+    .setting-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all var(--transition-fast);
+    }
+
+    .setting-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* 設定標籤 - 帶圖標 */
+    .setting-label {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        font-weight: 500;
+        color: var(--ink-gray);
+    }
+
+    /* 設定值 - 墨黑 */
+    .setting-value {
+        font-size: 0.9375rem;
+        color: var(--ink-black);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    /* 設定值內的 code - 天藍高亮 */
+    .setting-value code {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        padding: 2px 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-sm);
+        color: var(--ink-sky);
+    }
+
+    /* ========================================
+     * 系統資訊區塊
+     * ======================================== */
+
+    /* 系統資訊網格 - 自動填充 */
+    .system-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    /* 資訊卡片 - 玻璃材質 */
+    .info-card {
+        padding: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all var(--transition-fast);
+    }
+
+    .info-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* 資訊卡片標籤 - 雲灰、小字、大寫 */
+    .info-card-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ink-cloud);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    /* 資訊卡片值 - 墨黑 */
+    .info-card-value {
+        font-size: 0.9375rem;
+        color: var(--ink-black);
+        word-break: break-word;
+    }
+
+    /* ========================================
+     * 響應式調整
+     * ======================================== */
+
+    @media (max-width: 767px) {
+        /* Feature 項目垂直排列 */
+        .feature-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        /* 設定項目垂直排列 */
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        /* 系統資訊網格縮小最小寬度 */
+        .system-info-grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        }
+    }
+}

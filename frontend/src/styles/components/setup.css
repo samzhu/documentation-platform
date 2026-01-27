@@ -1,0 +1,259 @@
+/**
+ * Setup 組件樣式
+ *
+ * 提供 Setup 頁面（整合指南）專用的樣式：
+ * - MCP 端點資訊展示
+ * - IDE 標籤切換按鈕（Claude Code、VS Code、Cursor）
+ * - 程式碼區塊與複製按鈕
+ * - 可用工具列表
+ * - OAuth2 認證狀態提示
+ *
+ * 設計語言：Apple Liquid Glass (Dark Mode)
+ * 文字色彩：墨玉色彩系統（符合 WCAG AA）
+ */
+
+@layer components {
+    /* ========================================
+     * MCP 端點資訊區塊
+     * ======================================== */
+
+    /* 端點資訊容器 */
+    .endpoint-info {
+        padding: var(--spacing-md);
+    }
+
+    /* 端點資訊行 - 兩端對齊 */
+    .endpoint-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+    }
+
+    /* 端點標籤 - 墨灰 */
+    .endpoint-label {
+        font-weight: 500;
+        color: var(--ink-gray);
+    }
+
+    /* 端點值容器 */
+    .endpoint-value-wrapper {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    /* 端點值 - 等寬字體、天藍高亮 */
+    .endpoint-value {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        padding: 6px 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-sm);
+        color: var(--ink-sky);
+    }
+
+    /* 認證狀態 - 帶圖標 */
+    .auth-status {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    /* 啟用狀態 - 亮綠 */
+    .auth-status.enabled {
+        color: var(--ink-green);
+    }
+
+    /* 停用狀態 - 墨灰 */
+    .auth-status.disabled {
+        color: var(--ink-gray);
+    }
+
+    /* ========================================
+     * IDE 標籤切換按鈕
+     * ======================================== */
+
+    /* 標籤容器 - Flex 佈局 */
+    .setup-tabs {
+        display: flex;
+        gap: var(--spacing-sm);
+        flex-wrap: wrap;
+    }
+
+    /* 標籤按鈕 - Liquid Glass Pill 風格 */
+    .setup-tab {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: 8px 16px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: var(--radius-full);  /* 膠囊形狀 */
+        background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.04));
+        color: var(--ink-gray);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        overflow: hidden;
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    /* Hover 狀態 - 背景變亮、邊框強化、微妙上浮 */
+    .setup-tab:hover {
+        background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.12),
+            rgba(255, 255, 255, 0.08));
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+        box-shadow:
+            0 2px 6px rgba(0, 0, 0, 0.15),
+            0 4px 10px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    /* Active 狀態 - 藍色漸層背景 */
+    .setup-tab.active {
+        background: linear-gradient(135deg,
+            rgba(56, 189, 248, 0.9),   /* ink-sky */
+            rgba(14, 165, 233, 0.85));
+        border-color: rgba(56, 189, 248, 0.6);
+        color: #ffffff;
+        box-shadow:
+            0 2px 8px rgba(56, 189, 248, 0.4),
+            0 4px 16px rgba(56, 189, 248, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    /* Active Hover - 增強發光效果 */
+    .setup-tab.active:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 4px 12px rgba(56, 189, 248, 0.5),
+            0 8px 24px rgba(56, 189, 248, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    /* ========================================
+     * 程式碼區塊與複製按鈕
+     * ======================================== */
+
+    /* 配置標題 - 墨黑、較大字重 */
+    .config-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--ink-black);
+    }
+
+    /* 程式碼區塊容器 - 相對定位用於放置複製按鈕 */
+    .code-block-wrapper {
+        position: relative;
+    }
+
+    /* 程式碼區塊 - 深色背景、等寬字體 */
+    .code-block {
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        line-height: 1.6;
+        padding: var(--spacing-md);
+        background: rgba(0, 0, 0, 0.3);  /* 深色背景以增強對比 */
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-sm);
+        color: var(--ink-gray);
+        overflow-x: auto;
+        margin: 0;
+    }
+
+    /* 程式碼內容 - 天藍色高亮 */
+    .code-block code {
+        color: var(--ink-sky);
+    }
+
+    /* 程式碼區塊的 pre 標籤 - 移除邊距 */
+    .code-block pre {
+        margin: 0;
+    }
+
+    /* 複製按鈕 - 絕對定位於右上角 */
+    .code-block-wrapper .copy-btn {
+        position: absolute;
+        top: var(--spacing-sm);
+        right: var(--spacing-sm);
+    }
+
+    /* ========================================
+     * 可用工具列表
+     * ======================================== */
+
+    /* 工具列表容器 - 垂直排列 */
+    .tools-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    /* 工具項目 - 玻璃背景、hover 效果 */
+    .tool-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all var(--transition-fast);
+    }
+
+    .tool-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    /* 工具名稱 - code 標籤、天藍色 */
+    .tool-name code {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--ink-sky);
+    }
+
+    /* 工具描述 - 墨灰 */
+    .tool-desc {
+        font-size: 0.875rem;
+        color: var(--ink-gray);
+        line-height: 1.5;
+    }
+
+    /* ========================================
+     * 響應式調整
+     * ======================================== */
+
+    @media (max-width: 767px) {
+        /* 端點資訊行 - 改為縱向排列 */
+        .endpoint-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* 標籤按鈕 - 縮小 padding 和字體 */
+        .setup-tab {
+            padding: 6px 12px;
+            font-size: 0.8125rem;
+        }
+
+        /* 程式碼區塊 - 縮小字體 */
+        .code-block {
+            font-size: 0.75rem;
+            padding: var(--spacing-sm);
+        }
+    }
+}

@@ -1,0 +1,365 @@
+/**
+ * Forms 表單組件
+ * Liquid Glass 風格的表單控制元件
+ */
+
+/* ===== 表單控制元件 - Liquid Glass 風格 ===== */
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+/* 表單標籤 - 使用墨黑 */
+.form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink-black);  /* 墨黑 */
+    margin-bottom: var(--spacing-sm);
+}
+
+/* 輸入框 - Dark Mode 玻璃凹陷效果 */
+.form-group input,
+.form-group select,
+.form-group textarea,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+textarea,
+select {
+    width: 100%;
+    padding: 12px 16px;
+    font-family: var(--font-text);
+    font-size: 0.9375rem;
+    color: var(--ink-black);  /* Dark Mode 淺色文字 */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 0 0 3px var(--color-accent-light),
+        inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+}
+
+/* 表單欄位提示文字 - 使用霧灰 */
+.form-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--ink-fog);  /* 霧灰 */
+    margin-top: var(--spacing-xs);
+}
+
+/* ===== 表單頁面 ===== */
+.form-page {
+    max-width: 1200px;
+}
+
+.form-card {
+    max-width: 600px;
+    background: var(--color-surface-white);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== 搜尋表單 ===== */
+.search-form {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.search-input {
+    flex: 1;
+    padding: 14px 20px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 4px var(--color-accent-light);
+}
+
+.search-results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 639px) {
+    .search-form {
+        flex-direction: column;
+    }
+}
+
+/* ===== 極光輸入框 - Aurora Input Fields（新增）===== */
+
+/**
+ * 極光流動邊框輸入框
+ * 使用偽元素創造流動的極光邊框效果
+ */
+.input-aurora-wrapper {
+    position: relative;
+    display: block;
+}
+
+/* 極光邊框容器 */
+.input-aurora-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: var(--gradient-aurora-flow);
+    background-size: 200% 200%;
+    animation: aurora-flow 8s ease infinite;
+    border-radius: calc(var(--radius-md) + 2px);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* focus 時顯示極光邊框 */
+.input-aurora-wrapper:has(input:focus)::before,
+.input-aurora-wrapper:has(textarea:focus)::before,
+.input-aurora-wrapper:has(select:focus)::before {
+    opacity: 1;
+    animation: aurora-flow 3s ease infinite; /* 加速流動 */
+}
+
+/* 極光輸入框本體 - 使用墨黑文字 */
+.input-aurora {
+    position: relative;
+    width: 100%;
+    padding: 12px 16px;
+    font-family: var(--font-text);
+    font-size: 0.9375rem;
+    color: var(--ink-black);  /* 墨黑 */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+    z-index: 1;
+}
+
+.input-aurora:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: transparent; /* 讓極光邊框顯現 */
+    box-shadow:
+        0 0 0 4px rgba(0, 229, 204, 0.1),
+        inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* textarea 變體 */
+textarea.input-aurora {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* select 變體 */
+select.input-aurora {
+    cursor: pointer;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236e6e73' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    appearance: none;
+}
+
+/* ===== 極光輸入框尺寸變體 ===== */
+
+/* 小尺寸 */
+.input-aurora.input-aurora-sm {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    border-radius: var(--radius-sm);
+}
+
+.input-aurora-wrapper:has(.input-aurora-sm)::before {
+    inset: -1.5px;
+    border-radius: calc(var(--radius-sm) + 1.5px);
+}
+
+/* 大尺寸 */
+.input-aurora.input-aurora-lg {
+    padding: 16px 20px;
+    font-size: 1rem;
+    border-radius: var(--radius-lg);
+}
+
+.input-aurora-wrapper:has(.input-aurora-lg)::before {
+    inset: -2.5px;
+    border-radius: calc(var(--radius-lg) + 2.5px);
+}
+
+/* ===== 極光輸入框狀態 ===== */
+
+/* 錯誤狀態 */
+.input-aurora.input-error {
+    border-color: var(--color-error);
+}
+
+.input-aurora-wrapper:has(.input-error)::before {
+    background: var(--color-error);
+    opacity: 0.3;
+    animation: none;
+}
+
+.input-aurora.input-error:focus {
+    box-shadow:
+        0 0 0 4px rgba(255, 69, 58, 0.15),
+        inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* 成功狀態 */
+.input-aurora.input-success {
+    border-color: var(--color-success);
+}
+
+.input-aurora-wrapper:has(.input-success)::before {
+    background: var(--color-success);
+    opacity: 0.3;
+    animation: none;
+}
+
+.input-aurora.input-success:focus {
+    box-shadow:
+        0 0 0 4px rgba(48, 209, 88, 0.15),
+        inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* 禁用狀態 */
+.input-aurora:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.input-aurora-wrapper:has(.input-aurora:disabled)::before {
+    display: none;
+}
+
+/* ===== 極光輸入框組合（帶圖標）===== */
+
+.input-aurora-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-aurora-group .input-aurora {
+    padding-left: 44px;
+}
+
+/* 輸入框圖標 - 使用霧灰 */
+.input-aurora-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--ink-fog);  /* 霧灰 */
+    pointer-events: none;
+    z-index: 2;
+}
+
+.input-aurora-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* focus 時圖標色彩變化 */
+.input-aurora-group:has(.input-aurora:focus) .input-aurora-icon {
+    color: var(--color-aurora-teal);
+}
+
+/* ===== 極光表單群組 ===== */
+
+.form-group-aurora {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* 極光表單標籤 - 使用墨黑 */
+.form-group-aurora label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--ink-black);  /* 墨黑 */
+    margin-bottom: var(--spacing-sm);
+}
+
+/* 極光表單提示 - 使用霧灰 */
+.form-group-aurora .form-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--ink-fog);  /* 霧灰 */
+    margin-top: var(--spacing-xs);
+}
+
+.form-group-aurora .form-error {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-error);
+    margin-top: var(--spacing-xs);
+}
+
+/* Dark Mode 已設為預設，極光輸入框樣式 */
+.input-aurora {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f5f5f7;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.input-aurora:focus {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* 移動裝置優化 */
+@media (max-width: 767px) {
+    .input-aurora {
+        font-size: 16px; /* 防止 iOS 自動縮放 */
+    }
+
+    .input-aurora-wrapper::before {
+        animation: none;
+        background-size: 100% 100%;
+    }
+
+    .input-aurora-wrapper:has(input:focus)::before {
+        animation: none;
+    }
+}
+
+/* 減少動作偏好設定 */
+@media (prefers-reduced-motion: reduce) {
+    .input-aurora-wrapper::before {
+        animation: none !important;
+    }
+}

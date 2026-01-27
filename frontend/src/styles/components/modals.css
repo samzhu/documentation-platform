@@ -1,0 +1,76 @@
+/**
+ * Modals 模態框組件
+ * Liquid Glass 風格的彈出式對話框
+ */
+
+/* ===== Modal ===== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+}
+
+.modal {
+    background: var(--color-surface-white);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    max-width: 500px;
+    width: 100%;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 16px 64px rgba(0, 0, 0, 0.3);
+}
+
+.modal h3 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* 寬版 Modal */
+.modal-wide {
+    max-width: 640px;
+}
+
+/* ===== 多選版本列表（Sync Modal） ===== */
+.version-select-modal {
+    max-width: 600px;
+}
+
+.version-select-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+.version-select-header h3 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.version-select-header .subtitle {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+/* 版本列表容器 - Dark Mode */
+.version-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+}

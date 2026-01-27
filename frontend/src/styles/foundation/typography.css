@@ -1,0 +1,250 @@
+/**
+ * Typography 字體系統 - Variable Font 極光版本
+ * 整合 Space Grotesk + Epilogue + Inter + JetBrains Mono
+ * 定義標題、正文和字體工具類別
+ *
+ * 注意：Google Fonts 已移至 index.html 透過 <link> 標籤載入，
+ * 以避免 @import 在 @layer 中的語法限制問題。
+ */
+
+/* ===== 全域字體設定 ===== */
+body {
+    font-family: var(--font-text);
+    font-weight: var(--font-weight-normal);
+    /* 開啟 OpenType 特性 */
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+    /* 優化文字渲染 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* ===== 標題系統 - Variable Font ===== */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+h1, .text-h1 {
+    font-size: 2.5rem;
+    font-weight: var(--font-weight-bold);
+}
+
+h2, .text-h2 {
+    font-size: 2rem;
+    font-weight: var(--font-weight-semibold);
+}
+
+h3, .text-h3 {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-semibold);
+}
+
+h4, .text-h4 {
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-medium);
+}
+
+h5, .text-h5 {
+    font-size: 1.125rem;
+    font-weight: var(--font-weight-medium);
+}
+
+h6, .text-h6 {
+    font-size: 1rem;
+    font-weight: var(--font-weight-medium);
+}
+
+/* ===== 顯示字體（超大標題）===== */
+.text-display {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    font-weight: var(--font-weight-light);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+/* ===== 正文系統 ===== */
+.text-body {
+    font-size: 1rem;
+    line-height: 1.6;
+    font-weight: var(--font-weight-normal);
+}
+
+.text-body-large {
+    font-size: 1.125rem;
+    line-height: 1.7;
+}
+
+.text-small {
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.text-tiny {
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+/* ===== 字重工具類別 ===== */
+.font-light {
+    font-weight: var(--font-weight-light);
+}
+
+.font-normal {
+    font-weight: var(--font-weight-normal);
+}
+
+.font-medium {
+    font-weight: var(--font-weight-medium);
+}
+
+.font-semibold {
+    font-weight: var(--font-weight-semibold);
+}
+
+.font-bold {
+    font-weight: var(--font-weight-bold);
+}
+
+.font-black {
+    font-weight: var(--font-weight-black);
+}
+
+/* ===== 字體家族工具類別 ===== */
+.font-display {
+    font-family: var(--font-display);
+}
+
+.font-heading {
+    font-family: var(--font-heading);
+}
+
+.font-text {
+    font-family: var(--font-text);
+}
+
+.font-mono {
+    font-family: var(--font-mono);
+}
+
+/* ===== 頁面標題 ===== */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+}
+
+/* 頁面標題 - 使用墨黑確保高對比度 */
+.page-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--ink-black);  /* 墨黑 - 18.3:1 對比度 */
+    letter-spacing: -0.02em;
+}
+
+/* ===== 區塊標題 ===== */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+/* 區塊標題 - 使用墨黑 */
+.section-title {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--ink-black);  /* 墨黑 - 18.3:1 對比度 */
+    letter-spacing: -0.01em;
+}
+
+/* ===== 表單頁面標題 ===== */
+.form-page-header {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* 表單頁面標題 - 使用墨黑 */
+.form-page-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--ink-black);  /* 墨黑 - 18.3:1 對比度 */
+}
+
+/* ===== 側邊欄品牌標題 ===== */
+.sidebar-brand h1 {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-inverse);
+    letter-spacing: -0.02em;
+}
+
+/* ===== 文件夾標題 ===== */
+/* 文件夾名稱 - 使用墨黑 */
+.folder-name {
+    font-weight: 600;
+    color: var(--ink-black);  /* 墨黑 */
+}
+
+/* ===== 文字大小 ===== */
+.text-lg {
+    font-size: 1.125rem;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+/* ===== 文字顏色 - 墨玉高對比度系統 ===== */
+/* 使用直接色值而非 CSS 變數，確保在 @layer 環境下正確顯示 */
+
+/* 主要文字 - 墨黑 */
+.text-primary {
+    color: var(--ink-black) !important;  /* 18.3:1 對比度 */
+}
+
+/* 次要文字 - 墨灰 */
+.text-secondary {
+    color: var(--ink-gray) !important;  /* 9.7:1 對比度 */
+}
+
+/* 輔助文字 - 霧灰 */
+.text-muted {
+    color: var(--ink-fog) !important;  /* 4.6:1 對比度 */
+}
+
+/* 強調色 - 天藍 */
+.text-accent {
+    color: var(--ink-sky) !important;  /* 5.9:1 對比度 */
+}
+
+/* 成功狀態 - 穩重綠 */
+.text-success {
+    color: var(--ink-green) !important;  /* 5.2:1 對比度 */
+}
+
+/* 警告狀態 - 琥珀 */
+.text-warning {
+    color: var(--ink-amber) !important;  /* 4.5:1 對比度 */
+}
+
+/* 錯誤狀態 - 警示紅 */
+.text-error {
+    color: var(--ink-red) !important;  /* 5.8:1 對比度 */
+}
+
+/* ===== 文字裝飾 ===== */
+.hover\:underline:hover {
+    text-decoration: underline;
+}

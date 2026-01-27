@@ -1,0 +1,295 @@
+/**
+ * Animations 動畫系統 - 極光折射版本
+ * 定義 keyframes 和動畫工具類別
+ * 包含極光流動、玻璃重組、波紋擴散等獨特動畫
+ */
+
+/* ===== 基礎動畫 Keyframes ===== */
+
+/* 旋轉動畫 */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 淡入向上動畫 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 脈動動畫 */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ===== 極光動畫 Keyframes ===== */
+
+/* 極光流動 - 背景漸層流動效果 */
+@keyframes aurora-flow {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    25% {
+        background-position: 100% 50%;
+    }
+    50% {
+        background-position: 100% 0%;
+    }
+    75% {
+        background-position: 0% 100%;
+    }
+}
+
+/* 極光波紋 - 點擊時的波紋擴散 */
+@keyframes aurora-ripple {
+    0% {
+        transform: scale(0);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* 極光脈衝 - 持續的光暈脈衝 */
+@keyframes aurora-pulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(0, 229, 204, 0.4),
+                    0 0 40px rgba(0, 191, 255, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(0, 229, 204, 0.6),
+                    0 0 60px rgba(0, 191, 255, 0.3);
+    }
+}
+
+/* ===== 玻璃效果動畫 Keyframes ===== */
+
+/* 玻璃重組 - 頁面載入時元素從碎片重組 */
+@keyframes glass-rebuild {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) rotateX(20deg);
+        filter: blur(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotateX(0deg);
+        filter: blur(0);
+    }
+}
+
+/* 玻璃波紋 - 微交互反饋 */
+@keyframes glass-ripple {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* 玻璃閃爍 - 高光掃過效果 */
+@keyframes glass-shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* ===== 頁面過渡動畫 Keyframes ===== */
+
+/* 液體流出 - 頁面退出效果 */
+@keyframes page-exit-liquid {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+        filter: blur(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-100px) scale(0.95);
+        filter: blur(20px);
+    }
+}
+
+/* 液體流入 - 頁面進入效果 */
+@keyframes page-enter-liquid {
+    0% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.95);
+        filter: blur(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+        filter: blur(0);
+    }
+}
+
+/* ===== 滾動顯示動畫 Keyframes ===== */
+
+/* 玻璃淡入 - 元素進入視窗時從透明玻璃變為實體 */
+@keyframes glass-fade-in {
+    0% {
+        opacity: 0;
+        backdrop-filter: blur(4px);
+        background: rgba(255, 255, 255, 0.02);
+    }
+    100% {
+        opacity: 1;
+        backdrop-filter: blur(var(--blur-md));
+        background: var(--glass-bg);
+    }
+}
+
+/* ===== 動畫工具類別 ===== */
+
+/* 旋轉中 */
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+/* 脈動中 */
+.pulsing {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ===== 頁面進入動畫 ===== */
+.fade-in-page {
+    animation: fadeInUp 400ms var(--ease-out-expo);
+}
+
+/* 玻璃重組進入（頁面載入）*/
+.glass-rebuild-enter {
+    animation: glass-rebuild 600ms var(--ease-out-expo);
+}
+
+/* 液體流入進入（頁面切換）*/
+.page-enter-liquid {
+    animation: page-enter-liquid 500ms var(--ease-out-expo);
+}
+
+/* 液體流出退出（頁面切換）*/
+.page-exit-liquid {
+    animation: page-exit-liquid 400ms var(--ease-out-expo);
+}
+
+/* ===== 卡片交錯動畫 ===== */
+.glass-card {
+    animation: fadeInUp 400ms var(--ease-out-expo) backwards;
+}
+
+.glass-card:nth-child(1) { animation-delay: 50ms; }
+.glass-card:nth-child(2) { animation-delay: 100ms; }
+.glass-card:nth-child(3) { animation-delay: 150ms; }
+.glass-card:nth-child(4) { animation-delay: 200ms; }
+.glass-card:nth-child(5) { animation-delay: 250ms; }
+.glass-card:nth-child(6) { animation-delay: 300ms; }
+
+/* 玻璃重組交錯（更戲劇化的進入效果）*/
+.glass-card-reveal {
+    animation: glass-rebuild 600ms var(--ease-out-expo) backwards;
+}
+
+.glass-card-reveal:nth-child(1) { animation-delay: 100ms; }
+.glass-card-reveal:nth-child(2) { animation-delay: 200ms; }
+.glass-card-reveal:nth-child(3) { animation-delay: 300ms; }
+.glass-card-reveal:nth-child(4) { animation-delay: 400ms; }
+.glass-card-reveal:nth-child(5) { animation-delay: 500ms; }
+.glass-card-reveal:nth-child(6) { animation-delay: 600ms; }
+
+/* ===== 極光動畫類別 ===== */
+
+/* 極光流動背景 */
+.aurora-flow {
+    background-size: 200% 200%;
+    animation: aurora-flow 8s ease infinite;
+}
+
+/* 極光流動加速（hover 狀態）*/
+.aurora-flow-fast {
+    animation: aurora-flow 3s ease infinite;
+}
+
+/* 極光脈衝 */
+.aurora-pulse {
+    animation: aurora-pulse 3s ease-in-out infinite;
+}
+
+/* ===== 玻璃效果動畫類別 ===== */
+
+/* 玻璃波紋（hover 反饋）*/
+.glass-ripple-hover:hover {
+    animation: glass-ripple 600ms var(--ease-out-expo);
+}
+
+/* 玻璃閃爍（載入提示）*/
+.glass-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent);
+    animation: glass-shimmer 2s ease-in-out infinite;
+}
+
+/* ===== 響應式調整 - 減少動畫 ===== */
+
+/* 尊重使用者的減少動作偏好設定 */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .aurora-flow,
+    .aurora-flow-fast,
+    .aurora-pulse,
+    .glass-shimmer::after {
+        animation: none !important;
+    }
+}
+
+/* 移動裝置簡化動畫 */
+@media (max-width: 767px) {
+    .glass-rebuild-enter,
+    .glass-card-reveal {
+        animation: fadeInUp 400ms var(--ease-out-expo) backwards;
+    }
+
+    .page-enter-liquid,
+    .page-exit-liquid {
+        animation-duration: 300ms;
+    }
+}

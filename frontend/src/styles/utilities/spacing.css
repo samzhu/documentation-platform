@@ -1,0 +1,27 @@
+/**
+ * Spacing 間距工具類別
+ * Margin 和 padding 工具類別
+ */
+
+/* ===== Margin Bottom ===== */
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mb-8 { margin-bottom: 2rem; }
+
+/* ===== Margin Top ===== */
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }
+
+/* ===== Margin Right ===== */
+.mr-2 { margin-right: 0.5rem; }
+
+/* ===== Margin Left ===== */
+.ml-2 { margin-left: 0.5rem; }
+
+/* ===== Space Between (垂直間距) ===== */
+.space-y-2 > * + * { margin-top: 0.5rem; }
+.space-y-4 > * + * { margin-top: 1rem; }
+.space-y-6 > * + * { margin-top: 1.5rem; }

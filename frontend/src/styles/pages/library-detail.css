@@ -1,0 +1,137 @@
+/**
+ * Library Detail 頁面樣式
+ * Library Detail Page Styles
+ *
+ * 用途：文件庫詳情頁面的專屬樣式
+ * 包含版本列表、Source URL、統計資訊等
+ */
+
+@layer components {
+    /* 頁面標題區 */
+    .library-detail .page-header {
+        align-items: flex-start;
+    }
+
+    .library-detail .page-header > div:first-child {
+        flex: 1;
+    }
+
+    /* Source URL 區塊 */
+    .source-url-container {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        word-break: break-all;
+    }
+
+    /* 版本區塊 */
+    .versions-section {
+        padding: var(--spacing-md) 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .versions-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .versions-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ink-cloud);  /* 雲灰 */
+    }
+
+    .versions-summary {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    /* 版本列表項目 */
+    .version-item {
+        position: relative;
+        padding: var(--spacing-md);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        transition: background var(--transition-fast);
+        cursor: pointer;
+    }
+
+    .version-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .version-item:last-child {
+        border-bottom: none;
+    }
+
+    .version-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    /* 版本資訊 */
+    .version-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .version-name {
+        font-weight: 600;
+        color: var(--ink-black);  /* 墨黑 */
+        margin-bottom: 2px;
+    }
+
+    .version-meta {
+        font-size: 0.75rem;
+        color: var(--ink-gray);  /* 墨灰 */
+    }
+
+    .version-count {
+        font-size: 0.75rem;
+        color: var(--ink-fog);  /* 霧灰 */
+    }
+
+    /* 版本徽章 */
+    .version-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 8px;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        border-radius: var(--radius-full);
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--ink-gray);  /* 淺灰文字 */
+    }
+
+    /* 文件庫名稱連結 */
+    .library-name-link {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .library-name-link:hover .library-name {
+        color: var(--color-accent);
+    }
+
+    /* 響應式調整 */
+    @media (max-width: 767px) {
+        .versions-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-xs);
+        }
+
+        .version-item {
+            padding: var(--spacing-sm);
+        }
+    }
+}

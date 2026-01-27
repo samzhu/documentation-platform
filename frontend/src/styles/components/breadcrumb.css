@@ -1,0 +1,51 @@
+/**
+ * 麵包屑導航組件
+ * Breadcrumb Component
+ *
+ * 用途：頁面層級導航，顯示當前頁面位置
+ * 使用墨玉色彩系統，與 Dark Mode 主題統一
+ */
+
+@layer components {
+    /* 麵包屑容器 */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-md);
+        font-size: 0.875rem;
+        color: var(--ink-gray);  /* 墨灰 */
+    }
+
+    /* 麵包屑連結 */
+    .breadcrumb a {
+        color: var(--ink-sky);  /* 天藍 */
+        text-decoration: none;
+        transition: opacity var(--transition-fast);
+    }
+
+    .breadcrumb a:hover {
+        text-decoration: underline;
+        opacity: 0.8;
+    }
+
+    /* 麵包屑分隔符號 */
+    .breadcrumb-separator {
+        color: var(--ink-fog);  /* 霧灰 */
+        user-select: none;
+    }
+
+    /* 麵包屑當前項目 */
+    .breadcrumb-item {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* 響應式調整 */
+    @media (max-width: 767px) {
+        .breadcrumb {
+            font-size: 0.8125rem;
+            flex-wrap: wrap;
+        }
+    }
+}

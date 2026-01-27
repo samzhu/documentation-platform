@@ -1,0 +1,122 @@
+/**
+ * Badges 徽章標籤組件
+ * 狀態標籤和標記
+ */
+
+/* ===== Badge 標籤 ===== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* 成功徽章 - 穩重綠（5.2:1 對比度） */
+.badge-success {
+    background: rgba(21, 128, 61, 0.12);
+    color: var(--ink-green);
+}
+
+/* 警告徽章 - 琥珀（4.5:1 對比度） */
+.badge-warning {
+    background: rgba(161, 98, 7, 0.12);
+    color: var(--ink-amber);
+}
+
+/* 危險徽章 - 警示紅（5.8:1 對比度） */
+.badge-danger {
+    background: rgba(185, 28, 28, 0.12);
+    color: var(--ink-red);
+}
+
+/* 資訊徽章 - 天藍（5.9:1 對比度） */
+.badge-info {
+    background: rgba(3, 105, 161, 0.12);
+    color: var(--ink-sky);
+}
+
+/* 預設徽章 - 墨灰 */
+.badge-default {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--ink-gray);
+}
+
+/* 主要徽章 - 天藍 */
+.badge-primary {
+    background: rgba(3, 105, 161, 0.12);
+    color: var(--ink-sky);
+}
+
+/* ===== 狀態標籤 ===== */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: var(--radius-full);
+}
+
+/* 成功狀態 - 穩重綠 */
+.status-success {
+    background: rgba(21, 128, 61, 0.12);
+    color: var(--ink-green);
+}
+
+/* 失敗狀態 - 警示紅 */
+.status-failed {
+    background: rgba(185, 28, 28, 0.12);
+    color: var(--ink-red);
+}
+
+/* 執行中狀態 - 天藍 */
+.status-running {
+    background: rgba(3, 105, 161, 0.12);
+    color: var(--ink-sky);
+}
+
+/* ===== Tag 標籤 - Neutral Glass 風格 ===== */
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+
+    /* 膠囊形狀 - 關鍵！讓 tag 看起來像 tag */
+    border-radius: var(--radius-full);
+
+    /* Neutral Glass 背景 - Dark Mode 優化 */
+    background: rgba(255, 255, 255, 0.06);
+
+    /* 玻璃邊框 - 建立視覺邊界 */
+    border: 1px solid rgba(255, 255, 255, 0.12);
+
+    /* 微妙內光 */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+    /* 墨玉色系 - 雲灰 */
+    color: var(--ink-cloud);
+
+    transition: all var(--transition-fast);
+}
+
+/* Hover 效果 */
+.tag:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: var(--ink-gray);
+    transform: translateY(-1px);
+}

@@ -1,0 +1,28 @@
+# 測試環境配置
+# 使用 spring.autoconfigure.exclude 完全排除 Spring AI 自動配置
+
+spring:
+  autoconfigure:
+    exclude:
+      # 排除 Google GenAI 自動配置（避免測試時要求 API Key）
+      - org.springframework.ai.model.google.genai.autoconfigure.embedding.GoogleGenAiEmbeddingConnectionAutoConfiguration
+      - org.springframework.ai.model.google.genai.autoconfigure.embedding.GoogleGenAiTextEmbeddingAutoConfiguration
+      - org.springframework.ai.model.google.genai.autoconfigure.chat.GoogleGenAiChatAutoConfiguration
+      # 排除 PgVector 自動配置
+      - org.springframework.ai.autoconfigure.vectorstore.pgvector.PgVectorStoreAutoConfiguration
+
+  # 資料庫配置由 Testcontainers 自動提供
+  datasource:
+    # schema.sql 會自動執行
+    initialization-mode: always
+
+  # 停用 Spring Boot DevTools 在測試環境
+  devtools:
+    restart:
+      enabled: false
+
+# 關閉不需要的日誌
+logging:
+  level:
+    org.springframework: WARN
+    org.testcontainers: INFO

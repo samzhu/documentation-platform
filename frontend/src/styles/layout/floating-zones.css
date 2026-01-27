@@ -1,0 +1,542 @@
+/**
+ * Floating Zones - 懸浮區域管理
+ * 管理不同層級的懸浮元素
+ * 包含 z-index 層級、定位系統、懸浮效果
+ */
+
+/* ===== Z-Index 層級系統 ===== */
+
+/**
+ * 統一的 z-index 層級管理
+ * 確保懸浮元素的正確堆疊順序
+ */
+:root {
+    /* 基礎層級 */
+    --z-base: 0;
+    --z-content: 1;
+    --z-raised: 10;
+
+    /* 懸浮層級 */
+    --z-floating: 100;
+    --z-sticky: 200;
+    --z-fixed: 300;
+
+    /* 覆蓋層級 */
+    --z-overlay: 400;
+    --z-dropdown: 500;
+    --z-tooltip: 600;
+
+    /* 模態層級 */
+    --z-modal-backdrop: 700;
+    --z-modal: 800;
+    --z-popover: 900;
+
+    /* 最高層級 */
+    --z-notification: 1000;
+    --z-top: 9999;
+}
+
+/* ===== Z-Index 工具類別 ===== */
+
+.z-base { z-index: var(--z-base); }
+.z-content { z-index: var(--z-content); }
+.z-raised { z-index: var(--z-raised); }
+.z-floating { z-index: var(--z-floating); }
+.z-sticky { z-index: var(--z-sticky); }
+.z-fixed { z-index: var(--z-fixed); }
+.z-overlay { z-index: var(--z-overlay); }
+.z-dropdown { z-index: var(--z-dropdown); }
+.z-tooltip { z-index: var(--z-tooltip); }
+.z-modal-backdrop { z-index: var(--z-modal-backdrop); }
+.z-modal { z-index: var(--z-modal); }
+.z-popover { z-index: var(--z-popover); }
+.z-notification { z-index: var(--z-notification); }
+.z-top { z-index: var(--z-top); }
+
+/* ===== 懸浮區域基礎 ===== */
+
+/**
+ * 懸浮區域容器
+ * 創造玻璃材質的懸浮效果
+ */
+.floating-zone {
+    position: relative;
+    z-index: var(--z-floating);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow-lg);
+    transition: all var(--transition-normal);
+}
+
+/* 懸浮區域 hover 效果 */
+.floating-zone:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+/* ===== 固定定位懸浮區域 ===== */
+
+/**
+ * 固定在視窗特定位置的懸浮區域
+ */
+
+/* 頂部固定 */
+.floating-zone-top {
+    position: fixed;
+    top: var(--spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--z-fixed);
+}
+
+/* 底部固定 */
+.floating-zone-bottom {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--z-fixed);
+}
+
+/* 左上角固定 */
+.floating-zone-top-left {
+    position: fixed;
+    top: var(--spacing-lg);
+    left: var(--spacing-lg);
+    z-index: var(--z-fixed);
+}
+
+/* 右上角固定 */
+.floating-zone-top-right {
+    position: fixed;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: var(--z-fixed);
+}
+
+/* 左下角固定 */
+.floating-zone-bottom-left {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    left: var(--spacing-lg);
+    z-index: var(--z-fixed);
+}
+
+/* 右下角固定 */
+.floating-zone-bottom-right {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: var(--z-fixed);
+}
+
+/* ===== 懸浮動作按鈕（FAB）===== */
+
+/**
+ * 懸浮動作按鈕
+ * Material Design 風格的 FAB，加入極光玻璃效果
+ */
+.fab {
+    position: fixed;
+    bottom: var(--spacing-xl);
+    right: var(--spacing-xl);
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    background: var(--gradient-aurora);
+    border: none;
+    box-shadow:
+        0 8px 24px rgba(0, 229, 204, 0.4),
+        0 16px 48px rgba(0, 191, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: var(--z-fixed);
+    transition: all var(--transition-normal);
+}
+
+.fab:hover {
+    transform: scale(1.1);
+    box-shadow:
+        0 12px 32px rgba(0, 229, 204, 0.5),
+        0 24px 64px rgba(0, 191, 255, 0.4);
+}
+
+.fab:active {
+    transform: scale(0.95);
+}
+
+/* FAB 圖標 */
+.fab svg {
+    width: 24px;
+    height: 24px;
+    color: #ffffff;
+}
+
+/* FAB 變體 - 小尺寸 */
+.fab-small {
+    width: 40px;
+    height: 40px;
+}
+
+.fab-small svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* FAB 變體 - 大尺寸 */
+.fab-large {
+    width: 72px;
+    height: 72px;
+}
+
+.fab-large svg {
+    width: 32px;
+    height: 32px;
+}
+
+/* ===== 懸浮工具列（Floating Toolbar）===== */
+
+/**
+ * 懸浮工具列
+ * 一組懸浮的操作按鈕
+ */
+.floating-toolbar {
+    position: fixed;
+    bottom: var(--spacing-xl);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-lg));
+    -webkit-backdrop-filter: blur(var(--blur-lg));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-full);
+    box-shadow: var(--glass-shadow-lg);
+    z-index: var(--z-fixed);
+}
+
+.floating-toolbar-item {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--color-text-primary);
+}
+
+.floating-toolbar-item:hover {
+    background: rgba(0, 229, 204, 0.1);
+    transform: scale(1.1);
+}
+
+.floating-toolbar-item:active {
+    transform: scale(0.95);
+}
+
+.floating-toolbar-item.active {
+    background: var(--gradient-aurora);
+    color: #ffffff;
+    box-shadow:
+        0 4px 12px rgba(0, 229, 204, 0.3),
+        0 8px 24px rgba(0, 191, 255, 0.2);
+}
+
+/* ===== 懸浮通知（Floating Notification）===== */
+
+/**
+ * 懸浮通知卡片
+ * 出現在右上角的通知
+ */
+.floating-notification {
+    position: fixed;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    min-width: 300px;
+    max-width: 400px;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--glass-bg-solid);
+    backdrop-filter: blur(var(--blur-xl));
+    -webkit-backdrop-filter: blur(var(--blur-xl));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        0 16px 64px rgba(0, 0, 0, 0.08);
+    z-index: var(--z-notification);
+    animation: notification-slide-in 400ms var(--ease-out-expo);
+}
+
+@keyframes notification-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 通知關閉動畫 */
+.floating-notification.closing {
+    animation: notification-slide-out 300ms var(--ease-out-expo);
+}
+
+@keyframes notification-slide-out {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+}
+
+/* ===== 懸浮選單（Floating Menu）===== */
+
+/**
+ * 懸浮下拉選單
+ * 玻璃材質的下拉選單
+ */
+.floating-menu {
+    position: absolute;
+    min-width: 200px;
+    padding: var(--spacing-sm);
+    background: var(--glass-bg-solid);
+    backdrop-filter: blur(var(--blur-xl));
+    -webkit-backdrop-filter: blur(var(--blur-xl));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow-lg);
+    z-index: var(--z-dropdown);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all var(--transition-normal);
+}
+
+.floating-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.floating-menu-item {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.floating-menu-item:hover {
+    background: rgba(0, 229, 204, 0.08);
+}
+
+.floating-menu-item:active {
+    background: rgba(0, 229, 204, 0.15);
+}
+
+/* ===== 懸浮提示（Tooltip）===== */
+
+/**
+ * 懸浮提示
+ * 小型的玻璃提示框
+ */
+.floating-tooltip {
+    position: absolute;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--glass-dark-bg);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--glass-dark-border);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    color: var(--color-text-inverse);
+    white-space: nowrap;
+    z-index: var(--z-tooltip);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-fast);
+    pointer-events: none;
+}
+
+.floating-tooltip.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Tooltip 箭頭 */
+.floating-tooltip::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--glass-dark-bg);
+    border: 1px solid var(--glass-dark-border);
+    transform: rotate(45deg);
+}
+
+/* Tooltip 方向 - 上方 */
+.floating-tooltip.tooltip-top {
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+}
+
+.floating-tooltip.tooltip-top.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+.floating-tooltip.tooltip-top::before {
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    border-top: none;
+    border-left: none;
+}
+
+/* Tooltip 方向 - 下方 */
+.floating-tooltip.tooltip-bottom {
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+}
+
+.floating-tooltip.tooltip-bottom.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+.floating-tooltip.tooltip-bottom::before {
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    border-bottom: none;
+    border-right: none;
+}
+
+/* ===== 懸浮面板（Floating Panel）===== */
+
+/**
+ * 大型懸浮面板
+ * 適合複雜內容的懸浮區域
+ */
+.floating-panel {
+    position: fixed;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: auto;
+    padding: var(--spacing-xl);
+    background: var(--glass-bg-solid);
+    backdrop-filter: blur(var(--blur-xl));
+    -webkit-backdrop-filter: blur(var(--blur-xl));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.25),
+        0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: var(--z-modal);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.9) translateY(40px);
+    transition: all var(--transition-normal);
+}
+
+.floating-panel.open {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1) translateY(0);
+}
+
+/* 面板居中 */
+.floating-panel-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+}
+
+.floating-panel-center.open {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* ===== 響應式調整 ===== */
+
+/* 移動裝置調整 */
+@media (max-width: 767px) {
+    /* FAB 移到左下角（避免遮擋右手操作區）*/
+    .fab {
+        bottom: var(--spacing-lg);
+        right: var(--spacing-lg);
+    }
+
+    /* 通知寬度調整 */
+    .floating-notification {
+        right: var(--spacing-sm);
+        left: var(--spacing-sm);
+        min-width: auto;
+        max-width: none;
+    }
+
+    /* 工具列調整 */
+    .floating-toolbar {
+        bottom: var(--spacing-md);
+        padding: var(--spacing-xs);
+    }
+
+    .floating-toolbar-item {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* 面板全屏 */
+    .floating-panel {
+        width: 100%;
+        max-width: none;
+        max-height: 100vh;
+        border-radius: 0;
+        inset: 0;
+    }
+
+    .floating-panel-center {
+        transform: translate(0, 0) scale(0.9);
+    }
+
+    .floating-panel-center.open {
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+/* 減少動作偏好設定 */
+@media (prefers-reduced-motion: reduce) {
+    .floating-zone,
+    .fab,
+    .floating-notification,
+    .floating-menu,
+    .floating-tooltip,
+    .floating-panel {
+        transition: opacity 200ms ease;
+        animation: none !important;
+    }
+
+    .fab:hover,
+    .floating-toolbar-item:hover {
+        transform: none;
+    }
+}

@@ -1,0 +1,461 @@
+/**
+ * Refractions - 色彩折射效果庫
+ * 極光色彩透過玻璃折射的視覺效果
+ * 包含色彩折射、邊緣高光、漸層扭曲等效果
+ */
+
+/* ===== 色彩折射基礎效果 ===== */
+
+/**
+ * 極光色彩折射（ChromaRefract）
+ * 讓極光色彩透過玻璃折射到元素背後
+ */
+.refract-aurora {
+    position: relative;
+    isolation: isolate; /* 創建新的堆疊上下文 */
+}
+
+.refract-aurora::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background: var(--gradient-aurora);
+    opacity: 0.08;
+    filter: blur(40px);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: -1;
+    transition: opacity var(--transition-normal);
+}
+
+.refract-aurora:hover::before {
+    opacity: 0.15;
+    filter: blur(60px);
+}
+
+/* 色彩折射強度變體 */
+.refract-aurora-subtle::before {
+    opacity: 0.04;
+    filter: blur(60px);
+}
+
+.refract-aurora-subtle:hover::before {
+    opacity: 0.08;
+}
+
+.refract-aurora-strong::before {
+    opacity: 0.12;
+    filter: blur(30px);
+}
+
+.refract-aurora-strong:hover::before {
+    opacity: 0.25;
+    filter: blur(40px);
+}
+
+/* ===== 單色折射效果 ===== */
+
+/* 青綠折射 */
+.refract-teal {
+    position: relative;
+    isolation: isolate;
+}
+
+.refract-teal::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(
+        circle,
+        var(--color-aurora-teal) 0%,
+        var(--color-aurora-cyan) 50%,
+        transparent 70%
+    );
+    opacity: 0.1;
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 藍紫折射 */
+.refract-blue {
+    position: relative;
+    isolation: isolate;
+}
+
+.refract-blue::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(
+        circle,
+        var(--color-aurora-blue) 0%,
+        var(--color-aurora-purple) 50%,
+        transparent 70%
+    );
+    opacity: 0.1;
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 粉紫折射 */
+.refract-pink {
+    position: relative;
+    isolation: isolate;
+}
+
+.refract-pink::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(
+        circle,
+        var(--color-aurora-purple) 0%,
+        var(--color-aurora-pink) 50%,
+        transparent 70%
+    );
+    opacity: 0.1;
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ===== 邊緣高光效果（EdgeGlow）===== */
+
+/**
+ * 玻璃邊緣的光線折射高光
+ * 模擬光線通過玻璃邊緣時的折射效果
+ */
+.edge-glow {
+    position: relative;
+    overflow: hidden;
+}
+
+/* 頂部邊緣高光線 */
+.edge-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.8),
+        transparent);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* 角落漸層高光 */
+.edge-glow::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 40%;
+    background: radial-gradient(
+        ellipse at top left,
+        rgba(255, 255, 255, 0.15),
+        transparent 70%
+    );
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* 邊緣高光變體 - 極光色彩 */
+.edge-glow-aurora::before {
+    background: linear-gradient(90deg,
+        transparent,
+        var(--color-aurora-teal) 25%,
+        var(--color-aurora-cyan) 50%,
+        var(--color-aurora-blue) 75%,
+        transparent);
+    opacity: 0.6;
+    filter: blur(1px);
+}
+
+.edge-glow-aurora::after {
+    background: radial-gradient(
+        ellipse at top left,
+        rgba(0, 229, 204, 0.2),
+        rgba(0, 191, 255, 0.1),
+        transparent 70%
+    );
+}
+
+/* 邊緣高光變體 - 全邊框 */
+.edge-glow-full {
+    border: 1px solid transparent;
+    background-image:
+        linear-gradient(var(--glass-bg), var(--glass-bg)),
+        var(--gradient-aurora);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+
+/* ===== 漸層扭曲效果（GradientWarp）===== */
+
+/**
+ * 極光漸層在玻璃中的扭曲效果
+ * 創造動態的色彩變化
+ */
+.gradient-warp {
+    position: relative;
+    overflow: hidden;
+}
+
+.gradient-warp::before {
+    content: '';
+    position: absolute;
+    inset: -100%;
+    background: conic-gradient(
+        from 0deg at 50% 50%,
+        var(--color-aurora-teal) 0deg,
+        var(--color-aurora-cyan) 60deg,
+        var(--color-aurora-blue) 120deg,
+        var(--color-aurora-purple) 180deg,
+        var(--color-aurora-pink) 240deg,
+        var(--color-aurora-teal) 300deg,
+        var(--color-aurora-teal) 360deg
+    );
+    opacity: 0.06;
+    filter: blur(80px);
+    animation: gradient-warp-rotate 20s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes gradient-warp-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.gradient-warp:hover::before {
+    animation-duration: 10s;
+    opacity: 0.12;
+}
+
+/* 漸層扭曲變體 - 快速 */
+.gradient-warp-fast::before {
+    animation: gradient-warp-rotate 10s linear infinite;
+}
+
+.gradient-warp-fast:hover::before {
+    animation-duration: 5s;
+}
+
+/* ===== 光線穿透效果（LightThrough）===== */
+
+/**
+ * 模擬光線穿透玻璃的效果
+ * 創造從一側到另一側的光線掃過
+ */
+.light-through {
+    position: relative;
+    overflow: hidden;
+}
+
+.light-through::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.15),
+        transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.light-through:hover::before {
+    animation: light-sweep 1.5s ease-out;
+}
+
+@keyframes light-sweep {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 200%;
+    }
+}
+
+/* 光線穿透變體 - 極光色彩 */
+.light-through-aurora::before {
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(0, 229, 204, 0.2),
+        rgba(0, 191, 255, 0.2),
+        rgba(102, 126, 234, 0.2),
+        transparent);
+    filter: blur(10px);
+}
+
+/* ===== 色彩分離效果（ChromaticAberration）===== */
+
+/**
+ * 模擬光學色彩分離現象
+ * 在邊緣創造微妙的彩色邊緣效果
+ */
+.chromatic-aberration {
+    position: relative;
+}
+
+.chromatic-aberration::before,
+.chromatic-aberration::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.chromatic-aberration::before {
+    box-shadow:
+        -2px 0 0 rgba(0, 229, 204, 0.5),
+        2px 0 0 rgba(255, 110, 199, 0.5);
+    z-index: -1;
+}
+
+.chromatic-aberration::after {
+    box-shadow:
+        0 -2px 0 rgba(0, 191, 255, 0.5),
+        0 2px 0 rgba(157, 78, 221, 0.5);
+    z-index: -1;
+}
+
+.chromatic-aberration:hover::before,
+.chromatic-aberration:hover::after {
+    opacity: 0.3;
+}
+
+/* ===== 稜鏡分光效果（PrismSplit）===== */
+
+/**
+ * 模擬稜鏡分光效果
+ * 在特定方向創造彩虹光譜
+ */
+.prism-split {
+    position: relative;
+    overflow: hidden;
+}
+
+.prism-split::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(135deg,
+        transparent 40%,
+        var(--color-aurora-teal) 45%,
+        var(--color-aurora-cyan) 50%,
+        var(--color-aurora-blue) 55%,
+        var(--color-aurora-purple) 60%,
+        var(--color-aurora-pink) 65%,
+        transparent 70%);
+    opacity: 0;
+    filter: blur(20px);
+    transform: rotate(-45deg);
+    transition: opacity var(--transition-slow);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.prism-split:hover::before {
+    opacity: 0.15;
+}
+
+/* ===== 極光脈動折射（AuroraPulse）===== */
+
+/**
+ * 持續脈動的極光折射效果
+ * 模擬北極光的自然脈動
+ */
+.aurora-pulse-refract {
+    position: relative;
+    isolation: isolate;
+}
+
+.aurora-pulse-refract::before {
+    content: '';
+    position: absolute;
+    inset: -30px;
+    background: radial-gradient(
+        ellipse,
+        var(--color-aurora-teal) 0%,
+        var(--color-aurora-cyan) 20%,
+        var(--color-aurora-blue) 40%,
+        transparent 70%
+    );
+    opacity: 0.08;
+    filter: blur(50px);
+    animation: aurora-pulse-refract 4s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes aurora-pulse-refract {
+    0%, 100% {
+        opacity: 0.08;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.15;
+        transform: scale(1.1);
+    }
+}
+
+/* Dark Mode 適配 */
+@media (prefers-color-scheme: dark) {
+    .refract-aurora::before,
+    .refract-teal::before,
+    .refract-blue::before,
+    .refract-pink::before {
+        opacity: 0.12;
+    }
+
+    .refract-aurora:hover::before {
+        opacity: 0.2;
+    }
+
+    .edge-glow::after {
+        background: radial-gradient(
+            ellipse at top left,
+            rgba(255, 255, 255, 0.08),
+            transparent 70%
+        );
+    }
+}
+
+/* 移動裝置優化 */
+@media (max-width: 767px) {
+    .gradient-warp::before,
+    .aurora-pulse-refract::before {
+        animation: none;
+    }
+
+    .light-through:hover::before {
+        animation: none;
+    }
+}
+
+/* 減少動作偏好設定 */
+@media (prefers-reduced-motion: reduce) {
+    .gradient-warp::before,
+    .aurora-pulse-refract::before,
+    .light-through::before {
+        animation: none !important;
+    }
+}

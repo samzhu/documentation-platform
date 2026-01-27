@@ -1,0 +1,15 @@
+/**
+ * Display 顯示工具類別
+ * Flexbox 和顯示相關工具類別
+ */
+
+/* ===== Flexbox ===== */
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+
+/* ===== Gap ===== */
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }

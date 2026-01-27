@@ -1,0 +1,202 @@
+/**
+ * Documentation Platform - Apple Liquid Glass Design System
+ * 極光折射設計系統 - Aurora Refraction Design System
+ *
+ * 特色功能：
+ * - 極光色彩流動系統（5 色漸層：teal → cyan → blue → purple → pink）
+ * - 三層景深玻璃效果（前景、中景、背景）
+ * - Variable Font 字重系統（Space Grotesk + Epilogue + Inter）
+ * - 動態折射與光暈效果
+ * - 豐富的微交互動畫
+ *
+ * 模組化 CSS 架構 - 使用 CSS @layer 管理層級
+ *
+ * 檔案數量統計：
+ * - Foundation: 5 個檔案
+ * - Layout: 4 個檔案
+ * - Effects: 2 個檔案
+ * - Animations: 3 個檔案
+ * - Components: 16 個檔案（含通用組件）
+ * - Pages: 7 個檔案（頁面專用樣式）
+ * - Utilities: 5 個檔案
+ * 總計：42 個模組化 CSS 檔案
+ *
+ * 瀏覽器支援：
+ * - Chrome/Edge 88+
+ * - Safari 15.4+
+ * - Firefox 97+
+ *
+ * 效能優化：
+ * - 移動裝置簡化動畫和模糊效果
+ * - 支援 prefers-reduced-motion
+ * - backdrop-filter 降級方案
+ * - 合理使用 will-change
+ *
+ * 重要：CSS 規範要求 @import 必須在檔案最頂端，
+ * 使用 layer() 函數指定目標層級
+ */
+
+/*
+ * 「墨玉」高對比度色彩系統說明
+ * 所有色彩變數統一定義於 foundation/variables.css
+ * 各組件使用 var(--ink-*) 引用，支援 Dark Mode 自動切換
+ *
+ * 墨玉文字層級（所有對比度通過 WCAG AA 驗證）：
+ * - var(--ink-black) 墨黑 - 標題、數字（18.3:1 對比度）
+ * - var(--ink-gray)  墨灰 - 正文、表格（9.7:1 對比度）
+ * - var(--ink-cloud) 雲灰 - 標籤、說明（6.5:1 對比度）
+ * - var(--ink-fog)   霧灰 - 輔助資訊（4.6:1 對比度）
+ *
+ * 墨玉強調色（極光點綴）：
+ * - var(--ink-sky)   天藍 - 連結、按鈕（5.9:1 對比度）
+ * - var(--ink-green) 穩重綠 - 成功狀態（5.2:1 對比度）
+ * - var(--ink-amber) 琥珀 - 警告狀態（4.5:1 對比度）
+ * - var(--ink-red)   警示紅 - 錯誤狀態（5.8:1 對比度）
+ */
+
+/* ===== Foundation 基礎層 ===== */
+/* 變數、重置、字體、動畫、玻璃效果的核心定義 */
+@import url('./foundation/variables.css') layer(foundation);
+@import url('./foundation/reset.css') layer(foundation);
+@import url('./foundation/typography.css') layer(foundation);
+@import url('./foundation/animations.css') layer(foundation);
+@import url('./foundation/glass-effects.css') layer(foundation);
+
+/* ===== Layout 佈局層 ===== */
+/* 容器、網格、不對稱佈局、懸浮區域 */
+@import url('./layout/containers.css') layer(layout);
+@import url('./layout/grid.css') layer(layout);
+@import url('./layout/asymmetric.css') layer(layout);
+@import url('./layout/floating-zones.css') layer(layout);
+
+/* ===== Effects 效果層 ===== */
+/* 折射效果、光暈效果 */
+@import url('./effects/refractions.css') layer(effects);
+@import url('./effects/glows.css') layer(effects);
+
+/* ===== Animations 動畫層 ===== */
+/* 頁面過渡、滾動顯示、微交互 */
+@import url('./animations/page-transitions.css') layer(animations);
+@import url('./animations/scroll-reveals.css') layer(animations);
+@import url('./animations/micro-interactions.css') layer(animations);
+
+/* ===== Components 組件層 ===== */
+/* UI 組件：側邊欄、標題列、卡片、按鈕、表單等 */
+@import url('./components/sidebar.css') layer(components);
+@import url('./components/header.css') layer(components);
+@import url('./components/cards.css') layer(components);
+@import url('./components/aurora-cards.css') layer(components);
+@import url('./components/buttons.css') layer(components);
+@import url('./components/forms.css') layer(components);
+@import url('./components/modals.css') layer(components);
+@import url('./components/tables.css') layer(components);
+@import url('./components/badges.css') layer(components);
+@import url('./components/breadcrumb.css') layer(components);
+@import url('./components/alerts.css') layer(components);
+@import url('./components/states.css') layer(components);
+@import url('./components/code-block.css') layer(components);
+@import url('./components/search.css') layer(components);
+@import url('./components/settings.css') layer(components);
+@import url('./components/setup.css') layer(components);
+
+/* ===== Pages 頁面層 ===== */
+/* 頁面專用樣式：文件庫詳情、API Keys、文件詳情等 */
+@import url('./pages/library-detail.css') layer(components);
+@import url('./pages/api-keys.css') layer(components);
+@import url('./pages/document-detail.css') layer(components);
+@import url('./pages/document-list.css') layer(components);
+@import url('./pages/sync-detail.css') layer(components);
+@import url('./pages/sync-history.css') layer(components);
+@import url('./pages/auth.css') layer(components);
+
+/* ===== Utilities 工具層 ===== */
+/* 工具類別：間距、顯示、文字、玻璃效果、極光效果 */
+@import url('./utilities/spacing.css') layer(utilities);
+@import url('./utilities/display.css') layer(utilities);
+@import url('./utilities/text.css') layer(utilities);
+@import url('./utilities/glass-utils.css') layer(utilities);
+@import url('./utilities/aurora-utils.css') layer(utilities);
+
+/* ===== CSS @layer 層級順序聲明 ===== */
+/* 定義層級順序，確保樣式的正確覆蓋（必須在 @import 之後）*/
+@layer foundation, layout, effects, animations, components, utilities;
+
+/* ===== 通用樣式（不屬於任何 layer）===== */
+
+/* Logo 區塊 */
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-inverse);
+}
+
+/* ===== 全域效能優化 ===== */
+
+/**
+ * 硬體加速提示
+ * 為可能進行變換的元素提供性能提示
+ */
+.glass-card,
+.aurora-card,
+.btn-glass-base,
+[class*="floating-"],
+[class*="hover-"],
+[class*="scroll-reveal-"] {
+    will-change: auto; /* 預設關閉，hover 時啟用 */
+}
+
+/**
+ * 平滑滾動
+ * 創造更流暢的頁面滾動體驗
+ */
+html {
+    scroll-behavior: smooth;
+}
+
+/* 減少動作偏好設定時禁用平滑滾動 */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/**
+ * 防止 iOS 橡皮筋效果影響固定元素
+ */
+body {
+    overscroll-behavior: none;
+}
+
+/* ===== 設計系統文檔說明 ===== */
+
+/*
+ * 如何使用極光折射設計系統：
+ *
+ * 1. 極光按鈕：
+ *    <button class="btn-glass-base btn-aurora">極光按鈕</button>
+ *
+ * 2. 三層玻璃卡片：
+ *    <div class="glass-card-layered">內容</div>
+ *
+ * 3. 極光卡片：
+ *    <div class="aurora-card">內容</div>
+ *
+ * 4. 極光輸入框：
+ *    <div class="input-aurora-wrapper">
+ *      <input class="input-aurora" />
+ *    </div>
+ *
+ * 5. 玻璃效果工具類別：
+ *    <div class="glass-standard glass-p-lg">快速應用玻璃效果</div>
+ *
+ * 6. 極光色彩工具類別：
+ *    <div class="bg-gradient-aurora text-gradient-aurora">極光漸層</div>
+ *
+ * 7. 折射效果：
+ *    <div class="refract-aurora">極光色彩折射</div>
+ *
+ * 8. 光暈效果：
+ *    <div class="glow-aurora-md">極光光暈</div>
+ *
+ * 詳細文檔請參考各個 CSS 檔案的註解說明。
+ */

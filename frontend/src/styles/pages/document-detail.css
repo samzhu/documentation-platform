@@ -1,0 +1,75 @@
+/**
+ * Document Detail 頁面樣式
+ * Document Detail Page Styles
+ *
+ * 用途：文件詳情頁面的專屬樣式
+ * 包含 Meta 資訊網格、文件內容顯示等
+ */
+
+@layer components {
+    /* Meta 資訊網格 */
+    .document-detail .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    /* Meta 資訊項目 */
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .meta-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ink-cloud);  /* 雲灰 */
+    }
+
+    .meta-value {
+        font-size: 0.9375rem;
+        color: var(--ink-black);  /* 墨黑 */
+        word-break: break-word;
+    }
+
+    /* 文件內容區域 */
+    .document-content {
+        line-height: 1.7;
+        color: var(--ink-black);  /* 墨黑 */
+        font-size: 0.9375rem;
+    }
+
+    .document-content h1,
+    .document-content h2,
+    .document-content h3,
+    .document-content h4 {
+        margin-top: var(--spacing-lg);
+        margin-bottom: var(--spacing-md);
+        color: var(--ink-black);  /* 墨黑 */
+    }
+
+    .document-content p {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .document-content ul,
+    .document-content ol {
+        margin-left: var(--spacing-lg);
+        margin-bottom: var(--spacing-md);
+    }
+
+    /* 響應式調整 */
+    @media (max-width: 767px) {
+        .document-detail .meta-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .document-content {
+            font-size: 0.875rem;
+        }
+    }
+}

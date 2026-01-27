@@ -1,0 +1,524 @@
+package io.github.samzhu.documentation.platform.service;
+
+import io.github.samzhu.documentation.platform.domain.enums.SyncStatus;
+import io.github.samzhu.documentation.platform.domain.model.CodeExample;
+import io.github.samzhu.documentation.platform.domain.model.Document;
+import io.github.samzhu.documentation.platform.domain.model.SyncHistory;
+import io.github.samzhu.documentation.platform.infrastructure.github.GitHubContentFetcher;
+import io.github.samzhu.documentation.platform.infrastructure.github.GitHubFile;
+import io.github.samzhu.documentation.platform.infrastructure.github.strategy.FetchResult;
+import io.github.samzhu.documentation.platform.infrastructure.local.LocalFileClient;
+import io.github.samzhu.documentation.platform.infrastructure.parser.DocumentParser;
+import io.github.samzhu.documentation.platform.infrastructure.parser.ParsedDocument;
+import io.github.samzhu.documentation.platform.infrastructure.vectorstore.DocumentChunkConverter;
+import io.github.samzhu.documentation.platform.repository.CodeExampleRepository;
+import io.github.samzhu.documentation.platform.repository.DocumentChunkRepository;
+import io.github.samzhu.documentation.platform.repository.DocumentRepository;
+import io.github.samzhu.documentation.platform.repository.SyncHistoryRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.time.OffsetDateTime;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * 文件同步服務
+ * <p>
+ * 負責從來源（GitHub、本地檔案）同步文件到資料庫。
+ * 包含解析、分塊、嵌入向量生成。
+ * </p>
+ */
+@Service
+public class SyncService {
+
+    private static final Logger log = LoggerFactory.getLogger(SyncService.class);
+
+    private final IdService idService;
+    private final GitHubContentFetcher gitHubContentFetcher;
+    private final LocalFileClient localFileClient;
+    private final List<DocumentParser> parsers;
+    private final DocumentChunker chunker;
+    private final VectorStore vectorStore;
+    private final DocumentChunkConverter chunkConverter;
+    private final DocumentRepository documentRepository;
+    private final DocumentChunkRepository chunkRepository;
+    private final CodeExampleRepository codeExampleRepository;
+    private final SyncHistoryRepository syncHistoryRepository;
+
+    public SyncService(IdService idService,
+                       GitHubContentFetcher gitHubContentFetcher,
+                       LocalFileClient localFileClient,
+                       List<DocumentParser> parsers,
+                       DocumentChunker chunker,
+                       VectorStore vectorStore,
+                       DocumentChunkConverter chunkConverter,
+                       DocumentRepository documentRepository,
+                       DocumentChunkRepository chunkRepository,
+                       CodeExampleRepository codeExampleRepository,
+                       SyncHistoryRepository syncHistoryRepository) {
+        this.idService = idService;
+        this.gitHubContentFetcher = gitHubContentFetcher;
+        this.localFileClient = localFileClient;
+        this.parsers = parsers;
+        this.chunker = chunker;
+        this.vectorStore = vectorStore;
+        this.chunkConverter = chunkConverter;
+        this.documentRepository = documentRepository;
+        this.chunkRepository = chunkRepository;
+        this.codeExampleRepository = codeExampleRepository;
+        this.syncHistoryRepository = syncHistoryRepository;
+    }
+
+    /**
+     * 從 GitHub 同步文件（非同步執行）
+     *
+     * @param versionId 版本 ID（TSID 格式）
+     * @param owner     GitHub 儲存庫擁有者
+     * @param repo      GitHub 儲存庫名稱
+     * @param docsPath  文件目錄路徑
+     * @param ref       Git 參考（branch、tag 或 commit）
+     * @return 同步歷史（非同步結果）
+     */
+    @Async
+    public CompletableFuture<SyncHistory> syncFromGitHub(String versionId, String owner,
+                                                          String repo, String docsPath, String ref) {
+        log.info("Starting GitHub sync for version: {} from {}/{} path={} ref={}",
+                versionId, owner, repo, docsPath, ref);
+
+        // 檢查是否有正在執行的同步任務
+        if (syncHistoryRepository.hasRunningSyncTask(versionId)) {
+            log.warn("Sync task already running for version: {}", versionId);
+            throw new SyncException("Already running a sync task for this version");
+        }
+
+        // 建立同步記錄
+        SyncHistory syncHistory = createSyncHistory(versionId);
+
+        try {
+            // 更新狀態為執行中
+            syncHistory = updateSyncStatus(syncHistory, SyncStatus.RUNNING, null);
+
+            // 使用策略模式取得所有文件（自動選擇最佳策略）
+            FetchResult fetchResult = gitHubContentFetcher.fetch(owner, repo, docsPath, ref);
+            List<GitHubFile> files = fetchResult.files();
+            log.info("Found {} files to sync using strategy: {}", files.size(), fetchResult.strategyUsed());
+
+            int documentsProcessed = 0;
+            int chunksCreated = 0;
+
+            // 處理每個文件
+            for (GitHubFile file : files) {
+                if (file.isFile() && isSupportedFile(file.path())) {
+                    try {
+                        SyncResult result = processFile(versionId, owner, repo, file, ref, fetchResult);
+                        documentsProcessed++;
+                        chunksCreated += result.chunksCreated();
+                    } catch (Exception e) {
+                        log.error("Failed to process file: {}", file.path(), e);
+                    }
+                }
+            }
+
+            // 更新狀態為成功
+            syncHistory = completeSyncHistory(syncHistory, SyncStatus.SUCCESS,
+                    documentsProcessed, chunksCreated, null);
+
+            log.info("GitHub sync completed for version: {}. Processed {} documents, created {} chunks (strategy: {})",
+                    versionId, documentsProcessed, chunksCreated, fetchResult.strategyUsed());
+
+            return CompletableFuture.completedFuture(syncHistory);
+
+        } catch (Exception e) {
+            log.error("GitHub sync failed for version: {}", versionId, e);
+
+            // 更新狀態為失敗
+            syncHistory = completeSyncHistory(syncHistory, SyncStatus.FAILED, 0, 0, e.getMessage());
+
+            return CompletableFuture.completedFuture(syncHistory);
+        }
+    }
+
+    /**
+     * 取得同步狀態
+     *
+     * @param syncId 同步 ID（TSID 格式）
+     * @return 同步歷史
+     */
+    public Optional<SyncHistory> getSyncStatus(String syncId) {
+        return syncHistoryRepository.findById(syncId);
+    }
+
+    /**
+     * 取得版本的最新同步記錄
+     *
+     * @param versionId 版本 ID（TSID 格式）
+     * @return 最新的同步歷史
+     */
+    public Optional<SyncHistory> getLatestSyncHistory(String versionId) {
+        return syncHistoryRepository.findLatestByVersionId(versionId);
+    }
+
+    /**
+     * 取得同步歷史列表
+     *
+     * @param versionId 版本 ID（TSID 格式，可選，null 表示查詢所有）
+     * @param limit     結果數量上限
+     * @return 同步歷史列表
+     */
+    public List<SyncHistory> getSyncHistory(String versionId, int limit) {
+        if (versionId != null) {
+            return syncHistoryRepository.findByVersionIdOrderByStartedAtDescLimit(versionId, limit);
+        }
+        return syncHistoryRepository.findAllOrderByStartedAtDesc(limit);
+    }
+
+    /**
+     * 從本地文件系統同步文件（非同步執行）
+     *
+     * @param versionId 版本 ID（TSID 格式）
+     * @param localPath 本地目錄路徑
+     * @param pattern   glob 模式（如 "**\/*.md"）
+     * @return 同步歷史（非同步結果）
+     */
+    @Async
+    public CompletableFuture<SyncHistory> syncFromLocal(String versionId, Path localPath, String pattern) {
+        log.info("Starting local sync for version: {} from path={} pattern={}",
+                versionId, localPath, pattern);
+
+        // 檢查是否有正在執行的同步任務
+        if (syncHistoryRepository.hasRunningSyncTask(versionId)) {
+            log.warn("Sync task already running for version: {}", versionId);
+            throw new SyncException("Already running a sync task for this version");
+        }
+
+        // 建立同步記錄
+        SyncHistory syncHistory = createSyncHistory(versionId);
+
+        try {
+            // 更新狀態為執行中
+            syncHistory = updateSyncStatus(syncHistory, SyncStatus.RUNNING, null);
+
+            // 讀取本地文件
+            List<LocalFileClient.FileContent> files = localFileClient.readDirectory(localPath, pattern);
+            log.info("Found {} files to sync from local", files.size());
+
+            int documentsProcessed = 0;
+            int chunksCreated = 0;
+
+            // 處理每個文件
+            for (LocalFileClient.FileContent file : files) {
+                if (isSupportedFile(file.path())) {
+                    try {
+                        SyncResult result = processLocalFile(versionId, file);
+                        if (result.processed()) {
+                            documentsProcessed++;
+                            chunksCreated += result.chunksCreated();
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to process local file: {}", file.path(), e);
+                    }
+                }
+            }
+
+            // 更新狀態為成功
+            syncHistory = completeSyncHistory(syncHistory, SyncStatus.SUCCESS,
+                    documentsProcessed, chunksCreated, null);
+
+            log.info("Local sync completed for version: {}. Processed {} documents, created {} chunks",
+                    versionId, documentsProcessed, chunksCreated);
+
+            return CompletableFuture.completedFuture(syncHistory);
+
+        } catch (IOException e) {
+            log.error("Local sync failed for version: {} - IO error", versionId, e);
+            syncHistory = completeSyncHistory(syncHistory, SyncStatus.FAILED, 0, 0, e.getMessage());
+            return CompletableFuture.completedFuture(syncHistory);
+
+        } catch (Exception e) {
+            log.error("Local sync failed for version: {}", versionId, e);
+            syncHistory = completeSyncHistory(syncHistory, SyncStatus.FAILED, 0, 0, e.getMessage());
+            return CompletableFuture.completedFuture(syncHistory);
+        }
+    }
+
+    /**
+     * 處理本地文件
+     */
+    @Transactional
+    protected SyncResult processLocalFile(String versionId, LocalFileClient.FileContent file) {
+        String content = file.content();
+        String path = file.path();
+
+        // 計算內容雜湊
+        String contentHash = calculateHash(content);
+
+        // 檢查是否已存在且內容相同
+        Optional<Document> existingDoc = documentRepository.findByVersionIdAndPath(versionId, path);
+        if (existingDoc.isPresent() && contentHash.equals(existingDoc.get().getContentHash())) {
+            log.debug("Skipping unchanged local file: {}", path);
+            return new SyncResult(0, false);
+        }
+
+        // 找到適合的解析器
+        DocumentParser parser = findParser(path);
+        if (parser == null) {
+            log.warn("No parser found for local file: {}", path);
+            return new SyncResult(0, false);
+        }
+
+        // 解析文件
+        ParsedDocument parsed = parser.parse(content, path);
+
+        // 刪除舊資料（如果存在）
+        if (existingDoc.isPresent()) {
+            String docId = existingDoc.get().getId();
+            codeExampleRepository.findByDocumentId(docId)
+                    .forEach(ex -> codeExampleRepository.delete(ex));
+            chunkRepository.findByDocumentIdOrderByChunkIndex(docId)
+                    .forEach(chunk -> chunkRepository.delete(chunk));
+            documentRepository.delete(existingDoc.get());
+        }
+
+        // 使用 IdService 生成新文件 ID
+        String documentId = idService.generateId();
+
+        // 儲存文件
+        Document document = Document.create(documentId, versionId, parsed.title(), path,
+                content, contentHash, parser.getDocType());
+        document = documentRepository.save(document);
+
+        // 分塊並使用 VectorStore 批次建立嵌入
+        List<DocumentChunker.ChunkResult> chunks = chunker.chunk(content);
+
+        // 建立 Spring AI Document 列表，由 VectorStore 自動生成 embedding
+        List<org.springframework.ai.document.Document> aiDocs = chunks.stream()
+                .map(chunkResult -> chunkConverter.createNewChunkDocument(
+                        versionId,
+                        documentId,
+                        chunkResult.index(),
+                        chunkResult.content(),
+                        chunkResult.tokenCount(),
+                        parsed.title(),
+                        path
+                ))
+                .toList();
+
+        // 使用 VectorStore.add() 批次儲存（自動 embed）
+        vectorStore.add(aiDocs);
+
+        // 儲存程式碼範例
+        for (ParsedDocument.CodeBlock codeBlock : parsed.codeBlocks()) {
+            String codeExampleId = idService.generateId();
+            CodeExample example = CodeExample.create(codeExampleId, documentId, codeBlock.language(),
+                    codeBlock.code(), codeBlock.description());
+            codeExampleRepository.save(example);
+        }
+
+        return new SyncResult(chunks.size(), true);
+    }
+
+    /**
+     * 處理單一文件
+     *
+     * @param versionId   版本 ID（TSID 格式）
+     * @param owner       GitHub 儲存庫擁有者
+     * @param repo        GitHub 儲存庫名稱
+     * @param file        檔案資訊
+     * @param ref         Git 參考
+     * @param fetchResult 取得結果（可能包含預載入的內容）
+     * @return 同步結果
+     */
+    @Transactional
+    protected SyncResult processFile(String versionId, String owner, String repo,
+                                      GitHubFile file, String ref, FetchResult fetchResult) {
+        // 取得文件內容（優先使用預載入內容，否則從 raw URL 下載）
+        String content = gitHubContentFetcher.getFileContent(fetchResult, owner, repo, file.path(), ref);
+
+        // 計算內容雜湊
+        String contentHash = calculateHash(content);
+
+        // 檢查是否已存在且內容相同
+        Optional<Document> existingDoc = documentRepository.findByVersionIdAndPath(versionId, file.path());
+        if (existingDoc.isPresent() && contentHash.equals(existingDoc.get().getContentHash())) {
+            log.debug("Skipping unchanged file: {}", file.path());
+            return new SyncResult(0, false);
+        }
+
+        // 找到適合的解析器
+        DocumentParser parser = findParser(file.path());
+        if (parser == null) {
+            log.warn("No parser found for file: {}", file.path());
+            return new SyncResult(0, false);
+        }
+
+        // 解析文件
+        ParsedDocument parsed = parser.parse(content, file.path());
+
+        // 刪除舊資料（如果存在）
+        if (existingDoc.isPresent()) {
+            String docId = existingDoc.get().getId();
+            codeExampleRepository.findByDocumentId(docId)
+                    .forEach(ex -> codeExampleRepository.delete(ex));
+            chunkRepository.findByDocumentIdOrderByChunkIndex(docId)
+                    .forEach(chunk -> chunkRepository.delete(chunk));
+            documentRepository.delete(existingDoc.get());
+        }
+
+        // 使用 IdService 生成新文件 ID
+        String documentId = idService.generateId();
+
+        // 儲存文件
+        Document document = Document.create(documentId, versionId, parsed.title(), file.path(),
+                content, contentHash, parser.getDocType());
+        document = documentRepository.save(document);
+
+        // 分塊並使用 VectorStore 批次建立嵌入
+        List<DocumentChunker.ChunkResult> chunks = chunker.chunk(content);
+
+        // 建立 Spring AI Document 列表，由 VectorStore 自動生成 embedding
+        List<org.springframework.ai.document.Document> aiDocs = chunks.stream()
+                .map(chunkResult -> chunkConverter.createNewChunkDocument(
+                        versionId,
+                        documentId,
+                        chunkResult.index(),
+                        chunkResult.content(),
+                        chunkResult.tokenCount(),
+                        parsed.title(),
+                        file.path()
+                ))
+                .toList();
+
+        // 使用 VectorStore.add() 批次儲存（自動 embed）
+        vectorStore.add(aiDocs);
+
+        // 儲存程式碼範例
+        for (ParsedDocument.CodeBlock codeBlock : parsed.codeBlocks()) {
+            String codeExampleId = idService.generateId();
+            CodeExample example = CodeExample.create(codeExampleId, documentId, codeBlock.language(),
+                    codeBlock.code(), codeBlock.description());
+            codeExampleRepository.save(example);
+        }
+
+        return new SyncResult(chunks.size(), true);
+    }
+
+    private boolean isSupportedFile(String path) {
+        return parsers.stream().anyMatch(p -> p.supports(path));
+    }
+
+    private DocumentParser findParser(String path) {
+        return parsers.stream()
+                .filter(p -> p.supports(path))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String calculateHash(String content) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(content.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to calculate hash", e);
+        }
+    }
+
+    /**
+     * 建立同步歷史記錄
+     * <p>
+     * 儲存後從 DB 重新查詢，確保 @PersistenceCreator 設定 isNew = false，
+     * 讓後續更新操作能正確執行 UPDATE 而非 INSERT。
+     * </p>
+     */
+    @Transactional
+    protected SyncHistory createSyncHistory(String versionId) {
+        String id = idService.generateId();
+        SyncHistory history = SyncHistory.createPending(id, versionId);
+        syncHistoryRepository.save(history);
+        // 從 DB 重新查詢以獲取正確的 isNew 狀態
+        return syncHistoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Failed to create sync history"));
+    }
+
+    /**
+     * 更新同步狀態
+     * <p>
+     * 使用 public constructor 創建實體，保留 version 以進行樂觀鎖定
+     * </p>
+     */
+    @Transactional
+    protected SyncHistory updateSyncStatus(SyncHistory history, SyncStatus status, String errorMessage) {
+        SyncHistory updated = new SyncHistory(
+                history.getId(),
+                history.getVersionId(),
+                status,
+                history.getStartedAt(),
+                null,
+                history.getDocumentsProcessed(),
+                history.getChunksCreated(),
+                errorMessage,
+                history.getMetadata(),
+                history.getVersion(),  // 保留 version 以進行樂觀鎖定
+                history.getCreatedAt(),
+                history.getUpdatedAt()
+        );
+        return syncHistoryRepository.save(updated);
+    }
+
+    /**
+     * 完成同步歷史記錄
+     * <p>
+     * 使用 public constructor 創建實體，保留 version 以進行樂觀鎖定
+     * </p>
+     */
+    @Transactional
+    protected SyncHistory completeSyncHistory(SyncHistory history, SyncStatus status,
+                                               int documentsProcessed, int chunksCreated,
+                                               String errorMessage) {
+        SyncHistory updated = new SyncHistory(
+                history.getId(),
+                history.getVersionId(),
+                status,
+                history.getStartedAt(),
+                OffsetDateTime.now(),
+                documentsProcessed,
+                chunksCreated,
+                errorMessage,
+                Map.of(),
+                history.getVersion(),  // 保留 version 以進行樂觀鎖定
+                history.getCreatedAt(),
+                history.getUpdatedAt()
+        );
+        return syncHistoryRepository.save(updated);
+    }
+
+    /**
+     * 同步結果
+     */
+    private record SyncResult(int chunksCreated, boolean processed) {}
+
+    /**
+     * 同步例外
+     */
+    public static class SyncException extends RuntimeException {
+        public SyncException(String message) {
+            super(message);
+        }
+
+        public SyncException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+}

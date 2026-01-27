@@ -1,0 +1,83 @@
+package io.github.samzhu.documentation.platform.repository;
+
+import io.github.samzhu.documentation.platform.domain.enums.VersionStatus;
+import io.github.samzhu.documentation.platform.domain.model.LibraryVersion;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 函式庫版本資料存取介面
+ * <p>
+ * 提供函式庫版本的 CRUD 操作及自訂查詢方法。
+ * ID 類型為 TSID 字串。
+ * </p>
+ */
+@Repository
+public interface LibraryVersionRepository extends CrudRepository<LibraryVersion, String> {
+
+    /**
+     * 查找指定函式庫的最新版本
+     *
+     * @param libraryId 函式庫 ID（TSID 格式）
+     * @return 最新版本（若存在）
+     */
+    @Query("SELECT * FROM library_versions WHERE library_id = :libraryId AND is_latest = true")
+    Optional<LibraryVersion> findLatestByLibraryId(@Param("libraryId") String libraryId);
+
+    /**
+     * 查找指定函式庫的特定版本
+     *
+     * @param libraryId 函式庫 ID（TSID 格式）
+     * @param version   版本號
+     * @return 版本資訊（若存在）
+     */
+    @Query("SELECT * FROM library_versions WHERE library_id = :libraryId AND version = :version")
+    Optional<LibraryVersion> findByLibraryIdAndVersion(
+            @Param("libraryId") String libraryId,
+            @Param("version") String version
+    );
+
+    /**
+     * 取得指定函式庫的所有版本
+     *
+     * @param libraryId 函式庫 ID（TSID 格式）
+     * @return 版本列表
+     */
+    @Query("SELECT * FROM library_versions WHERE library_id = :libraryId ORDER BY created_at DESC")
+    List<LibraryVersion> findByLibraryId(@Param("libraryId") String libraryId);
+
+    /**
+     * 取得指定函式庫中特定狀態的版本
+     *
+     * @param libraryId 函式庫 ID（TSID 格式）
+     * @param status    版本狀態
+     * @return 符合條件的版本列表
+     */
+    @Query("SELECT * FROM library_versions WHERE library_id = :libraryId AND status = :status")
+    List<LibraryVersion> findByLibraryIdAndStatus(
+            @Param("libraryId") String libraryId,
+            @Param("status") VersionStatus status
+    );
+
+    /**
+     * 查找指定函式庫的 LTS 版本
+     *
+     * @param libraryId 函式庫 ID（TSID 格式）
+     * @return LTS 版本（若存在）
+     */
+    @Query("SELECT * FROM library_versions WHERE library_id = :libraryId AND is_lts = true ORDER BY created_at DESC LIMIT 1")
+    Optional<LibraryVersion> findLtsByLibraryId(@Param("libraryId") String libraryId);
+
+    /**
+     * 取得所有 LTS 版本
+     *
+     * @return LTS 版本列表
+     */
+    @Query("SELECT * FROM library_versions WHERE is_lts = true ORDER BY created_at DESC")
+    List<LibraryVersion> findAllLts();
+}

@@ -1,0 +1,364 @@
+/**
+ * Aurora Cards - 極光流動卡片組件
+ * 背景色彩持續流動的特殊卡片效果
+ * 適用於特色內容、重點功能展示
+ */
+
+/* ===== 極光卡片基礎 ===== */
+
+.aurora-card {
+    position: relative;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--glass-border);
+    padding: var(--spacing-xl);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+/* 極光色彩流動背景層 */
+.aurora-card::before {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: var(--gradient-aurora);
+    background-size: 200% 200%;
+    animation: aurora-flow 8s ease infinite;
+    opacity: 0.08;
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* 頂部高光線 */
+.aurora-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.8),
+        transparent);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* 確保內容在極光層之上 */
+.aurora-card > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* hover 時加速流動與增強效果 */
+.aurora-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--glass-shadow-hover);
+    border-color: var(--glass-border-inner);
+}
+
+.aurora-card:hover::before {
+    animation-duration: 3s;
+    opacity: 0.15;
+}
+
+/* ===== 極光卡片變體 ===== */
+
+/* 強化版 - 更明顯的極光效果 */
+.aurora-card-strong::before {
+    opacity: 0.12;
+    filter: blur(40px);
+}
+
+.aurora-card-strong:hover::before {
+    opacity: 0.25;
+}
+
+/* 微妙版 - 輕微的極光提示 */
+.aurora-card-subtle::before {
+    opacity: 0.04;
+    filter: blur(80px);
+}
+
+.aurora-card-subtle:hover::before {
+    opacity: 0.08;
+}
+
+/* 快速流動版 - 預設就快速流動 */
+.aurora-card-fast::before {
+    animation: aurora-flow 4s ease infinite;
+}
+
+.aurora-card-fast:hover::before {
+    animation-duration: 2s;
+}
+
+/* ===== 極光卡片內容佈局 ===== */
+
+/* 頭部區塊 */
+.aurora-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+}
+
+.aurora-card-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.aurora-card-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+/* 圖標容器 - 帶極光色彩 */
+.aurora-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg,
+        var(--color-aurora-teal),
+        var(--color-aurora-cyan));
+    box-shadow:
+        0 4px 16px rgba(0, 229, 204, 0.3),
+        0 8px 32px rgba(0, 191, 255, 0.2);
+    margin-bottom: var(--spacing-md);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 圖標容器頂部高光 */
+.aurora-card-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 50%;
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.5),
+        transparent);
+    border-radius: 0 0 50% 50%;
+}
+
+.aurora-card-icon svg {
+    width: 28px;
+    height: 28px;
+    color: #ffffff;
+    position: relative;
+    z-index: 1;
+}
+
+/* 內容區塊 */
+.aurora-card-body {
+    margin-bottom: var(--spacing-lg);
+}
+
+.aurora-card-description {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+/* 底部操作區 */
+.aurora-card-footer {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: auto;
+}
+
+/* ===== 極光特性列表 ===== */
+
+.aurora-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.aurora-feature-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.aurora-feature-item:last-child {
+    border-bottom: none;
+}
+
+.aurora-feature-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: var(--color-aurora-teal);
+}
+
+.aurora-feature-text {
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+}
+
+/* ===== 極光網格佈局 ===== */
+
+.aurora-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-xl);
+}
+
+@media (max-width: 767px) {
+    .aurora-cards-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+}
+
+/* ===== 極光卡片尺寸變體 ===== */
+
+/* 緊湊版 */
+.aurora-card-compact {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+}
+
+.aurora-card-compact .aurora-card-title {
+    font-size: 1.25rem;
+}
+
+.aurora-card-compact .aurora-card-icon {
+    width: 48px;
+    height: 48px;
+}
+
+/* 寬鬆版 */
+.aurora-card-spacious {
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+}
+
+.aurora-card-spacious .aurora-card-title {
+    font-size: 1.75rem;
+}
+
+.aurora-card-spacious .aurora-card-icon {
+    width: 64px;
+    height: 64px;
+}
+
+/* ===== 極光色彩主題變體 ===== */
+
+/* 青綠主題 */
+.aurora-card[data-theme="teal"] .aurora-card-icon {
+    background: linear-gradient(135deg,
+        var(--color-aurora-teal),
+        var(--color-aurora-cyan));
+    box-shadow:
+        0 4px 16px rgba(0, 229, 204, 0.4),
+        0 8px 32px rgba(0, 191, 255, 0.25);
+}
+
+/* 藍紫主題 */
+.aurora-card[data-theme="blue"] .aurora-card-icon {
+    background: linear-gradient(135deg,
+        var(--color-aurora-blue),
+        var(--color-aurora-purple));
+    box-shadow:
+        0 4px 16px rgba(102, 126, 234, 0.4),
+        0 8px 32px rgba(157, 78, 221, 0.25);
+}
+
+/* 粉紫主題 */
+.aurora-card[data-theme="pink"] .aurora-card-icon {
+    background: linear-gradient(135deg,
+        var(--color-aurora-purple),
+        var(--color-aurora-pink));
+    box-shadow:
+        0 4px 16px rgba(157, 78, 221, 0.4),
+        0 8px 32px rgba(255, 110, 199, 0.25);
+}
+
+/* ===== 互動狀態 ===== */
+
+/* 可點擊的極光卡片 */
+.aurora-card.aurora-card-clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.aurora-card.aurora-card-clickable:active {
+    transform: translateY(-4px) scale(0.98);
+}
+
+/* 選中狀態 */
+.aurora-card.aurora-card-selected {
+    border-color: var(--color-aurora-cyan);
+    box-shadow:
+        0 0 0 3px rgba(0, 191, 255, 0.2),
+        var(--glass-shadow-lg);
+}
+
+.aurora-card.aurora-card-selected::before {
+    opacity: 0.2;
+    animation-duration: 4s;
+}
+
+/* Dark Mode 適配 */
+@media (prefers-color-scheme: dark) {
+    .aurora-card {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .aurora-card:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .aurora-card-title {
+        color: #f5f5f7;
+    }
+
+    .aurora-card-description,
+    .aurora-feature-text {
+        color: #aeaeb2;
+    }
+}
+
+/* 移動裝置優化 */
+@media (max-width: 767px) {
+    .aurora-card::before {
+        animation: none;
+        background-size: 100% 100%;
+        opacity: 0.06;
+    }
+
+    .aurora-card:hover::before {
+        animation: none;
+        opacity: 0.1;
+    }
+
+    .aurora-card:hover {
+        transform: translateY(-4px);
+    }
+}
+
+/* 減少動作偏好設定 */
+@media (prefers-reduced-motion: reduce) {
+    .aurora-card::before {
+        animation: none !important;
+    }
+}

@@ -1,0 +1,738 @@
+/**
+ * Cards 卡片組件
+ * 包含統計卡片、玻璃卡片、操作卡片、文件庫卡片等
+ */
+
+/* ===== 統計卡片 ===== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg);
+}
+
+@media (max-width: 1023px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 639px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 統計卡片 - 帶圖標版本（Dark Mode） */
+.stat-card {
+    background: var(--color-surface-white);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.06);
+    transition: all var(--transition-normal);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* 統計卡片圖標容器 - 增強玻璃效果 */
+.stat-icon {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* 統計圖標頂部高光 */
+.stat-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 50%;
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.35) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        transparent 100%);
+    border-radius: 0 0 50% 50%;
+    pointer-events: none;
+}
+
+.stat-icon svg {
+    position: relative;
+    z-index: 1;
+    width: 24px;
+    height: 24px;
+}
+
+/* 統計圖標顏色變體 */
+.stat-icon.blue {
+    background: rgba(0, 122, 255, 0.12);
+    color: #007aff;
+}
+
+.stat-icon.green {
+    background: rgba(48, 209, 88, 0.12);
+    color: #30d158;
+}
+
+.stat-icon.yellow {
+    background: rgba(255, 159, 10, 0.12);
+    color: #ff9f0a;
+}
+
+.stat-icon.red {
+    background: rgba(255, 69, 58, 0.12);
+    color: #ff453a;
+}
+
+.stat-icon.purple {
+    background: rgba(175, 82, 222, 0.12);
+    color: #af52de;
+}
+
+/* 統計內容區 */
+.stat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 統計數字 - 使用墨黑色值，確保高對比度 */
+.stat-value {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ink-black);  /* 墨黑 - 使用墨玉變數 */
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+/* 統計標籤 - 使用墨灰色值 */
+.stat-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink-gray);  /* 墨灰 - 使用墨玉變數 */
+    margin-top: var(--spacing-xs);
+}
+
+/* ===== Glass Card - 標準玻璃卡片（Dark Mode） ===== */
+.glass-card {
+    position: relative;
+    background: var(--color-surface-white);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all var(--transition-normal);
+    overflow: hidden;
+}
+
+/* 頂部高光線 */
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.6),
+        transparent);
+    z-index: 0;
+}
+
+/* 角落漸層高光 */
+.glass-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 40%;
+    background: radial-gradient(
+        ellipse at top left,
+        rgba(255, 255, 255, 0.15),
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+}
+
+.glass-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 8px 24px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Glass Card 靜態版本（無 hover 效果，Dark Mode） */
+.glass-card-static {
+    position: relative;
+    background: var(--color-surface-white);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    overflow: hidden;
+}
+
+.glass-card-static::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.6),
+        transparent);
+    z-index: 0;
+}
+
+.glass-card-static::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 40%;
+    background: radial-gradient(
+        ellipse at top left,
+        rgba(255, 255, 255, 0.15),
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+}
+
+.glass-card-static > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== 操作卡片 ===== */
+.action-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+}
+
+@media (max-width: 639px) {
+    .action-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.action-card {
+    position: relative;
+    background: var(--color-surface-white);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        0 4px 16px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all var(--transition-normal);
+}
+
+/* Action card 頂部高光 */
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.6),
+        transparent);
+    z-index: 0;
+}
+
+/* Action card 角落漸層 */
+.action-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30%;
+    height: 30%;
+    background: radial-gradient(
+        ellipse at top left,
+        rgba(255, 255, 255, 0.12),
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+}
+
+.action-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.action-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.1),
+        0 12px 40px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    border-color: var(--color-accent);
+}
+
+/* 操作卡片圖標容器 - 增強玻璃效果 */
+.action-card-icon {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* 圖標容器頂部高光 */
+.action-card-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 50%;
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        transparent 100%);
+    border-radius: 0 0 50% 50%;
+    pointer-events: none;
+}
+
+.action-card-icon svg {
+    position: relative;
+    z-index: 1;
+    width: 26px;
+    height: 26px;
+}
+
+/* 操作卡片內容區 - 使用墨玉色彩系統 */
+.action-card-content h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink-black);  /* 墨黑 */
+}
+
+.action-card-content p {
+    font-size: 0.875rem;
+    color: var(--ink-gray);  /* 墨灰 */
+    margin-top: 2px;
+}
+
+/* 保留舊版 action-icon 類別相容性 */
+.action-card .action-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    background: var(--color-accent-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--color-accent);
+}
+
+.action-card .action-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.action-card .action-icon.green {
+    background: rgba(48, 209, 88, 0.12);
+    color: #30d158;
+}
+
+.action-card .action-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.action-card .action-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.action-card .action-desc {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+/* 快捷操作卡片增強 */
+.action-card.action-card-primary {
+    border-color: var(--color-accent);
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.04) 0%, rgba(88, 86, 214, 0.04) 100%);
+}
+
+.action-card.action-card-primary:hover {
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.08) 0%, rgba(88, 86, 214, 0.08) 100%);
+}
+
+/* ===== 文件庫卡片 ===== */
+.library-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.library-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.library-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.library-card .library-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+}
+
+/* 文件庫卡片標題 - 使用墨黑 */
+.library-card h3,
+.library-card .library-name {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--ink-black);  /* 墨黑 */
+    margin-bottom: var(--spacing-sm);
+}
+
+/* 文件庫卡片描述 - 使用墨灰 */
+.library-card .library-desc {
+    font-size: 0.875rem;
+    color: var(--ink-gray);  /* 墨灰 */
+    margin-bottom: var(--spacing-md);
+    line-height: 1.5;
+}
+
+.library-card .source-type {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: var(--spacing-xs);
+}
+
+.library-card .source-url {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    word-break: break-all;
+    margin-bottom: var(--spacing-md);
+}
+
+.library-card .library-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.card-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: auto;
+}
+
+/* ===== 資訊卡片分離設計（Dark Mode）===== */
+.info-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: var(--spacing-md);
+}
+
+/* 資訊卡片標題 - 使用墨黑 */
+.info-card-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--ink-black);  /* 墨黑 */
+    margin-bottom: var(--spacing-xs);
+}
+
+/* 資訊卡片副標題 - 使用雲灰 */
+.info-card-subtitle {
+    font-size: 0.875rem;
+    color: var(--ink-cloud);  /* 雲灰 */
+}
+
+.info-card-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.info-card-body {
+    margin-bottom: var(--spacing-md);
+}
+
+/* 資訊卡片描述 - 使用墨灰 */
+.info-card-description {
+    font-size: 0.9375rem;
+    color: var(--ink-gray);  /* 墨灰 */
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+}
+
+/* 資訊網格（2 欄）- Dark Mode */
+.info-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 639px) {
+    .info-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 資訊項目（全寬）- Dark Mode */
+.info-item-full {
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.info-item-full:last-child {
+    border-bottom: none;
+}
+
+/* 標籤區塊 */
+.info-tags-section {
+    padding-top: var(--spacing-md);
+}
+
+/* 標籤區塊標籤 - 使用雲灰 */
+.info-tags-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-cloud);  /* 雲灰 */
+    margin-bottom: var(--spacing-sm);
+}
+
+/* ===== 三層玻璃卡片 - Multi-Layer Glass Card（新增）===== */
+
+/**
+ * 三層景深玻璃卡片
+ * 使用 ::before（背景層）、自身（中景層）、::after（前景層）創造立體視差效果
+ */
+.glass-card-layered {
+    position: relative;
+    background: var(--glass-bg-solid);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+    padding: var(--spacing-lg);
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+    transition: all var(--transition-normal);
+    transform-style: preserve-3d;
+}
+
+/* 背景層 - 深空陰影與色彩透射 */
+.glass-card-layered::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: var(--glass-bg-dark);
+    backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+    border-radius: inherit;
+    transform: translateZ(-20px);
+    filter: drop-shadow(0 0 40px rgba(0, 229, 204, 0.4));
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* 前景層 - 極光高光與邊緣發光 */
+.glass-card-layered::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.25) 0%,
+        transparent 40%,
+        rgba(0, 229, 204, 0.1) 100%);
+    border-radius: inherit;
+    transform: translateZ(10px);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* 確保內容在高光之上 */
+.glass-card-layered > * {
+    position: relative;
+    z-index: 20;
+}
+
+/* hover 時激活三層效果與視差移動 */
+.glass-card-layered:hover {
+    transform: translateY(-8px) rotateX(2deg);
+    box-shadow: var(--glass-shadow-hover);
+    border-color: var(--glass-border-inner);
+}
+
+.glass-card-layered:hover::before {
+    opacity: 1;
+}
+
+.glass-card-layered:hover::after {
+    opacity: 1;
+}
+
+/* 互動卡片變體（可點擊） */
+.glass-card-layered.card-interactive {
+    cursor: pointer;
+}
+
+.glass-card-layered.card-interactive:hover {
+    transform: translateY(-10px) rotateX(3deg);
+}
+
+/* 靜態卡片變體（無 hover 效果） */
+.glass-card-layered.card-static:hover {
+    transform: none;
+    box-shadow: var(--glass-shadow);
+}
+
+.glass-card-layered.card-static:hover::before,
+.glass-card-layered.card-static:hover::after {
+    opacity: 0;
+}
+
+/* 統計卡片變體（帶圖標） */
+.glass-card-layered.card-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+/* 操作卡片變體（特殊邊框色） */
+.glass-card-layered.card-action:hover {
+    border-color: var(--color-accent);
+}
+
+.glass-card-layered.card-action:hover::after {
+    background: linear-gradient(135deg,
+        rgba(0, 122, 255, 0.15) 0%,
+        transparent 40%,
+        rgba(102, 126, 234, 0.1) 100%);
+}
+
+/* 色彩變體 - 不同的極光色彩透射 */
+.glass-card-layered[data-aurora-color="teal"]:hover::before {
+    filter: drop-shadow(0 0 40px rgba(0, 229, 204, 0.5));
+}
+
+.glass-card-layered[data-aurora-color="cyan"]:hover::before {
+    filter: drop-shadow(0 0 40px rgba(0, 191, 255, 0.5));
+}
+
+.glass-card-layered[data-aurora-color="purple"]:hover::before {
+    filter: drop-shadow(0 0 40px rgba(157, 78, 221, 0.5));
+}
+
+.glass-card-layered[data-aurora-color="pink"]:hover::before {
+    filter: drop-shadow(0 0 40px rgba(255, 110, 199, 0.5));
+}
+
+/* Dark Mode 已設為預設，三層玻璃卡片樣式 */
+.glass-card-layered {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.glass-card-layered:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.glass-card-layered::after {
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        transparent 40%,
+        rgba(0, 229, 204, 0.08) 100%);
+}
+
+/* 移動裝置簡化（避免性能問題） */
+@media (max-width: 767px) {
+    .glass-card-layered::before {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .glass-card-layered:hover {
+        transform: translateY(-4px);
+    }
+}

@@ -1,0 +1,270 @@
+/**
+ * Sidebar 側邊欄組件
+ * 深色 Liquid Glass 風格的側邊導航
+ *
+ * 色彩對比度已優化，符合 WCAG AA 標準
+ * - 主文字：白色 rgba(255,255,255,1) - 12.6:1
+ * - 次要文字：rgba(255,255,255,0.8) - 10.1:1
+ * - 三級文字：rgba(255,255,255,0.6) - 7.5:1
+ */
+
+/* ===== 側邊欄 - 深色 Liquid Glass ===== */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    z-index: 100;
+    transition: transform var(--transition-normal);
+}
+
+/* 側邊欄玻璃容器 - 浮動效果 */
+.sidebar-glass-container {
+    position: absolute;
+    inset: 12px;
+    background: var(--glass-dark-bg);
+    backdrop-filter: blur(var(--blur-xl)) saturate(200%);
+    -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(200%);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--glass-dark-border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 頂部高光線 */
+.sidebar-glass-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent);
+    z-index: 1;
+}
+
+/* 邊緣高光漸層 */
+.sidebar-glass-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        transparent 50%);
+    pointer-events: none;
+}
+
+/* 側邊欄內容區 */
+.sidebar-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    z-index: 1;
+}
+
+/* 傳統結構相容（無 glass-container） */
+.sidebar:not(:has(.sidebar-glass-container)) {
+    background: var(--glass-dark-bg);
+    backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--blur-xl)) saturate(180%);
+    border-right: 1px solid var(--glass-dark-border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 傳統結構的頂部高光 */
+.sidebar:not(:has(.sidebar-glass-container))::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: var(--glass-dark-highlight);
+    pointer-events: none;
+}
+
+/* ===== 側邊欄品牌區 ===== */
+.sidebar-brand {
+    position: relative;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--glass-dark-border);
+}
+
+/* ===== 側邊欄導航 ===== */
+.sidebar-nav {
+    flex: 1;
+    padding: var(--spacing-md) var(--spacing-sm);
+    overflow-y: auto;
+}
+
+/* 導航分組 */
+.nav-group {
+    margin-bottom: var(--spacing-md);
+}
+
+/* 分組標籤 - 已修復對比度（從 0.4 提升到 0.6） */
+.nav-group-label {
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-sidebar-text-tertiary);
+}
+
+/* 導航項目 - 浮動膠囊效果，已修復對比度（從 0.7 提升到 0.8） */
+.nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin: 2px 8px;
+    border-radius: var(--radius-md);
+    color: var(--color-sidebar-text-secondary);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    overflow: hidden;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--glass-highlight-subtle);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-sidebar-text-primary);
+}
+
+.nav-item:hover::before {
+    opacity: 1;
+}
+
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--color-sidebar-text-primary);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.nav-item.active::before {
+    opacity: 1;
+}
+
+.nav-icon {
+    font-size: 1.125rem;
+}
+
+.nav-label {
+    position: relative;
+}
+
+/* ===== 側邊欄導航項目（更新版） ===== */
+.sidebar-nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+    color: var(--color-sidebar-text-secondary);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    overflow: hidden;
+}
+
+.sidebar-nav-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--glass-highlight-subtle);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.sidebar-nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-sidebar-text-primary);
+}
+
+.sidebar-nav-item:hover::before {
+    opacity: 1;
+}
+
+.sidebar-nav-item.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--color-sidebar-text-primary);
+}
+
+.sidebar-nav-item.active::before {
+    opacity: 1;
+}
+
+.sidebar-nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.sidebar-nav-label {
+    position: relative;
+}
+
+/* ===== 側邊欄使用者區塊 ===== */
+.sidebar-user {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-top: 1px solid var(--glass-dark-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-sidebar-text-primary);
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ===== 側邊欄頁尾 ===== */
+.sidebar-footer {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-top: 1px solid var(--glass-dark-border);
+}
+
+.sidebar-footer p {
+    font-size: 0.6875rem;
+    color: var(--color-sidebar-text-muted);
+}

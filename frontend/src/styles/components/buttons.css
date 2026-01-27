@@ -1,0 +1,881 @@
+/**
+ * Apple Liquid Glass 按鈕系統
+ * 統一的玻璃效果架構，透過顏色變數和修飾類別實現多樣化
+ */
+
+/* ============================================
+   1. 顏色主題系統
+   ============================================
+   注意:按鈕色彩變數已移至 foundation/variables.css 統一管理
+   此處不再重複定義 :root，避免 @layer 環境下的變數覆蓋問題
+   ============================================ */
+
+/* ============================================
+   2. 基礎玻璃效果類別
+   ============================================ */
+
+.btn-glass-base,
+.btn {
+    /* 定位與顯示 */
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+
+    /* 尺寸（預設 medium） */
+    padding: 10px 18px;
+
+    /* 字體 */
+    font-family: var(--font-text);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+
+    /* 外觀 */
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+
+    /* 過渡動畫 */
+    transition: all var(--transition-fast);
+
+    /* 預設外觀（Ghost 風格作為預設，可被變體覆蓋） */
+    background: linear-gradient(135deg,
+        var(--btn-ghost-bg-start, rgba(255, 255, 255, 0.08)),
+        var(--btn-ghost-bg-end, rgba(255, 255, 255, 0.04)));
+    color: var(--btn-ghost-text, #ffffff);
+    border: 1px solid var(--btn-ghost-border, rgba(255, 255, 255, 0.12));
+
+    /* 陰影基礎（由變體覆蓋） */
+    box-shadow:
+        0 4px 16px var(--btn-shadow-color, rgba(0, 0, 0, 0.1)),
+        0 8px 32px var(--btn-shadow-color-2, rgba(0, 0, 0, 0.08)),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 禁用狀態 */
+.btn-glass-base:disabled,
+.btn:disabled,
+.btn-glass-base.disabled,
+.btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ============================================
+   3. 玻璃高光效果（偽元素）
+   ============================================ */
+
+/* 頂部高光（適用所有按鈕） */
+.btn-glass-base::before,
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 60%;
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(255, 255, 255, 0.2) 40%,
+        transparent 100%);
+    border-radius: 0 0 50% 50%;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity var(--transition-fast);
+}
+
+/* 邊緣光暈（適用所有按鈕） */
+.btn-glass-base::after,
+.btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.25) 0%,
+        transparent 60%);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.8;
+    transition: opacity var(--transition-fast);
+}
+
+/* 確保內容在高光之上 */
+.btn-glass-base > *,
+.btn > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* ============================================
+   4. Hover 和 Active 狀態
+   ============================================ */
+
+.btn-glass-base:hover:not(:disabled),
+.btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    filter: brightness(1.1) saturate(1.1);
+    box-shadow:
+        0 6px 24px var(--btn-shadow-color, rgba(0, 0, 0, 0.15)),
+        0 12px 48px var(--btn-shadow-color-2, rgba(0, 0, 0, 0.12)),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn-glass-base:hover:not(:disabled)::before,
+.btn:hover:not(:disabled)::before {
+    opacity: 1;
+}
+
+.btn-glass-base:active:not(:disabled),
+.btn:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   5. 顏色變體
+   ============================================ */
+
+/* Primary - 藍色漸層 */
+.btn-glass-base.btn-primary,
+.btn.btn-primary,
+.btn-glass-base[data-variant="primary"],
+.btn[data-variant="primary"] {
+    background: linear-gradient(135deg,
+        var(--btn-primary-bg-start),
+        var(--btn-primary-bg-end));
+    color: var(--btn-primary-text);
+    --btn-shadow-color: var(--btn-primary-shadow-color);
+    --btn-shadow-color-2: var(--btn-primary-shadow-color-2);
+}
+
+.btn-glass-base.btn-primary:hover,
+.btn.btn-primary:hover,
+.btn-glass-base[data-variant="primary"]:hover,
+.btn[data-variant="primary"]:hover {
+    background: linear-gradient(135deg,
+        var(--btn-primary-hover-bg-start),
+        var(--btn-primary-hover-bg-end));
+}
+
+/* Secondary - 白色玻璃 */
+.btn-glass-base.btn-secondary,
+.btn.btn-secondary,
+.btn-glass-base[data-variant="secondary"],
+.btn[data-variant="secondary"] {
+    background: linear-gradient(135deg,
+        var(--btn-secondary-bg-start),
+        var(--btn-secondary-bg-end));
+    color: var(--btn-secondary-text);
+    border: 1px solid var(--btn-secondary-border);
+    --btn-shadow-color: var(--btn-secondary-shadow-color);
+    --btn-shadow-color-2: rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 2px 8px var(--btn-shadow-color),
+        0 4px 16px var(--btn-shadow-color-2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-glass-base.btn-secondary:hover,
+.btn.btn-secondary:hover,
+.btn-glass-base[data-variant="secondary"]:hover,
+.btn[data-variant="secondary"]:hover {
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 1),
+        rgba(255, 255, 255, 0.9));
+    border-color: rgba(0, 0, 0, 0.12);
+}
+
+/* Danger - 紅色漸層 */
+.btn-glass-base.btn-danger,
+.btn.btn-danger,
+.btn-glass-base[data-variant="danger"],
+.btn[data-variant="danger"] {
+    background: linear-gradient(135deg,
+        var(--btn-danger-bg-start),
+        var(--btn-danger-bg-end));
+    color: var(--btn-danger-text);
+    --btn-shadow-color: var(--btn-danger-shadow-color);
+    --btn-shadow-color-2: var(--btn-danger-shadow-color-2);
+}
+
+.btn-glass-base.btn-danger:hover,
+.btn.btn-danger:hover,
+.btn-glass-base[data-variant="danger"]:hover,
+.btn[data-variant="danger"]:hover {
+    background: linear-gradient(135deg,
+        var(--btn-danger-hover-bg-start),
+        var(--btn-danger-hover-bg-end));
+}
+
+/* Success - 綠色漸層 */
+.btn-glass-base.btn-success,
+.btn.btn-success,
+.btn-glass-base[data-variant="success"],
+.btn[data-variant="success"] {
+    background: linear-gradient(135deg,
+        var(--btn-success-bg-start),
+        var(--btn-success-bg-end));
+    color: var(--btn-success-text);
+    --btn-shadow-color: var(--btn-success-shadow-color);
+    --btn-shadow-color-2: var(--btn-success-shadow-color-2);
+}
+
+.btn-glass-base.btn-success:hover,
+.btn.btn-success:hover,
+.btn-glass-base[data-variant="success"]:hover,
+.btn[data-variant="success"]:hover {
+    background: linear-gradient(135deg,
+        var(--btn-success-hover-bg-start),
+        var(--btn-success-hover-bg-end));
+}
+
+/* Ghost - 透明玻璃 */
+.btn-glass-base.btn-ghost,
+.btn.btn-ghost,
+.btn-glass-base[data-variant="ghost"],
+.btn[data-variant="ghost"] {
+    background: linear-gradient(135deg,
+        var(--btn-ghost-bg-start),
+        var(--btn-ghost-bg-end));
+    color: var(--btn-ghost-text);
+    border: 1px solid var(--btn-ghost-border);
+    --btn-shadow-color: var(--btn-ghost-shadow-color);
+    --btn-shadow-color-2: rgba(0, 0, 0, 0.02);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.btn-glass-base.btn-ghost:hover,
+.btn.btn-ghost:hover,
+.btn-glass-base[data-variant="ghost"]:hover,
+.btn[data-variant="ghost"]:hover {
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.15),
+        rgba(255, 255, 255, 0.08));
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+/* Warning - 琥珀色漸層 */
+.btn-glass-base.btn-warning,
+.btn.btn-warning,
+.btn-glass-base[data-variant="warning"],
+.btn[data-variant="warning"] {
+    background: linear-gradient(135deg,
+        var(--btn-warning-bg-start),
+        var(--btn-warning-bg-end));
+    color: var(--btn-warning-text);
+    --btn-shadow-color: var(--btn-warning-shadow-color);
+    --btn-shadow-color-2: var(--btn-warning-shadow-color-2);
+    /* 琥珀色專屬：溫暖的內發光效果 */
+    box-shadow:
+        0 4px 16px var(--btn-shadow-color),
+        0 8px 32px var(--btn-shadow-color-2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+
+.btn-glass-base.btn-warning:hover,
+.btn.btn-warning:hover,
+.btn-glass-base[data-variant="warning"]:hover,
+.btn[data-variant="warning"]:hover {
+    background: linear-gradient(135deg,
+        var(--btn-warning-hover-bg-start),
+        var(--btn-warning-hover-bg-end));
+    /* Hover 時增強琥珀光暈 */
+    box-shadow:
+        0 6px 24px var(--btn-shadow-color),
+        0 12px 48px var(--btn-shadow-color-2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+        0 0 40px rgba(251, 191, 36, 0.2);
+}
+
+/* Warning 按鈕特殊高光 - 溫暖的琥珀色折射 */
+.btn-glass-base.btn-warning::before,
+.btn.btn-warning::before,
+.btn-glass-base[data-variant="warning"]::before,
+.btn[data-variant="warning"]::before {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(255, 255, 255, 0.3) 40%,
+        rgba(251, 191, 36, 0.1) 100%);
+}
+
+/* Info - 天藍色漸層 */
+.btn-glass-base.btn-info,
+.btn.btn-info,
+.btn-glass-base[data-variant="info"],
+.btn[data-variant="info"] {
+    background: linear-gradient(135deg,
+        var(--btn-info-bg-start),
+        var(--btn-info-bg-end));
+    color: var(--btn-info-text);
+    --btn-shadow-color: var(--btn-info-shadow-color);
+    --btn-shadow-color-2: var(--btn-info-shadow-color-2);
+    /* 天藍色專屬：清新的水晶質感 */
+    box-shadow:
+        0 4px 16px var(--btn-shadow-color),
+        0 8px 32px var(--btn-shadow-color-2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn-glass-base.btn-info:hover,
+.btn.btn-info:hover,
+.btn-glass-base[data-variant="info"]:hover,
+.btn[data-variant="info"]:hover {
+    background: linear-gradient(135deg,
+        var(--btn-info-hover-bg-start),
+        var(--btn-info-hover-bg-end));
+    /* Hover 時增強水晶光暈 */
+    box-shadow:
+        0 6px 24px var(--btn-shadow-color),
+        0 12px 48px var(--btn-shadow-color-2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+        0 0 40px rgba(56, 189, 248, 0.25);
+}
+
+/* Info 按鈕特殊高光 - 清新的天空折射 */
+.btn-glass-base.btn-info::before,
+.btn.btn-info::before,
+.btn-glass-base[data-variant="info"]::before,
+.btn[data-variant="info"]::before {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(255, 255, 255, 0.25) 40%,
+        rgba(56, 189, 248, 0.08) 100%);
+}
+
+/* Outline - 透明背景 + 色彩邊框 */
+/* Outline Primary */
+.btn-glass-base.btn-outline-primary,
+.btn.btn-outline-primary,
+.btn-glass-base[data-variant="outline-primary"],
+.btn[data-variant="outline-primary"] {
+    background: linear-gradient(135deg,
+        rgba(59, 130, 246, 0.08),
+        rgba(88, 86, 214, 0.05));
+    color: #60a5fa;
+    border: 2px solid #3b82f6;
+    --btn-shadow-color: rgba(59, 130, 246, 0.15);
+    --btn-shadow-color-2: rgba(59, 130, 246, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-glass-base.btn-outline-primary:hover,
+.btn.btn-outline-primary:hover,
+.btn-glass-base[data-variant="outline-primary"]:hover,
+.btn[data-variant="outline-primary"]:hover {
+    background: linear-gradient(135deg,
+        rgba(59, 130, 246, 0.15),
+        rgba(88, 86, 214, 0.12));
+    border-color: #60a5fa;
+    color: #93c5fd;
+    box-shadow:
+        0 6px 24px rgba(59, 130, 246, 0.2),
+        0 12px 48px rgba(59, 130, 246, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Outline Danger */
+.btn-glass-base.btn-outline-danger,
+.btn.btn-outline-danger,
+.btn-glass-base[data-variant="outline-danger"],
+.btn[data-variant="outline-danger"] {
+    background: linear-gradient(135deg,
+        rgba(255, 69, 58, 0.08),
+        rgba(255, 105, 97, 0.05));
+    color: #fca5a5;
+    border: 2px solid #ff453a;
+    --btn-shadow-color: rgba(255, 69, 58, 0.15);
+    --btn-shadow-color-2: rgba(255, 69, 58, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-glass-base.btn-outline-danger:hover,
+.btn.btn-outline-danger:hover,
+.btn-glass-base[data-variant="outline-danger"]:hover,
+.btn[data-variant="outline-danger"]:hover {
+    background: linear-gradient(135deg,
+        rgba(255, 69, 58, 0.15),
+        rgba(255, 105, 97, 0.12));
+    border-color: #ff6961;
+    color: #fecaca;
+    box-shadow:
+        0 6px 24px rgba(255, 69, 58, 0.2),
+        0 12px 48px rgba(255, 69, 58, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Outline Success */
+.btn-glass-base.btn-outline-success,
+.btn.btn-outline-success,
+.btn-glass-base[data-variant="outline-success"],
+.btn[data-variant="outline-success"] {
+    background: linear-gradient(135deg,
+        rgba(48, 209, 88, 0.08),
+        rgba(50, 215, 75, 0.05));
+    color: #6ee7b7;
+    border: 2px solid #30d158;
+    --btn-shadow-color: rgba(48, 209, 88, 0.15);
+    --btn-shadow-color-2: rgba(48, 209, 88, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-glass-base.btn-outline-success:hover,
+.btn.btn-outline-success:hover,
+.btn-glass-base[data-variant="outline-success"]:hover,
+.btn[data-variant="outline-success"]:hover {
+    background: linear-gradient(135deg,
+        rgba(48, 209, 88, 0.15),
+        rgba(50, 215, 75, 0.12));
+    border-color: #3ee065;
+    color: #a7f3d0;
+    box-shadow:
+        0 6px 24px rgba(48, 209, 88, 0.2),
+        0 12px 48px rgba(48, 209, 88, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Outline Warning */
+.btn-glass-base.btn-outline-warning,
+.btn.btn-outline-warning,
+.btn-glass-base[data-variant="outline-warning"],
+.btn[data-variant="outline-warning"] {
+    background: linear-gradient(135deg,
+        rgba(251, 191, 36, 0.08),
+        rgba(245, 158, 11, 0.05));
+    color: #fcd34d;
+    border: 2px solid #fbbf24;
+    --btn-shadow-color: rgba(251, 191, 36, 0.15);
+    --btn-shadow-color-2: rgba(251, 191, 36, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-glass-base.btn-outline-warning:hover,
+.btn.btn-outline-warning:hover,
+.btn-glass-base[data-variant="outline-warning"]:hover,
+.btn[data-variant="outline-warning"]:hover {
+    background: linear-gradient(135deg,
+        rgba(251, 191, 36, 0.15),
+        rgba(245, 158, 11, 0.12));
+    border-color: #fcd34d;
+    color: #fde68a;
+    box-shadow:
+        0 6px 24px rgba(251, 191, 36, 0.2),
+        0 12px 48px rgba(251, 191, 36, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Outline Info */
+.btn-glass-base.btn-outline-info,
+.btn.btn-outline-info,
+.btn-glass-base[data-variant="outline-info"],
+.btn[data-variant="outline-info"] {
+    background: linear-gradient(135deg,
+        rgba(56, 189, 248, 0.08),
+        rgba(14, 165, 233, 0.05));
+    color: #7dd3fc;
+    border: 2px solid #38bdf8;
+    --btn-shadow-color: rgba(56, 189, 248, 0.15);
+    --btn-shadow-color-2: rgba(56, 189, 248, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-glass-base.btn-outline-info:hover,
+.btn.btn-outline-info:hover,
+.btn-glass-base[data-variant="outline-info"]:hover,
+.btn[data-variant="outline-info"]:hover {
+    background: linear-gradient(135deg,
+        rgba(56, 189, 248, 0.15),
+        rgba(14, 165, 233, 0.12));
+    border-color: #7dd3fc;
+    color: #bae6fd;
+    box-shadow:
+        0 6px 24px rgba(56, 189, 248, 0.2),
+        0 12px 48px rgba(56, 189, 248, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Outline 按鈕特殊效果 - 邊框流光 */
+.btn-glass-base.btn-outline-primary::after,
+.btn.btn-outline-primary::after,
+.btn-glass-base.btn-outline-danger::after,
+.btn.btn-outline-danger::after,
+.btn-glass-base.btn-outline-success::after,
+.btn.btn-outline-success::after,
+.btn-glass-base.btn-outline-warning::after,
+.btn.btn-outline-warning::after,
+.btn-glass-base.btn-outline-info::after,
+.btn.btn-outline-info::after,
+.btn-glass-base[data-variant^="outline-"]::after,
+.btn[data-variant^="outline-"]::after {
+    opacity: 0;
+    background: radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.3) 0%,
+        transparent 70%
+    );
+    transition: opacity var(--transition-normal);
+}
+
+.btn-glass-base.btn-outline-primary:hover::after,
+.btn.btn-outline-primary:hover::after,
+.btn-glass-base.btn-outline-danger:hover::after,
+.btn.btn-outline-danger:hover::after,
+.btn-glass-base.btn-outline-success:hover::after,
+.btn.btn-outline-success:hover::after,
+.btn-glass-base.btn-outline-warning:hover::after,
+.btn.btn-outline-warning:hover::after,
+.btn-glass-base.btn-outline-info:hover::after,
+.btn.btn-outline-info:hover::after,
+.btn-glass-base[data-variant^="outline-"]:hover::after,
+.btn[data-variant^="outline-"]:hover::after {
+    opacity: 0.4;
+}
+
+/* ============================================
+   6. 尺寸修飾類別
+   ============================================ */
+
+/* 小尺寸 */
+.btn-glass-base.btn-sm,
+.btn.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+    border-radius: var(--radius-sm);
+}
+
+.btn-glass-base.btn-sm::before,
+.btn.btn-sm::before {
+    height: 45%;
+}
+
+.btn-glass-base.btn-sm:hover,
+.btn.btn-sm:hover {
+    transform: translateY(-2px);
+}
+
+/* 中尺寸（預設，已在基礎類別定義） */
+.btn-glass-base.btn-md,
+.btn.btn-md {
+    padding: 10px 18px;
+    font-size: 0.9375rem;
+}
+
+/* 大尺寸 */
+.btn-glass-base.btn-lg,
+.btn.btn-lg {
+    padding: 14px 24px;
+    font-size: 1rem;
+    border-radius: var(--radius-lg);
+}
+
+.btn-glass-base.btn-lg::before,
+.btn.btn-lg::before {
+    height: 65%;
+}
+
+/* ============================================
+   7. 圓形按鈕
+   ============================================ */
+
+.btn-glass-base.btn-circle,
+.btn.btn-circle {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: var(--radius-full);
+}
+
+.btn-glass-base.btn-circle.btn-sm,
+.btn.btn-circle.btn-sm {
+    width: 32px;
+    height: 32px;
+}
+
+.btn-glass-base.btn-circle.btn-lg,
+.btn.btn-circle.btn-lg {
+    width: 48px;
+    height: 48px;
+}
+
+/* 圓形按鈕特殊高光 */
+.btn-glass-base.btn-circle::before,
+.btn.btn-circle::before {
+    left: 15%;
+    right: 15%;
+    height: 50%;
+    border-radius: 50% 50% 50% 50% / 100% 100% 0 0;
+}
+
+.btn-glass-base.btn-circle::after,
+.btn.btn-circle::after {
+    background: radial-gradient(
+        ellipse at top,
+        rgba(255, 255, 255, 0.4) 0%,
+        transparent 60%
+    );
+}
+
+.btn-glass-base.btn-circle:hover,
+.btn.btn-circle:hover {
+    transform: scale(1.08) translateY(-1px);
+}
+
+.btn-glass-base.btn-circle:active,
+.btn.btn-circle:active {
+    transform: scale(1) translateY(0);
+}
+
+/* ============================================
+   8. 圖標按鈕（帶文字）
+   ============================================ */
+
+.btn-glass-base.btn-icon,
+.btn.btn-icon {
+    gap: var(--spacing-sm);
+}
+
+.btn-glass-base.btn-icon svg,
+.btn.btn-icon svg,
+.btn-glass-base.btn-icon i,
+.btn.btn-icon i {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   9. 按鈕群組
+   ============================================ */
+
+.btn-group {
+    display: inline-flex;
+    gap: var(--spacing-xs);
+}
+
+.btn-group-attached {
+    display: inline-flex;
+}
+
+/* 按鈕群組內的按鈕樣式 */
+.btn-group-attached .btn-glass-base,
+.btn-group-attached .btn {
+    border-radius: 0;
+    margin-left: -1px;
+}
+
+.btn-group-attached .btn-glass-base:first-child,
+.btn-group-attached .btn:first-child {
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    margin-left: 0;
+}
+
+.btn-group-attached .btn-glass-base:last-child,
+.btn-group-attached .btn:last-child {
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* ============================================
+   10. 載入狀態
+   ============================================ */
+
+.btn-glass-base.btn-loading,
+.btn.btn-loading {
+    pointer-events: none;
+    position: relative;
+}
+
+.btn-glass-base.btn-loading::after,
+.btn.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: btn-spin 0.6s linear infinite;
+    opacity: 1;
+    background: none;
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   11. 相容性：向後兼容舊類別
+   ============================================ */
+
+/*
+ * 向後相容性說明：
+ * 所有選擇器已更新為同時支援 .btn-glass-base 和 .btn
+ * 現有的 JSX 使用 btn btn-primary 等類別會自動獲得 Liquid Glass 效果
+ */
+
+/* ============================================
+   12. Dark Mode 支援
+   ============================================
+   注意：Dark Mode 按鈕變數已移至 foundation/variables.css 統一管理
+   此處不再重複定義，避免 @layer 環境下的變數覆蓋問題
+   ============================================ */
+
+/* ============================================
+   13. 極光按鈕 - Aurora Button
+   ============================================ */
+
+/* 極光流動按鈕 - 背景色彩持續流動 */
+.btn-glass-base.btn-aurora,
+.btn.btn-aurora,
+.btn-glass-base[data-variant="aurora"],
+.btn[data-variant="aurora"] {
+    background: var(--gradient-aurora);
+    background-size: 200% 200%;
+    color: #ffffff;
+    border: none;
+    --btn-shadow-color: rgba(0, 229, 204, 0.35);
+    --btn-shadow-color-2: rgba(102, 126, 234, 0.25);
+    animation: aurora-flow 8s ease infinite;
+}
+
+/* hover 時加速流動 */
+.btn-glass-base.btn-aurora:hover,
+.btn.btn-aurora:hover,
+.btn-glass-base[data-variant="aurora"]:hover,
+.btn[data-variant="aurora"]:hover {
+    animation: aurora-flow 3s ease infinite;
+    filter: brightness(1.15) saturate(1.2);
+}
+
+/* 極光按鈕特殊的玻璃折射層 */
+.btn-glass-base.btn-aurora::before,
+.btn.btn-aurora::before {
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        transparent 100%);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.btn-glass-base.btn-aurora:hover::before,
+.btn.btn-aurora:hover::before {
+    opacity: 1;
+}
+
+/* 極光按鈕的色彩光暈（hover 顯示）*/
+.btn-glass-base.btn-aurora::after,
+.btn.btn-aurora::after {
+    background: radial-gradient(
+        circle at center,
+        rgba(0, 229, 204, 0.4) 0%,
+        rgba(0, 191, 255, 0.3) 25%,
+        rgba(102, 126, 234, 0.2) 50%,
+        transparent 70%
+    );
+    filter: blur(12px);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    z-index: -1;
+    inset: -20px;
+}
+
+.btn-glass-base.btn-aurora:hover::after,
+.btn.btn-aurora:hover::after {
+    opacity: 0.6;
+}
+
+/* 極光小尺寸 */
+.btn-glass-base.btn-aurora.btn-sm,
+.btn.btn-aurora.btn-sm {
+    animation: aurora-flow 6s ease infinite;
+}
+
+.btn-glass-base.btn-aurora.btn-sm:hover,
+.btn.btn-aurora.btn-sm:hover {
+    animation: aurora-flow 2.5s ease infinite;
+}
+
+/* 極光大尺寸 */
+.btn-glass-base.btn-aurora.btn-lg,
+.btn.btn-aurora.btn-lg {
+    animation: aurora-flow 10s ease infinite;
+}
+
+.btn-glass-base.btn-aurora.btn-lg:hover,
+.btn.btn-aurora.btn-lg:hover {
+    animation: aurora-flow 3.5s ease infinite;
+}
+
+/* ============================================
+   14. 響應式優化
+   ============================================ */
+
+@media (max-width: 768px) {
+    .btn-glass-base,
+    .btn {
+        /* 移動裝置觸控優化 */
+        min-height: 44px;
+        padding: 12px 16px;
+    }
+
+    .btn-glass-base.btn-sm,
+    .btn.btn-sm {
+        min-height: 36px;
+        padding: 8px 12px;
+    }
+
+    /* 移動裝置上簡化極光動畫 */
+    .btn-glass-base.btn-aurora,
+    .btn.btn-aurora {
+        animation: none;
+        background-size: 100% 100%;
+    }
+
+    .btn-glass-base.btn-aurora:hover,
+    .btn.btn-aurora:hover {
+        animation: none;
+    }
+
+    .btn-glass-base.btn-aurora::after,
+    .btn.btn-aurora::after {
+        display: none;
+    }
+
+    /* 簡化動畫 */
+    @media (prefers-reduced-motion: reduce) {
+        .btn-glass-base,
+        .btn {
+            transition: none;
+        }
+
+        .btn-glass-base:hover,
+        .btn:hover {
+            transform: none;
+        }
+
+        .btn-glass-base.btn-aurora,
+        .btn.btn-aurora {
+            animation: none;
+        }
+    }
+}
