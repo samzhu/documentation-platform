@@ -58,6 +58,23 @@ backend/
 ../gradlew test --tests "YourTest" --continuous
 ```
 
+## 測試報告
+
+Gradle 內建 HTML 測試報告，執行測試後自動產生。
+
+| 測試類型 | 執行指令 | 報告路徑 |
+|----------|----------|----------|
+| 單元測試 | `./gradlew test` | `build/reports/tests/test/index.html` |
+| 整合測試 | `./gradlew integrationTest` | `build/reports/tests/integrationTest/index.html` |
+
+```bash
+# 執行測試並開啟報告（macOS）
+./gradlew integrationTest && open build/reports/tests/integrationTest/index.html
+./gradlew test && open build/reports/tests/test/index.html
+```
+
+報告內容：總測試數、成功率、依 Package/Class 分類結果、失敗測試的 stack trace。
+
 ## 配置檔案
 
 | 檔案 | 說明 |
