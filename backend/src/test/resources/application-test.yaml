@@ -1,6 +1,11 @@
 # 測試環境配置
 # 使用 spring.autoconfigure.exclude 完全排除 Spring AI 自動配置
 
+# 停用 OAuth2，使用開發模式的安全配置
+platform:
+  features:
+    oauth2: false
+
 spring:
   autoconfigure:
     exclude:

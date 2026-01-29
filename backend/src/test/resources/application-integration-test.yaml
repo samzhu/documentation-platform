@@ -1,0 +1,30 @@
+# 整合測試專用配置
+# 使用真實 Google GenAI EmbeddingModel API
+# API Key 從 config/application-secrets.properties 載入
+# 執行方式：./gradlew integrationTest
+
+# 停用 OAuth2，使用 @WithMockUser 進行安全驗證
+platform:
+  features:
+    oauth2: false
+
+spring:
+  config:
+    # 導入 secrets 配置檔（與 application-dev.yaml 相同模式）
+    import: "optional:file:./config/application-secrets.properties"
+
+  # 資料庫配置由 Testcontainers 自動提供
+  datasource:
+    initialization-mode: always
+
+  # 停用 Spring Boot DevTools 在測試環境
+  devtools:
+    restart:
+      enabled: false
+
+# 日誌配置
+logging:
+  level:
+    org.springframework: WARN
+    org.testcontainers: INFO
+    org.springframework.ai: DEBUG

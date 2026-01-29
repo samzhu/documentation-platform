@@ -71,6 +71,7 @@ dependencies {
 
 	// 測試依賴
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
 	testImplementation 'org.springframework.ai:spring-ai-spring-boot-testcontainers'
@@ -99,11 +100,18 @@ tasks.named('test') {
 }
 
 // 整合測試（需要網路、Docker 或外部服務）
+// 使用真實 Google AI API 進行向量嵌入測試
 tasks.register('integrationTest', Test) {
 	description = '執行整合測試（@Tag("integration")）'
 	group = 'verification'
 	testClassesDirs = sourceSets.test.output.classesDirs
 	classpath = sourceSets.test.runtimeClasspath
+
+	// 設定整合測試專用 Profile
+	systemProperty 'spring.profiles.active', 'integration-test'
+	// 載入 secrets 配置檔（包含 Google AI API Key）
+	systemProperty 'spring.config.additional-location', 'file:./config/'
+
 	useJUnitPlatform {
 		includeTags 'integration'
 	}
@@ -111,6 +119,38 @@ tasks.register('integrationTest', Test) {
 	testLogging {
 		events "passed", "skipped", "failed"
 		showStandardStreams = true
+	}
+}
+
+// ==================== Docker Image 建構配置 ====================
+// 使用 Spring Boot Buildpacks 建構 OCI Image
+// 執行：./gradlew bootBuildImage --publishImage
+// 本地測試：./gradlew bootBuildImage --imageName=documentation-platform:local
+
+tasks.named('bootBuildImage') {
+	// Image 名稱由 CI/CD 透過 --imageName 參數傳入
+	// 預設名稱用於本地開發測試
+	imageName = "documentation-platform:${project.version}"
+
+	// 使用 Paketo Buildpacks (Jammy base image)
+	builder = 'paketobuildpacks/builder-jammy-base:latest'
+
+	// 設定 JVM 版本與記憶體配置
+	environment = [
+		'BP_JVM_VERSION': '25',
+		'BPE_DELIM_JAVA_TOOL_OPTIONS': ' ',
+		'BPE_APPEND_JAVA_TOOL_OPTIONS': '-XX:+UseZGC -XX:+ZGenerational'
+	]
+
+	// 啟用 Docker publish（需搭配 --publishImage 使用）
+	publish = true
+
+	// Docker registry 認證（從環境變數讀取，用於 CI/CD）
+	docker {
+		publishRegistry {
+			username = System.getenv('DOCKER_USERNAME') ?: ''
+			password = System.getenv('DOCKER_PASSWORD') ?: ''
+		}
 	}
 }
 
