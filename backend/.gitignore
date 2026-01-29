@@ -46,6 +46,7 @@ config/application-secrets.properties
 
 ### Frontend Build Output ###
 # 前端建構產物（由 npm run build 產生，不納入版控）
-src/main/resources/static/
+src/main/resources/static/*
+!src/main/resources/static/.gitkeep
 
 
