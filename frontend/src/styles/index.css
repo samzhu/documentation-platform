@@ -100,7 +100,8 @@
 @import url('./components/setup.css') layer(components);
 
 /* ===== Pages 頁面層 ===== */
-/* 頁面專用樣式：文件庫詳情、API Keys、文件詳情等 */
+/* 頁面專用樣式：Landing、文件庫詳情、API Keys、文件詳情等 */
+@import url('./pages/landing.css') layer(components);
 @import url('./pages/library-detail.css') layer(components);
 @import url('./pages/api-keys.css') layer(components);
 @import url('./pages/document-detail.css') layer(components);

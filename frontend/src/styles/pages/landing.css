@@ -1,0 +1,370 @@
+/**
+ * Landing Page 樣式
+ * 沉浸式深空體驗 + Apple Liquid Glass 材質設計
+ *
+ * 設計特色：
+ * - 深空漸層背景（#0a0e27 → #151b3d → #1f2849）
+ * - 三層極光光球裝飾（teal、purple、cyan）
+ * - Variable Font 字重系統（Epilogue + Inter）
+ * - 三層景深玻璃卡片效果
+ * - 豐富的進入動畫和微交互
+ */
+
+@layer components {
+  /* ===== Landing Page 容器 ===== */
+  .landing-page {
+    position: relative;
+    min-height: 100vh;
+    background: var(--bg-space-gradient);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ===== 深空背景層 ===== */
+  .landing-background {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* 極光光球裝飾 - 浮動的模糊光球 */
+  .aurora-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    animation: aurora-drift 12s ease-in-out infinite;
+  }
+
+  /* 極光光球 1 - 青綠色（左上角） */
+  .aurora-orb-1 {
+    width: 600px;
+    height: 600px;
+    background: var(--color-aurora-teal);
+    top: -20%;
+    left: -10%;
+    animation-delay: 0s;
+  }
+
+  /* 極光光球 2 - 紫色（右下角） */
+  .aurora-orb-2 {
+    width: 500px;
+    height: 500px;
+    background: var(--color-aurora-purple);
+    bottom: -15%;
+    right: -5%;
+    animation-delay: -4s;
+  }
+
+  /* 極光光球 3 - 青藍色（中右側） */
+  .aurora-orb-3 {
+    width: 400px;
+    height: 400px;
+    background: var(--color-aurora-cyan);
+    top: 50%;
+    left: 60%;
+    transform: translateY(-50%);
+    animation-delay: -8s;
+  }
+
+  /* 極光漂浮動畫 - 緩慢的位移和透明度變化 */
+  @keyframes aurora-drift {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.4;
+    }
+    25% {
+      transform: translate(30px, -20px) scale(1.05);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translate(-20px, 30px) scale(0.95);
+      opacity: 0.35;
+    }
+    75% {
+      transform: translate(15px, 15px) scale(1.02);
+      opacity: 0.45;
+    }
+  }
+
+  /* 深空網格覆蓋層 - 微妙的網格紋理 */
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.5;
+  }
+
+  /* ===== 內容層 ===== */
+  .landing-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    max-width: 1200px;
+    width: 100%;
+  }
+
+  /* ===== Hero 區塊 ===== */
+  .landing-hero {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+    animation: glass-rebuild 600ms var(--ease-out-expo) 200ms backwards;
+  }
+
+  /* Hero 主標題 */
+  .hero-title {
+    font-family: var(--font-heading);
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: var(--font-weight-light);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-text-primary);
+  }
+
+  /* 標題每行獨立顯示 */
+  .hero-title-line {
+    display: block;
+  }
+
+  /* 標題強調部分 - 極光漸層文字 */
+  .hero-title-accent {
+    background: var(--gradient-aurora);
+    background-size: 200% 200%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: aurora-flow 6s ease infinite;
+  }
+
+  /* Hero 副標題 */
+  .hero-subtitle {
+    font-family: var(--font-text);
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.6;
+    color: var(--ink-cloud);
+    max-width: 500px;
+    margin: 0 auto var(--spacing-xl);
+    animation: fadeInUp 600ms var(--ease-out-expo) 400ms backwards;
+  }
+
+  /* Hero CTA 按鈕容器 */
+  .hero-cta {
+    animation: fadeInUp 600ms var(--ease-out-expo) 600ms backwards;
+  }
+
+  /* CTA 按鈕內的圖示 */
+  .hero-cta svg {
+    transition: transform var(--transition-fast);
+  }
+
+  .hero-cta:hover svg {
+    transform: translateX(4px);
+  }
+
+  /* ===== 功能卡片區塊 ===== */
+  .landing-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    max-width: 1000px;
+    width: 100%;
+  }
+
+  /* 功能卡片 - 三層景深玻璃效果 */
+  .feature-card {
+    padding: var(--spacing-xl);
+    text-align: left;
+    animation: fadeInUp 600ms var(--ease-out-expo) backwards;
+  }
+
+  /* 卡片交錯進入動畫 */
+  .feature-card:nth-child(1) { animation-delay: 800ms; }
+  .feature-card:nth-child(2) { animation-delay: 900ms; }
+  .feature-card:nth-child(3) { animation-delay: 1000ms; }
+
+  /* 功能圖示容器 */
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur-sm));
+    -webkit-backdrop-filter: blur(var(--blur-sm));
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-aurora-cyan);
+    transition: all var(--transition-normal);
+  }
+
+  /* 卡片 hover 時圖示效果 */
+  .feature-card:hover .feature-icon {
+    background: rgba(0, 184, 230, 0.15);
+    border-color: var(--color-aurora-cyan);
+    box-shadow: 0 0 20px rgba(0, 184, 230, 0.3);
+  }
+
+  /* 功能卡片標題 */
+  .feature-card h3 {
+    font-family: var(--font-heading);
+    font-size: 1.125rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--ink-black);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  /* 功能卡片描述 */
+  .feature-card p {
+    font-family: var(--font-text);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--ink-cloud);
+    margin: 0;
+  }
+
+  /* ===== 認證載入狀態 ===== */
+  .auth-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: var(--spacing-md);
+    background: var(--bg-space-gradient);
+  }
+
+  .auth-loading p {
+    color: var(--ink-cloud);
+    font-size: 1rem;
+  }
+
+  /* 載入動畫 */
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--glass-border);
+    border-top-color: var(--color-aurora-cyan);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  /* ===== 響應式設計 ===== */
+
+  /* 平板電腦 */
+  @media (max-width: 1024px) {
+    .landing-content {
+      padding: var(--spacing-lg);
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+    }
+
+    .aurora-orb-1 {
+      width: 400px;
+      height: 400px;
+    }
+
+    .aurora-orb-2 {
+      width: 350px;
+      height: 350px;
+    }
+
+    .aurora-orb-3 {
+      width: 300px;
+      height: 300px;
+    }
+  }
+
+  /* 手機版 */
+  @media (max-width: 768px) {
+    .landing-page {
+      padding: var(--spacing-md);
+    }
+
+    .landing-content {
+      padding: var(--spacing-md);
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 10vw, 3rem);
+    }
+
+    .hero-subtitle {
+      font-size: 1rem;
+      padding: 0 var(--spacing-sm);
+    }
+
+    .landing-features {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-md);
+    }
+
+    .feature-card {
+      padding: var(--spacing-lg);
+    }
+
+    /* 簡化極光光球 - 減少數量和大小 */
+    .aurora-orb {
+      filter: blur(60px);
+      opacity: 0.3;
+    }
+
+    .aurora-orb-1 {
+      width: 300px;
+      height: 300px;
+      top: -15%;
+      left: -20%;
+    }
+
+    .aurora-orb-2 {
+      width: 250px;
+      height: 250px;
+      bottom: -10%;
+      right: -15%;
+    }
+
+    .aurora-orb-3 {
+      display: none; /* 手機版隱藏第三個光球 */
+    }
+
+    /* 簡化網格 */
+    .grid-overlay {
+      background-size: 40px 40px;
+      opacity: 0.3;
+    }
+  }
+
+  /* ===== 減少動態偏好設定 ===== */
+  @media (prefers-reduced-motion: reduce) {
+    .aurora-orb {
+      animation: none;
+    }
+
+    .hero-title-accent {
+      animation: none;
+    }
+
+    .landing-hero,
+    .hero-subtitle,
+    .hero-cta,
+    .feature-card {
+      animation: none;
+      opacity: 1;
+    }
+  }
+}

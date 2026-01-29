@@ -11,6 +11,7 @@ import Header from './components/Header';
 import RequireAuth from './components/RequireAuth';
 
 // 頁面組件
+import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Libraries from './pages/Libraries';
 import LibraryForm from './pages/LibraryForm';
@@ -27,7 +28,8 @@ import Callback from './pages/Callback';
 
 // 頁面標題對應表
 const pageTitles = {
-  '/': 'Dashboard',
+  '/': 'Home',
+  '/dashboard': 'Dashboard',
   '/libraries': 'Libraries',
   '/libraries/new': 'New Library',
   '/search': 'Search',
@@ -46,6 +48,9 @@ const pageTitles = {
 function AppContent() {
   const { loading } = useAuth();
   const location = useLocation();
+
+  // 判斷是否為全螢幕頁面（不顯示 Sidebar 和 Header）
+  const isFullscreenPage = ['/', '/callback'].includes(location.pathname);
 
   /**
    * 取得目前頁面標題
@@ -77,6 +82,17 @@ function AppContent() {
     return <div className="app-loading">Loading...</div>;
   }
 
+  // 全螢幕頁面（Landing、Callback）：不顯示 Sidebar 和 Header
+  if (isFullscreenPage) {
+    return (
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/callback" element={<Callback />} />
+      </Routes>
+    );
+  }
+
+  // 一般頁面：顯示完整佈局
   return (
     <div className="app-container">
       {/* 側邊欄導航 */}
@@ -90,13 +106,14 @@ function AppContent() {
         {/* 內容區 */}
         <main className="app-content">
           <Routes>
-            {/* 公開頁面 */}
-            <Route path="/" element={<Dashboard />} />
+            {/* 公開頁面 - 不需要認證 */}
             <Route path="/search" element={<Search />} />
-            <Route path="/callback" element={<Callback />} />
             <Route path="/setup" element={<Setup />} />
 
-            {/* 需要認證的頁面 */}
+            {/* 受保護頁面 - 需要認證 */}
+            <Route path="/dashboard" element={
+              <RequireAuth><Dashboard /></RequireAuth>
+            } />
             <Route path="/libraries" element={
               <RequireAuth><Libraries /></RequireAuth>
             } />

@@ -23,15 +23,22 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      // OAuth2 認證相關端點代理
+      '/oauth2': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/login/oauth2': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
     },
   },
 
   // 建構配置
   build: {
-    // 輸出到 Spring Boot 的 static 目錄
-    outDir: path.resolve(__dirname, '../src/main/resources/static'),
-    // 清空輸出目錄
-    emptyOutDir: true,
+    // 使用預設的 dist 目錄，手動複製到 Spring Boot static 目錄
+    // 這樣可以保持乾淨的建構流程
     // 不產生 source map（生產環境）
     sourcemap: false,
     // 資源內聯閾值

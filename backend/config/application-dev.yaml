@@ -11,6 +11,26 @@ spring:
     # 引入本地機敏設定檔（optional: 檔案不存在也不報錯）
     import: "optional:file:./config/application-secrets.properties"
 
+  # ----- OAuth2 配置（僅在 platform.features.oauth2=true 時生效） -----
+  security:
+    oauth2:
+      # OAuth2 Client 配置（用於登入重導向）
+      client:
+        registration:
+          omnihubs:
+            client-id: ${platform-oauth2-client-id}
+            client-secret: ${platform-oauth2-client-secret}
+            scope: openid,profile
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          omnihubs:
+            issuer-uri: ${platform-oauth2-issuer-uri}
+      # Resource Server 配置（用於 API JWT 驗證）
+      resourceserver:
+        jwt:
+          issuer-uri: ${platform-oauth2-issuer-uri}
+
   # ----- 靜態資源開發設定 -----
   # 從原始碼目錄讀取，修改後重整瀏覽器即可
   web:
@@ -33,9 +53,13 @@ logging:
   level:
     io.github.samzhu.documentation.platform: DEBUG
     org.springframework.ai: DEBUG
+    org.springframework.security: DEBUG
 
 # ----- 功能開關配置 -----
-# 開發環境關閉併發限制，方便測試
+# 開發環境預設關閉 OAuth2，方便功能測試
+# 啟用 OAuth2 時，使用 Mock OAuth2 Server（compose.yaml 中已配置）
 platform:
   features:
     concurrency-limit: false
+    oauth2: true  # ⬅️ 啟用 OAuth2 Stateless 認證流程
+                  # 使用 Mock OAuth2 Server (http://localhost:8090)

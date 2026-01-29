@@ -18,14 +18,9 @@ spring:
     virtual:
       enabled: true  # Java 21+ Virtual Threads
 
-  # ----- OAuth2 Resource Server 配置 -----
-  # OAuth2 Client 配置請使用 oauth2 profile（見 application-oauth2.yaml）
-  security:
-    oauth2:
-      # Resource Server 配置（驗證 JWT）
-      resourceserver:
-        jwt:
-          issuer-uri: ${platform-oauth2-issuer-uri:https://auth-dev.omnihubs.cloud/}
+  # ----- OAuth2 配置 -----
+  # OAuth2 配置已移至 application-dev.yaml
+  # 透過 platform.features.oauth2 開關控制是否啟用
 
   # ----- 資料庫配置 -----
   # 使用統一屬性名稱，各環境可覆蓋

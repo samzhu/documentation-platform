@@ -20,7 +20,7 @@ const navGroups = [
   {
     label: 'Main',
     items: [
-      { path: '/', label: 'Dashboard', icon: DashboardIcon },
+      { path: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
       { path: '/libraries', label: 'Libraries', icon: LibraryIcon },
       { path: '/search', label: 'Search', icon: SearchIcon },
       { path: '/sync-history', label: 'Sync Status', icon: SyncIcon },

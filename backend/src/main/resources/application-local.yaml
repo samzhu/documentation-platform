@@ -13,13 +13,6 @@ spring:
       enabled: true
       lifecycle-management: start-and-stop
 
-  # ----- 禁用 OAuth2 自動配置（本地開發） -----
-  # 因為本地沒有 Authorization Server，禁用 OAuth2 Resource Server 自動配置
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
-
 # ----- 本地開發功能開關 -----
-platform:
-  features:
-    oauth2: false  # 本地開發禁用 OAuth2 認證
+# OAuth2 設定由 application-dev.yaml 控制
+# 啟用 OAuth2 測試請在 config/application-dev.yaml 設定 platform.features.oauth2: true

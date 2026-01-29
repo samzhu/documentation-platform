@@ -23,7 +23,11 @@ export default function Callback() {
     try {
       await auth.handleCallback();
       await refreshAuth();
-      navigate('/');
+
+      // 取得儲存的重導向路徑，預設為 /dashboard
+      const redirect = sessionStorage.getItem('auth_redirect') || '#/dashboard';
+      sessionStorage.removeItem('auth_redirect');
+      navigate(redirect.replace('#', '') || '/dashboard');
     } catch (err) {
       console.error('OAuth2 回調處理失敗:', err);
       setError('登入失敗，請重試');

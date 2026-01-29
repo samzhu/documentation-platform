@@ -29,6 +29,15 @@ async function request(endpoint, options = {}) {
   try {
     const response = await fetch(url, config);
 
+    // 處理 401 未授權：Token 過期或無效
+    if (response.status === 401) {
+      console.warn('[API] Token 過期或無效，清除認證狀態');
+      localStorage.removeItem('access_token');
+      // 重導向到首頁觸發重新登入
+      window.location.href = '/#/';
+      throw new Error('認證已過期，請重新登入');
+    }
+
     // 處理無內容回應
     if (response.status === 204) {
       return null;
