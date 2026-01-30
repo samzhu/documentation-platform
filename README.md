@@ -167,6 +167,49 @@ cd backend
 - Backend Guide: `backend/CLAUDE.md`
 - Design System: `frontend/docs/DESIGN_LANGUAGE.md`
 
+## Manual Deployment
+
+Build and run the application locally with OAuth2 authentication.
+
+### Step 1: Build Frontend
+```bash
+cd frontend
+npm run clean       # Clear previous build artifacts
+npm install
+npm run build
+```
+
+### Step 2: Copy Frontend to Backend
+```bash
+rm -rf backend/src/main/resources/static/*
+cp -r frontend/dist/* backend/src/main/resources/static/
+```
+
+### Step 3: Configure Secrets
+Edit `backend/config/application-secrets.properties`:
+```properties
+# Google AI API Key (required)
+platform-google-api-key=your-google-api-key
+
+# OAuth2 Configuration (for production)
+platform-oauth2-issuer-uri=https://your-auth-server.com/realms/your-realm
+platform-oauth2-client-id=your-client-id
+platform-oauth2-client-secret=your-client-secret
+```
+
+### Step 4: Start Backend
+```bash
+cd backend
+./gradlew clean bootRun --no-daemon
+```
+
+### Step 5: Access
+| Service | URL |
+|---------|-----|
+| Application | http://localhost:8080 |
+| API | http://localhost:8080/api |
+| Health Check | http://localhost:8080/actuator/health |
+
 ## Docker Deployment
 
 ### Quick Start

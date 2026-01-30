@@ -192,3 +192,90 @@
     position: relative;
     z-index: 1;
 }
+
+/* ===== 使用者選單容器 ===== */
+.header-user-menu {
+    position: relative;
+}
+
+/* ===== 下拉選單 - Liquid Glass 風格 ===== */
+.header-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: rgba(24, 24, 27, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-lg);
+    box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.4),
+        0 8px 48px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-sm);
+    z-index: 100;
+    animation: dropdown-appear 0.2s ease-out;
+}
+
+@keyframes dropdown-appear {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 用戶資訊區塊 */
+.header-dropdown-user {
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.header-dropdown-name {
+    font-weight: 600;
+    color: var(--ink-black);
+    font-size: 0.9375rem;
+}
+
+.header-dropdown-email {
+    font-size: 0.8125rem;
+    color: var(--ink-gray);
+}
+
+/* 分隔線 */
+.header-dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: var(--spacing-xs) 0;
+}
+
+/* 下拉選單項目 */
+.header-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    background: transparent;
+    color: var(--ink-gray);
+    font-size: 0.875rem;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.header-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--ink-black);
+}
+
+.header-dropdown-item svg {
+    flex-shrink: 0;
+}

@@ -1,5 +1,6 @@
 package io.github.samzhu.documentation.platform.security;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -13,17 +14,20 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * OAuth2 登入成功處理器
+ * OAuth2 登入成功處理器（無狀態 BFF 模式）
  * <p>
  * 登入成功後：
  * 1. 從 OAuth2AuthorizedClientService 取得 access_token
- * 2. 產生一次性交換碼（60 秒有效）
- * 3. 重導向到前端 /#/callback?code=xxx
+ * 2. 將 Token 存入 HttpOnly Cookie（前端 JavaScript 無法讀取）
+ * 3. 重導向到前端 /#/dashboard
+ * </p>
+ * <p>
+ * 安全特性：
+ * - HttpOnly：防止 XSS 攻擊竊取 Token
+ * - Secure：僅透過 HTTPS 傳輸（開發環境可覆寫）
+ * - SameSite=Lax：基本 CSRF 防護
  * </p>
  */
 @Component
@@ -33,19 +37,19 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private static final Logger logger = LoggerFactory.getLogger(OAuth2AuthenticationSuccessHandler.class);
 
     /**
-     * 交換碼有效期（秒）
+     * Token Cookie 名稱
      */
-    private static final int EXCHANGE_CODE_EXPIRE_SECONDS = 60;
+    public static final String TOKEN_COOKIE_NAME = "platform_token";
+
+    /**
+     * Token Cookie 有效期（秒）- 預設 1 小時
+     */
+    private static final int TOKEN_COOKIE_MAX_AGE = 3600;
 
     /**
      * OAuth2 授權客戶端服務
      */
     private final OAuth2AuthorizedClientService authorizedClientService;
-
-    /**
-     * 一次性交換碼存儲（ConcurrentHashMap，生產環境建議使用 Redis）
-     */
-    private final ConcurrentHashMap<String, TokenInfo> exchangeCodes = new ConcurrentHashMap<>();
 
     public OAuth2AuthenticationSuccessHandler(OAuth2AuthorizedClientService authorizedClientService) {
         this.authorizedClientService = authorizedClientService;
@@ -53,6 +57,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
     /**
      * 登入成功處理邏輯
+     * <p>
+     * 將 access_token 存入 HttpOnly Cookie，然後重導向到前端。
+     * </p>
      */
     @Override
     public void onAuthenticationSuccess(
@@ -81,60 +88,53 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             return;
         }
 
-        // 2. 產生一次性交換碼
+        // 2. 取得 access_token
         String accessToken = authorizedClient.getAccessToken().getTokenValue();
-        Instant expiresAt = Instant.now().plusSeconds(EXCHANGE_CODE_EXPIRE_SECONDS);
-        String code = UUID.randomUUID().toString();
 
-        exchangeCodes.put(code, new TokenInfo(accessToken, expiresAt));
+        // 3. 設置 HttpOnly Cookie
+        Cookie tokenCookie = new Cookie(TOKEN_COOKIE_NAME, accessToken);
+        tokenCookie.setHttpOnly(true);  // 防止 XSS 攻擊讀取 Token
+        tokenCookie.setSecure(isSecureRequest(request));  // HTTPS 環境下啟用
+        tokenCookie.setPath("/");  // 全站可用
+        tokenCookie.setMaxAge(TOKEN_COOKIE_MAX_AGE);  // 1 小時有效期
 
-        logger.info("登入成功，產生交換碼: code={}, principalName={}", code, principalName);
+        // 設置 SameSite=Lax 防止 CSRF（透過 Header 方式）
+        // 注意：Jakarta Servlet API 原生不支援 SameSite，需透過 response header
+        String cookieValue = String.format("%s=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=Lax%s",
+                TOKEN_COOKIE_NAME,
+                accessToken,
+                TOKEN_COOKIE_MAX_AGE,
+                isSecureRequest(request) ? "; Secure" : "");
+        response.setHeader("Set-Cookie", cookieValue);
 
-        // 3. 清理過期的交換碼
-        cleanExpiredCodes();
+        logger.info("登入成功，Token 已存入 HttpOnly Cookie: principalName={}", principalName);
 
-        // 4. 重導向到前端 callback 頁面
-        String redirectUrl = "/#/callback?code=" + code;
-        response.sendRedirect(redirectUrl);
+        // 4. 重導向到前端 Dashboard
+        response.sendRedirect("/#/dashboard");
     }
 
     /**
-     * 用交換碼換取 access_token
+     * 判斷是否為安全連線（HTTPS）
      * <p>
-     * 此方法供 AuthController 呼叫。
+     * 考慮反向代理情況（X-Forwarded-Proto header）
      * </p>
-     *
-     * @param code 一次性交換碼
-     * @return access_token，如果 code 無效或過期則返回 null
      */
-    public String exchangeCodeForToken(String code) {
-        TokenInfo tokenInfo = exchangeCodes.remove(code); // 一次性使用，取出後刪除
-
-        if (tokenInfo == null) {
-            logger.warn("交換碼不存在或已使用: code={}", code);
-            return null;
+    private boolean isSecureRequest(HttpServletRequest request) {
+        // 檢查直接連線是否為 HTTPS
+        if (request.isSecure()) {
+            return true;
         }
-
-        if (Instant.now().isAfter(tokenInfo.expiresAt())) {
-            logger.warn("交換碼已過期: code={}", code);
-            return null;
-        }
-
-        logger.info("交換碼驗證成功: code={}", code);
-        return tokenInfo.accessToken();
+        // 檢查反向代理 header
+        String forwardedProto = request.getHeader("X-Forwarded-Proto");
+        return "https".equalsIgnoreCase(forwardedProto);
     }
 
     /**
-     * 清理過期的交換碼
+     * 清除 Token Cookie（用於登出）
      */
-    private void cleanExpiredCodes() {
-        Instant now = Instant.now();
-        exchangeCodes.entrySet().removeIf(entry -> now.isAfter(entry.getValue().expiresAt()));
-    }
-
-    /**
-     * Token 資訊（包含 access_token 和過期時間）
-     */
-    private record TokenInfo(String accessToken, Instant expiresAt) {
+    public static void clearTokenCookie(HttpServletResponse response) {
+        String cookieValue = String.format("%s=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax",
+                TOKEN_COOKIE_NAME);
+        response.setHeader("Set-Cookie", cookieValue);
     }
 }

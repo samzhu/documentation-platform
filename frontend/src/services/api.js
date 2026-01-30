@@ -1,28 +1,30 @@
 /**
- * API 服務
- * 提供與後端 REST API 通訊的方法
+ * API 服務（無狀態 BFF 模式）
+ * <p>
+ * Token 存於 HttpOnly Cookie，由瀏覽器自動管理。
+ * 所有請求使用 credentials: 'include' 讓瀏覽器自動帶上 Cookie。
+ * </p>
  */
-import auth from './auth';
 
 const BASE_URL = '/api';
 
 /**
  * 通用 HTTP 請求方法
- * 自動加入 OAuth2 Bearer Token（如果已登入）
+ * <p>
+ * 使用 credentials: 'include' 讓瀏覽器自動帶上 HttpOnly Cookie。
+ * 不需要手動處理 Authorization Header。
+ * </p>
  */
 async function request(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`;
 
-  // 取得 Access Token（如果已登入）
-  const token = await auth.getAccessToken();
-
   const config = {
     headers: {
       'Content-Type': 'application/json',
-      // 如果有 Token，加入 Authorization Header
-      ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers,
     },
+    // ✅ 重要：讓瀏覽器自動帶上 Cookie（包含 HttpOnly Cookie）
+    credentials: 'include',
     ...options,
   };
 
@@ -31,8 +33,7 @@ async function request(endpoint, options = {}) {
 
     // 處理 401 未授權：Token 過期或無效
     if (response.status === 401) {
-      console.warn('[API] Token 過期或無效，清除認證狀態');
-      localStorage.removeItem('access_token');
+      console.warn('[API] Token 過期或無效');
       // 重導向到首頁觸發重新登入
       window.location.href = '/#/';
       throw new Error('認證已過期，請重新登入');
@@ -56,6 +57,30 @@ async function request(endpoint, options = {}) {
     console.error(`API 請求失敗: ${endpoint}`, error);
     throw error;
   }
+}
+
+// =====================
+// User API（用戶）
+// =====================
+
+/**
+ * 取得當前用戶資訊
+ * <p>
+ * 用於判斷是否已登入，以及取得用戶基本資訊。
+ * </p>
+ */
+export async function getMe() {
+  return request('/me');
+}
+
+/**
+ * 登出
+ * <p>
+ * 清除 Token Cookie。
+ * </p>
+ */
+export async function logout() {
+  return request('/logout', { method: 'POST' });
 }
 
 // =====================
@@ -216,15 +241,26 @@ export async function getStats() {
 
 /**
  * 取得前端配置
- * 包含 OAuth2 啟用狀態等資訊
+ * <p>
+ * 包含 OAuth2 啟用狀態等資訊。
+ * 注意：此為公開端點，使用 credentials: 'include' 不影響。
+ * </p>
  */
 export async function getConfig() {
-  return request('/config');
+  const response = await fetch('/api/config', {
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw new Error(`HTTP 錯誤: ${response.status}`);
+  }
+  return response.json();
 }
 
 /**
  * 取得系統設定
+ * <p>
  * 包含 Feature Flags、同步設定、系統資訊
+ * </p>
  */
 export async function getSettings() {
   return request('/config/settings');
@@ -317,6 +353,8 @@ export async function batchSync(libraryId, data) {
 
 // 匯出所有 API 方法
 const api = {
+  getMe,
+  logout,
   getLibraries,
   getLibrary,
   createLibrary,

@@ -14,8 +14,14 @@ import java.util.Base64;
 /**
  * 無狀態的 OAuth2 授權請求存儲
  * <p>
- * 將 OAuth2AuthorizationRequest 序列化後存入加密 Cookie，
+ * 將 OAuth2AuthorizationRequest 序列化後存入 Cookie，
  * 避免使用 Session，支援水平擴展。
+ * </p>
+ * <p>
+ * 安全特性：
+ * - HttpOnly：防止 XSS 攻擊讀取
+ * - Secure：僅透過 HTTPS 傳輸（生產環境）
+ * - SameSite=Lax：基本 CSRF 防護
  * </p>
  */
 @Component
@@ -49,6 +55,7 @@ public class CookieAuthorizationRequestRepository implements AuthorizationReques
      * 儲存授權請求
      * <p>
      * 將 OAuth2AuthorizationRequest 序列化後存入 Cookie。
+     * 設置 HttpOnly, Secure（HTTPS 環境）, SameSite=Lax 屬性。
      * </p>
      */
     @Override
@@ -63,11 +70,14 @@ public class CookieAuthorizationRequestRepository implements AuthorizationReques
         }
 
         String value = serialize(authorizationRequest);
-        Cookie cookie = new Cookie(COOKIE_NAME, value);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(COOKIE_EXPIRE_SECONDS);
-        response.addCookie(cookie);
+
+        // 使用 Set-Cookie header 設置完整的 Cookie 屬性（包含 SameSite）
+        String cookieValue = String.format("%s=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=Lax%s",
+                COOKIE_NAME,
+                value,
+                COOKIE_EXPIRE_SECONDS,
+                isSecureRequest(request) ? "; Secure" : "");
+        response.addHeader("Set-Cookie", cookieValue);
     }
 
     /**
@@ -83,11 +93,11 @@ public class CookieAuthorizationRequestRepository implements AuthorizationReques
 
         OAuth2AuthorizationRequest authorizationRequest = loadAuthorizationRequest(request);
 
-        Cookie cookie = new Cookie(COOKIE_NAME, "");
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        // 使用 Set-Cookie header 刪除 Cookie（設置 Max-Age=0）
+        String cookieValue = String.format("%s=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax%s",
+                COOKIE_NAME,
+                isSecureRequest(request) ? "; Secure" : "");
+        response.addHeader("Set-Cookie", cookieValue);
 
         return authorizationRequest;
     }
@@ -107,6 +117,22 @@ public class CookieAuthorizationRequestRepository implements AuthorizationReques
         }
 
         return java.util.Optional.empty();
+    }
+
+    /**
+     * 判斷是否為安全連線（HTTPS）
+     * <p>
+     * 考慮反向代理情況（X-Forwarded-Proto header）
+     * </p>
+     */
+    private boolean isSecureRequest(HttpServletRequest request) {
+        // 檢查直接連線是否為 HTTPS
+        if (request.isSecure()) {
+            return true;
+        }
+        // 檢查反向代理 header
+        String forwardedProto = request.getHeader("X-Forwarded-Proto");
+        return "https".equalsIgnoreCase(forwardedProto);
     }
 
     /**

@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.0.2'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.cyclonedx.bom' version '3.0.1'
 }
 
 group = 'io.github.samzhu'
@@ -40,6 +41,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// OpenTelemetry - 可觀測性（Traces, Metrics, Logs）
+	implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
+
+	// JDBC 查詢追蹤 - 在 trace 中顯示每條 SQL 的執行時間
+	implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot:2.0.1'
 
 	// OAuth2 Resource Server（JWT 驗證）與 Client（前端登入流程）
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'

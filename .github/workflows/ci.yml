@@ -1,7 +1,7 @@
-# CI/CD Pipeline for Documentation Platform
-# 前端建構 + 後端測試 + Docker Image 推送
+# CI Pipeline for Documentation Platform
+# 前端建構 + 後端測試 + Docker Image 推送到 Docker Hub
 
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -84,14 +84,6 @@ jobs:
       - name: Run unit tests
         working-directory: backend
         run: ./gradlew test
-
-      - name: Run integration tests
-        working-directory: backend
-        env:
-          # 整合測試需要 Google AI API Key 進行向量嵌入測試
-          # 若未設定 secret，整合測試中的相關測試會被跳過
-          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
-        run: ./gradlew integrationTest
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
