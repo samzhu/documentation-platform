@@ -9,7 +9,7 @@
 | Java | 25 | 語言版本 |
 | Spring Boot | 4.0.2 | Web 框架 |
 | Spring AI | 2.0.0-M2 | AI 整合（Gemini Embedding） |
-| PostgreSQL | latest | 資料庫 + pgvector |
+| PostgreSQL | 18 | 資料庫 + pgvector (Cloud SQL Enterprise) |
 
 ## 開發指令
 
@@ -79,9 +79,9 @@ Gradle 內建 HTML 測試報告，執行測試後自動產生。
 
 | 檔案 | 說明 |
 |------|------|
-| `src/main/resources/application.yaml` | 基礎配置 |
-| `src/main/resources/application-local.yaml` | 本地開發覆蓋 |
-| `config/application-dev.yaml` | DEBUG 日誌 |
+| `src/main/resources/application.yaml` | 正式環境就緒的基底配置（包進 Docker Image） |
+| `src/main/resources/application-local.yaml` | 本地 Docker Compose 基礎設施 |
+| `config/application-dev.yaml` | 開發覆蓋（Liquibase on、OTLP off、DEBUG 日誌） |
 | `config/application-secrets.properties` | 敏感資訊（gitignored） |
 
 ## API Key 管理

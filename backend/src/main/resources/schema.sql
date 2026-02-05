@@ -22,7 +22,16 @@ CREATE TABLE IF NOT EXISTS libraries (
 
 COMMENT ON TABLE libraries IS '儲存函式庫/框架的基本資訊';
 COMMENT ON COLUMN libraries.id IS 'TSID 格式（13 字元 Crockford Base32）';
+COMMENT ON COLUMN libraries.name IS '函式庫唯一名稱，用於程式識別（如 spring-boot）';
+COMMENT ON COLUMN libraries.display_name IS '函式庫顯示名稱，用於前端呈現（如 Spring Boot）';
+COMMENT ON COLUMN libraries.description IS '函式庫描述說明';
 COMMENT ON COLUMN libraries.source_type IS '來源類型: GITHUB, LOCAL, MANUAL';
+COMMENT ON COLUMN libraries.source_url IS '來源網址（如 GitHub Repository URL）';
+COMMENT ON COLUMN libraries.category IS '分類標籤（如 backend, frontend, devops）';
+COMMENT ON COLUMN libraries.tags IS '標籤陣列，用於多維度分類與篩選';
+COMMENT ON COLUMN libraries.version IS '樂觀鎖版本號，用於併發控制';
+COMMENT ON COLUMN libraries.created_at IS '資料建立時間';
+COMMENT ON COLUMN libraries.updated_at IS '資料最後更新時間';
 
 -- 建立 library_versions 表（版本資訊表）
 CREATE TABLE IF NOT EXISTS library_versions (
@@ -41,7 +50,17 @@ CREATE TABLE IF NOT EXISTS library_versions (
 );
 
 COMMENT ON TABLE library_versions IS '儲存每個函式庫的版本資訊';
+COMMENT ON COLUMN library_versions.id IS 'TSID 格式（13 字元 Crockford Base32）';
+COMMENT ON COLUMN library_versions.library_id IS '所屬函式庫 ID（外鍵關聯 libraries）';
+COMMENT ON COLUMN library_versions.version IS '版本號（如 3.2.0、4.0.2）';
+COMMENT ON COLUMN library_versions.is_latest IS '是否為最新版本';
+COMMENT ON COLUMN library_versions.is_lts IS '是否為長期支援（Long-Term Support）版本';
 COMMENT ON COLUMN library_versions.status IS '版本狀態: ACTIVE, DEPRECATED, EOL';
+COMMENT ON COLUMN library_versions.docs_path IS '文件檔案存放路徑';
+COMMENT ON COLUMN library_versions.release_date IS '版本發佈日期';
+COMMENT ON COLUMN library_versions.entity_version IS '樂觀鎖版本號，用於併發控制';
+COMMENT ON COLUMN library_versions.created_at IS '資料建立時間';
+COMMENT ON COLUMN library_versions.updated_at IS '資料最後更新時間';
 
 -- 建立 documents 表（文件表）
 CREATE TABLE IF NOT EXISTS documents (
@@ -61,7 +80,18 @@ CREATE TABLE IF NOT EXISTS documents (
 );
 
 COMMENT ON TABLE documents IS '儲存文件內容和元資料';
-COMMENT ON COLUMN documents.search_vector IS '全文檢索向量';
+COMMENT ON COLUMN documents.id IS 'TSID 格式（13 字元 Crockford Base32）';
+COMMENT ON COLUMN documents.version_id IS '所屬函式庫版本 ID（外鍵關聯 library_versions）';
+COMMENT ON COLUMN documents.title IS '文件標題';
+COMMENT ON COLUMN documents.path IS '文件檔案路徑（相對於文件根目錄）';
+COMMENT ON COLUMN documents.content IS '文件完整內容';
+COMMENT ON COLUMN documents.content_hash IS '內容雜湊值（SHA-256），用於偵測文件變更';
+COMMENT ON COLUMN documents.doc_type IS '文件類型（如 markdown, html, text）';
+COMMENT ON COLUMN documents.metadata IS '額外元資料（JSONB 格式）';
+COMMENT ON COLUMN documents.search_vector IS '全文檢索向量（tsvector），由標題與內容組合產生';
+COMMENT ON COLUMN documents.version IS '樂觀鎖版本號，用於併發控制';
+COMMENT ON COLUMN documents.created_at IS '資料建立時間';
+COMMENT ON COLUMN documents.updated_at IS '資料最後更新時間';
 
 -- 建立 document_chunks 表（文件區塊表，含向量嵌入）
 CREATE TABLE IF NOT EXISTS document_chunks (
@@ -79,7 +109,16 @@ CREATE TABLE IF NOT EXISTS document_chunks (
 );
 
 COMMENT ON TABLE document_chunks IS '儲存分塊的文件內容與向量嵌入';
-COMMENT ON COLUMN document_chunks.embedding IS '768 維度向量，用於語意搜尋 (text-embedding-004)';
+COMMENT ON COLUMN document_chunks.id IS 'TSID 格式（13 字元 Crockford Base32）';
+COMMENT ON COLUMN document_chunks.document_id IS '所屬文件 ID（外鍵關聯 documents）';
+COMMENT ON COLUMN document_chunks.chunk_index IS '區塊索引，從 0 開始，表示在原文件中的順序';
+COMMENT ON COLUMN document_chunks.content IS '區塊文字內容（典型大小 500-1000 tokens）';
+COMMENT ON COLUMN document_chunks.embedding IS '768 維度向量嵌入，用於語意搜尋（gemini-embedding-001）';
+COMMENT ON COLUMN document_chunks.token_count IS '此區塊的 token 數量';
+COMMENT ON COLUMN document_chunks.metadata IS '額外元資料（JSONB 格式，含 versionId 等篩選欄位）';
+COMMENT ON COLUMN document_chunks.version IS '樂觀鎖版本號，用於併發控制';
+COMMENT ON COLUMN document_chunks.created_at IS '資料建立時間';
+COMMENT ON COLUMN document_chunks.updated_at IS '資料最後更新時間';
 
 -- 建立 code_examples 表（程式碼範例表）
 CREATE TABLE IF NOT EXISTS code_examples (
@@ -97,6 +136,17 @@ CREATE TABLE IF NOT EXISTS code_examples (
 );
 
 COMMENT ON TABLE code_examples IS '儲存從文件中擷取的程式碼範例';
+COMMENT ON COLUMN code_examples.id IS 'TSID 格式（13 字元 Crockford Base32）';
+COMMENT ON COLUMN code_examples.document_id IS '所屬文件 ID（外鍵關聯 documents）';
+COMMENT ON COLUMN code_examples.language IS '程式語言（如 java, javascript, python）';
+COMMENT ON COLUMN code_examples.code IS '程式碼內容';
+COMMENT ON COLUMN code_examples.description IS '程式碼範例的說明描述';
+COMMENT ON COLUMN code_examples.start_line IS '在原始文件中的起始行號';
+COMMENT ON COLUMN code_examples.end_line IS '在原始文件中的結束行號';
+COMMENT ON COLUMN code_examples.metadata IS '額外元資料（JSONB 格式）';
+COMMENT ON COLUMN code_examples.version IS '樂觀鎖版本號，用於併發控制';
+COMMENT ON COLUMN code_examples.created_at IS '資料建立時間';
+COMMENT ON COLUMN code_examples.updated_at IS '資料最後更新時間';
 
 -- 建立 sync_history 表（同步歷史記錄表）
 CREATE TABLE IF NOT EXISTS sync_history (
@@ -115,7 +165,18 @@ CREATE TABLE IF NOT EXISTS sync_history (
 );
 
 COMMENT ON TABLE sync_history IS '追蹤文件同步歷史記錄';
+COMMENT ON COLUMN sync_history.id IS 'TSID 格式（13 字元 Crockford Base32）';
+COMMENT ON COLUMN sync_history.version_id IS '同步的目標函式庫版本 ID（外鍵關聯 library_versions）';
 COMMENT ON COLUMN sync_history.status IS '同步狀態: PENDING, RUNNING, SUCCESS, FAILED';
+COMMENT ON COLUMN sync_history.started_at IS '同步作業開始時間';
+COMMENT ON COLUMN sync_history.completed_at IS '同步作業完成時間（進行中為 NULL）';
+COMMENT ON COLUMN sync_history.documents_processed IS '已處理的文件數量';
+COMMENT ON COLUMN sync_history.chunks_created IS '已建立的文件區塊數量';
+COMMENT ON COLUMN sync_history.error_message IS '同步失敗時的錯誤訊息';
+COMMENT ON COLUMN sync_history.metadata IS '額外元資料（JSONB 格式）';
+COMMENT ON COLUMN sync_history.version IS '樂觀鎖版本號，用於併發控制';
+COMMENT ON COLUMN sync_history.created_at IS '資料建立時間';
+COMMENT ON COLUMN sync_history.updated_at IS '資料最後更新時間';
 
 -- 建立 api_keys 表（API 金鑰表）
 CREATE TABLE IF NOT EXISTS api_keys (
@@ -134,9 +195,18 @@ CREATE TABLE IF NOT EXISTS api_keys (
 );
 
 COMMENT ON TABLE api_keys IS '儲存 API 認證金鑰';
-COMMENT ON COLUMN api_keys.key_hash IS 'BCrypt 雜湊後的金鑰';
-COMMENT ON COLUMN api_keys.key_prefix IS '金鑰前綴，用於識別（如 dmcp_xxxx）';
+COMMENT ON COLUMN api_keys.id IS 'TSID 格式（13 字元 Crockford Base32）';
+COMMENT ON COLUMN api_keys.name IS '金鑰識別名稱（唯一，用於辨識用途）';
+COMMENT ON COLUMN api_keys.key_hash IS 'BCrypt 雜湊後的金鑰（永不儲存原始金鑰）';
+COMMENT ON COLUMN api_keys.key_prefix IS '金鑰前綴（前 12 字元，如 dmcp_a1b2），用於快速查詢識別';
 COMMENT ON COLUMN api_keys.status IS '金鑰狀態: ACTIVE, REVOKED, EXPIRED';
+COMMENT ON COLUMN api_keys.rate_limit IS '每小時請求上限（預設 1000）';
+COMMENT ON COLUMN api_keys.expires_at IS '金鑰到期時間（NULL 表示永不過期）';
+COMMENT ON COLUMN api_keys.last_used_at IS '金鑰最後使用時間';
+COMMENT ON COLUMN api_keys.version IS '樂觀鎖版本號，用於併發控制';
+COMMENT ON COLUMN api_keys.created_at IS '資料建立時間';
+COMMENT ON COLUMN api_keys.updated_at IS '資料最後更新時間';
+COMMENT ON COLUMN api_keys.created_by IS '建立者識別資訊';
 
 -- 建立索引以優化查詢效能
 

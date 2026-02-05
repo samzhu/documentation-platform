@@ -5,7 +5,7 @@ A unified platform for managing technical documentation with GitHub sync, semant
 ![Java](https://img.shields.io/badge/Java-25-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen)
 ![React](https://img.shields.io/badge/React-19-blue)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-blue)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-blue)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ## Features
@@ -23,7 +23,7 @@ A unified platform for managing technical documentation with GitHub sync, semant
 |-------|------------|
 | Frontend | React 19 + Vite 6 + React Router 7 |
 | Backend | Java 25 + Spring Boot 4.0.2 + Spring AI 2.0.0-M2 |
-| Database | PostgreSQL 16 + pgvector |
+| Database | PostgreSQL 18 + pgvector |
 | AI/ML | Gemini Embedding (768 dimensions) |
 | Auth | OAuth2 Stateless (JWT) |
 

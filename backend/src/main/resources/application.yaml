@@ -1,8 +1,11 @@
 # =============================================================================
-# Documentation Platform - 基礎共用配置
+# Documentation Platform - 基礎配置（正式環境就緒）
 # =============================================================================
-# 此檔案包進 Docker Image，包含所有環境共用的配置
-# 環境特定配置透過 profile 檔案覆蓋
+# 此檔案包進 Docker Image，配置以正式環境為基準
+# 本地開發差異透過 profile 覆蓋：
+#   - local: Docker Compose 基礎設施（application-local.yaml）
+#   - dev:   除錯日誌、OTLP 停用、Liquibase 啟用（config/application-dev.yaml）
+# Cloud Run 設定 SPRING_PROFILES_ACTIVE 覆蓋預設 profiles，僅載入此檔案
 # =============================================================================
 
 spring:
@@ -10,30 +13,80 @@ spring:
     name: Documentation Platform
 
   profiles:
-    # 預設 profiles（可被 spring.profiles.active 覆蓋）
-    # 本地開發: 自動使用 local,dev
+    # 本地開發預設啟用 local + dev profiles
+    # Cloud Run 透過 SPRING_PROFILES_ACTIVE 覆蓋，停用這些 profiles
     default: local,dev
 
   threads:
     virtual:
       enabled: true  # Java 21+ Virtual Threads
 
-  # ----- OAuth2 配置 -----
-  # OAuth2 配置已移至 application-dev.yaml
-  # 透過 platform.features.oauth2 開關控制是否啟用
+  # ----- SQL 初始化配置 -----
+  # 停用 schema.sql 執行，所有 schema 變更由 Liquibase 管理
+  sql:
+    init:
+      mode: never
+
+  # ----- Liquibase 配置 -----
+  # 正式環境由 Cloud Run Job 執行資料庫遷移，應用程式啟動時不執行
+  # 避免多個實例同時啟動造成 DATABASECHANGELOGLOCK 鎖定競爭
+  # 本地開發由 dev profile 覆蓋為 enabled: true
+  liquibase:
+    enabled: false
+
+  # ----- 優雅關機超時 -----
+  # Cloud Run SIGTERM 後有 10 秒寬限期，預留 2 秒給 JVM 清理
+  lifecycle:
+    timeout-per-shutdown-phase: 8s
 
   # ----- 資料庫配置 -----
-  # 使用統一屬性名稱，各環境可覆蓋
   datasource:
     url: ${platform-db-url:jdbc:postgresql://localhost:5432/mydatabase}
     username: ${platform-db-username:myuser}
     password: ${platform-db-password:secret}
+    hikari:
+      # 連線池大小：Cloud Run 1-2 vCPU 建議 5（公式：core_count * 2 + 1）
+      maximum-pool-size: 5
+      # 固定連線池：最小空閒數 = 最大值（HikariCP 官方建議最佳效能配置）
+      minimum-idle: 5
+      # 等待連線的最大毫秒數
+      connection-timeout: 10000
+      # 空閒連線超時（10 分鐘）
+      idle-timeout: 600000
+      # 連線最大存活時間（28 分鐘，須小於 Cloud SQL idle timeout 30 分鐘）
+      max-lifetime: 1680000
+      # 連線保活間隔（5 分鐘，防止 Auth Proxy 關閉閒置連線）
+      keepalive-time: 300000
+      # 連線池名稱（便於監控識別）
+      pool-name: DocPlatformPool
 
-  # ----- SQL 初始化配置 -----
-  sql:
-    init:
-      mode: always
-      platform: postgresql
+  # ----- OAuth2 配置 -----
+  # 機敏資訊透過環境變數或 Secret Manager 注入
+  # 由 platform.features.oauth2 開關控制是否啟用
+  security:
+    oauth2:
+      client:
+        registration:
+          omnihubs:
+            client-id: ${platform-oauth2-client-id:}
+            client-secret: ${platform-oauth2-client-secret:}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/api/oauth2/callback/{registrationId}"
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          omnihubs:
+            # 僅設定 issuer-uri，其餘端點由 OIDC Discovery 自動取得
+            # Spring Security 會從 {issuer-uri}/.well-known/openid-configuration 發現所有端點
+            # 避免手動拼接 URL 導致的尾斜線問題
+            issuer-uri: ${platform-oauth2-issuer-uri:https://auth.omnihubs.cloud}
+            user-name-attribute: sub
+      # Resource Server JWT 驗證配置
+      resourceserver:
+        jwt:
+          issuer-uri: ${platform-oauth2-issuer-uri:https://auth.omnihubs.cloud}
 
   # ----- Spring AI 配置 -----
   ai:
@@ -56,19 +109,84 @@ spring:
         distance-type: COSINE_DISTANCE
         index-type: HNSW
 
-# ----- Actuator 配置 -----
+# ----- Server 配置 -----
+server:
+  # 優雅關機：收到 SIGTERM 後停止接收新請求，等待進行中的請求完成
+  shutdown: graceful
+  tomcat:
+    # 連線超時
+    connection-timeout: 5s
+
+# ----- Actuator / Management 配置 -----
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        # 健康檢查、應用資訊、Micrometer 指標、Prometheus 格式指標
+        include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: always
       probes:
+        # 啟用 Kubernetes/Cloud Run 探針端點
+        # /actuator/health/liveness  - 程序存活檢查（不含外部依賴，避免 DB 故障造成雪崩重啟）
+        # /actuator/health/readiness - 服務就緒檢查（含資料庫等依賴）
+        enabled: true
+      # 健康檢查詳細資訊僅授權用戶可見（防止洩漏內部連線資訊）
+      # 本地開發由 dev profile 覆蓋為 always
+      show-details: when-authorized
+      show-components: when-authorized
+
+  # ----- OpenTelemetry 追蹤配置 -----
+  tracing:
+    sampling:
+      # 追蹤取樣率（1.0 = 100%，可透過環境變數調降以減少成本）
+      probability: 1.0
+
+  # ----- OTLP 匯出配置 -----
+  # 連線至 OTel Collector Sidecar（Cloud Run 多容器架構）
+  # 本地開發由 dev profile 停用（無 Collector）
+  #
+  # Spring Boot 4 分為兩個 namespace：
+  #   - management.otlp.metrics.*           → Micrometer OTLP exporter（僅 HTTP）
+  #   - management.opentelemetry.{signal}.* → OpenTelemetry SDK（支援 gRPC / HTTP）
+  #
+  # Sidecar 模式推薦 gRPC（單一 TCP 多路複用、低延遲）
+  # Metrics 因 Micrometer 限制只能走 HTTP
+  #   Metrics → HTTP localhost:4318/v1/metrics
+  #   Tracing → gRPC localhost:4317
+  #   Logging → gRPC localhost:4317
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+
+  # OTLP Logging 匯出啟用開關
+  logging:
+    export:
+      otlp:
         enabled: true
 
-# ----- Platform 功能開關配置 -----
+  # ----- OpenTelemetry SDK 匯出配置 -----
+  opentelemetry:
+    # Tracing OTLP 匯出（gRPC，效能優於 HTTP）
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4317
+          transport: grpc
+    # Logging OTLP 匯出（gRPC，效能優於 HTTP）
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4317
+          transport: grpc
+    # 資源屬性（附加於所有 traces/metrics/logs）
+    resource-attributes:
+      service.name: documentation-platform
+      service.version: ${project.version:0.0.1-SNAPSHOT}
+      deployment.environment: production
+
+# ----- Platform 配置 -----
 platform:
   # ----- 已知函式庫文件路徑對應表 -----
   # 用於自動帶入 GitHub 函式庫的文件路徑
@@ -89,14 +207,14 @@ platform:
     microsoft/TypeScript: "doc"
     golang/go: "doc"
 
+  # ----- 功能開關 -----
   features:
-    web-ui: true            # 啟用 Web UI 介面
-    api-key-auth: false     # API Key 認證（生產環境建議開啟）
-    semantic-search: true   # 語意搜尋功能
-    code-examples: true     # 程式碼範例功能
-    migration-guides: false # 遷移指南功能（P2 延後）
-    sync-scheduling: false  # 同步排程功能（預設關閉）
-    concurrency-limit: true # 併發限制功能（生產環境建議開啟）
+    # OAuth2 認證
+    oauth2: true
+    # 同步排程
+    sync-scheduling: true
+    # API Key 認證
+    api-key-auth: true
 
   # ----- 搜尋配置 -----
   search:
@@ -137,28 +255,8 @@ platform:
           retry-delay-ms: 1000       # 重試間隔（毫秒）
           rate-limit-wait-ms: 60000  # 遇到 Rate Limit 時等待（毫秒）
 
-  # ----- 併發限制配置 -----
-  security:
-    concurrency:
-      default-limit: 10  # 每個 API Key 同時請求上限
-      anonymous-limit: 5 # 匿名請求同時上限
-
-  # ----- CORS 配置 -----
-  cors:
-    allowed-origins:
-      - "http://localhost:3000"
-      - "http://localhost:8080"
-    allowed-methods:
-      - GET
-      - POST
-      - PUT
-      - DELETE
-      - OPTIONS
-    allowed-headers:
-      - "*"
-    allow-credentials: true
-
 # ----- 日誌配置 -----
 logging:
   level:
     root: INFO
+    io.github.samzhu.documentation.platform: INFO

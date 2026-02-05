@@ -318,7 +318,7 @@ platform:
 
 | 項目 | 值 |
 |------|-----|
-| Authorization Server | `https://auth-dev.omnihubs.cloud/` |
+| Authorization Server | （由環境變數 `platform-oauth2-issuer-uri` 注入） |
 | 認證流程 | Authorization Code + PKCE |
 | 使用者 | 內部管理員（Web UI） |
 

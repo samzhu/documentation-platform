@@ -2,8 +2,11 @@
 # 開發環境行為配置
 # =============================================================================
 # Profile: dev
-# 用途: 本地開發環境，DEBUG 日誌、開啟更多 Actuator 端點
-# 啟動: spring.profiles.active=local,dev (預設)
+# 用途: 本地開發環境，覆蓋正式環境配置：
+#   - 啟用 Liquibase（本地啟動時自動遷移）
+#   - 停用 OTLP 匯出（本地無 OTel Collector）
+#   - DEBUG 日誌、開啟更多 Actuator 端點
+# 啟動: spring.profiles.default=local,dev（已在 application.yaml 設定）
 # =============================================================================
 
 spring:
@@ -11,10 +14,15 @@ spring:
     # 引入本地機敏設定檔（optional: 檔案不存在也不報錯）
     import: "optional:file:./config/application-secrets.properties"
 
-  # ----- OAuth2 配置（僅在 platform.features.oauth2=true 時生效） -----
+  # ----- Liquibase 配置 -----
+  # 本地開發啟動時執行 Liquibase 遷移（正式環境由 Cloud Run Job 執行）
+  liquibase:
+    enabled: true
+
+  # ----- OAuth2 配置（覆蓋正式環境設定） -----
+  # 使用 Mock OAuth2 Server（compose.yaml 中配置）
   security:
     oauth2:
-      # OAuth2 Client 配置（用於登入重導向）
       client:
         registration:
           omnihubs:
@@ -46,6 +54,38 @@ management:
     web:
       exposure:
         include: health,info,metrics,env,configprops
+  endpoint:
+    health:
+      # 開發環境顯示完整健康檢查詳情
+      show-details: always
+      show-components: always
+
+  # ----- 本地開發停用 OTLP 匯出 -----
+  # 本地沒有 OTel Collector，停用避免連線警告
+  #
+  # Metrics (Micrometer): management.otlp.metrics.export.enabled
+  # Logging (OTel SDK):   management.logging.export.otlp.enabled
+  # Tracing (OTel SDK):   取樣率設為 0 即不產生 span
+  otlp:
+    metrics:
+      export:
+        enabled: false
+
+  # 停用追蹤取樣（不產生 span，不連線 Collector）
+  tracing:
+    sampling:
+      probability: 0.0
+
+  # 停用 OTLP Logging 匯出
+  logging:
+    export:
+      otlp:
+        enabled: false
+
+  # 本地環境標記
+  opentelemetry:
+    resource-attributes:
+      deployment.environment: development
 
 # ----- 日誌配置 -----
 # 開發環境使用 DEBUG 級別
@@ -56,10 +96,7 @@ logging:
     org.springframework.security: DEBUG
 
 # ----- 功能開關配置 -----
-# 開發環境預設關閉 OAuth2，方便功能測試
-# 啟用 OAuth2 時，使用 Mock OAuth2 Server（compose.yaml 中已配置）
 platform:
   features:
-    concurrency-limit: false
-    oauth2: true  # ⬅️ 啟用 OAuth2 Stateless 認證流程
+    oauth2: true  # 啟用 OAuth2 Stateless 認證流程
                   # 使用 Mock OAuth2 Server (http://localhost:8090)

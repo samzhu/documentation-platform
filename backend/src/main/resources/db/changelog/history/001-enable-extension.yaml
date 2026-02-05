@@ -1,0 +1,7 @@
+databaseChangeLog:
+- changeSet:
+    id: 1700794119845-1
+    author: samzhu (generated)
+    changes:
+    - sql: 
+        sql: CREATE extension IF NOT EXISTS vector;

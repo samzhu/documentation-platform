@@ -1,0 +1,789 @@
+databaseChangeLog:
+- changeSet:
+    id: 1770271607211-1
+    author: liquibase (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: libraries_pkey
+            name: id
+            remarks: TSID 格式（13 字元 Crockford Base32）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: name
+            remarks: 函式庫唯一名稱，用於程式識別（如 spring-boot）
+            type: VARCHAR(100)
+        - column:
+            constraints:
+              nullable: false
+            name: display_name
+            remarks: 函式庫顯示名稱，用於前端呈現（如 Spring Boot）
+            type: VARCHAR(200)
+        - column:
+            name: description
+            remarks: 函式庫描述說明
+            type: TEXT
+        - column:
+            constraints:
+              nullable: false
+            name: source_type
+            remarks: '來源類型: GITHUB, LOCAL, MANUAL'
+            type: VARCHAR(20)
+        - column:
+            name: source_url
+            remarks: 來源網址（如 GitHub Repository URL）
+            type: VARCHAR(500)
+        - column:
+            name: category
+            remarks: 分類標籤（如 backend, frontend, devops）
+            type: VARCHAR(50)
+        - column:
+            name: tags
+            remarks: 標籤陣列，用於多維度分類與篩選
+            type: TEXT[]
+        - column:
+            defaultValueNumeric: 0
+            name: version
+            remarks: 樂觀鎖版本號，用於併發控制
+            type: BIGINT
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: created_at
+            remarks: 資料建立時間
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: updated_at
+            remarks: 資料最後更新時間
+            type: TIMESTAMP WITH TIME ZONE
+        remarks: 儲存函式庫/框架的基本資訊
+        tableName: libraries
+- changeSet:
+    id: 1770271607211-2
+    author: liquibase (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: library_versions_pkey
+            name: id
+            remarks: TSID 格式（13 字元 Crockford Base32）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: library_id
+            remarks: 所屬函式庫 ID（外鍵關聯 libraries）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: version
+            remarks: 版本號（如 3.2.0、4.0.2）
+            type: VARCHAR(50)
+        - column:
+            defaultValueBoolean: false
+            name: is_latest
+            remarks: 是否為最新版本
+            type: BOOLEAN
+        - column:
+            defaultValueBoolean: false
+            name: is_lts
+            remarks: 是否為長期支援（Long-Term Support）版本
+            type: BOOLEAN
+        - column:
+            defaultValue: ACTIVE
+            name: status
+            remarks: '版本狀態: ACTIVE, DEPRECATED, EOL'
+            type: VARCHAR(20)
+        - column:
+            name: docs_path
+            remarks: 文件檔案存放路徑
+            type: VARCHAR(500)
+        - column:
+            name: release_date
+            remarks: 版本發佈日期
+            type: date
+        - column:
+            defaultValueNumeric: 0
+            name: entity_version
+            remarks: 樂觀鎖版本號，用於併發控制
+            type: BIGINT
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: created_at
+            remarks: 資料建立時間
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: updated_at
+            remarks: 資料最後更新時間
+            type: TIMESTAMP WITH TIME ZONE
+        remarks: 儲存每個函式庫的版本資訊
+        tableName: library_versions
+- changeSet:
+    id: 1770271607211-3
+    author: liquibase (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: documents_pkey
+            name: id
+            remarks: TSID 格式（13 字元 Crockford Base32）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: version_id
+            remarks: 所屬函式庫版本 ID（外鍵關聯 library_versions）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: title
+            remarks: 文件標題
+            type: VARCHAR(500)
+        - column:
+            constraints:
+              nullable: false
+            name: path
+            remarks: 文件檔案路徑（相對於文件根目錄）
+            type: VARCHAR(1000)
+        - column:
+            name: content
+            remarks: 文件完整內容
+            type: TEXT
+        - column:
+            name: content_hash
+            remarks: 內容雜湊值（SHA-256），用於偵測文件變更
+            type: VARCHAR(64)
+        - column:
+            name: doc_type
+            remarks: 文件類型（如 markdown, html, text）
+            type: VARCHAR(50)
+        - column:
+            defaultValueComputed: "'{}'::jsonb"
+            name: metadata
+            remarks: 額外元資料（JSONB 格式）
+            type: JSONB
+        - column:
+            name: search_vector
+            remarks: 全文檢索向量（tsvector），由標題與內容組合產生
+            type: TSVECTOR
+        - column:
+            defaultValueNumeric: 0
+            name: version
+            remarks: 樂觀鎖版本號，用於併發控制
+            type: BIGINT
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: created_at
+            remarks: 資料建立時間
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: updated_at
+            remarks: 資料最後更新時間
+            type: TIMESTAMP WITH TIME ZONE
+        remarks: 儲存文件內容和元資料
+        tableName: documents
+- changeSet:
+    id: 1770271607211-4
+    author: liquibase (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: code_examples_pkey
+            name: id
+            remarks: TSID 格式（13 字元 Crockford Base32）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: document_id
+            remarks: 所屬文件 ID（外鍵關聯 documents）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: language
+            remarks: 程式語言（如 java, javascript, python）
+            type: VARCHAR(50)
+        - column:
+            constraints:
+              nullable: false
+            name: code
+            remarks: 程式碼內容
+            type: TEXT
+        - column:
+            name: description
+            remarks: 程式碼範例的說明描述
+            type: TEXT
+        - column:
+            name: start_line
+            remarks: 在原始文件中的起始行號
+            type: INTEGER
+        - column:
+            name: end_line
+            remarks: 在原始文件中的結束行號
+            type: INTEGER
+        - column:
+            defaultValueComputed: "'{}'::jsonb"
+            name: metadata
+            remarks: 額外元資料（JSONB 格式）
+            type: JSONB
+        - column:
+            defaultValueNumeric: 0
+            name: version
+            remarks: 樂觀鎖版本號，用於併發控制
+            type: BIGINT
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: created_at
+            remarks: 資料建立時間
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: updated_at
+            remarks: 資料最後更新時間
+            type: TIMESTAMP WITH TIME ZONE
+        remarks: 儲存從文件中擷取的程式碼範例
+        tableName: code_examples
+- changeSet:
+    id: 1770271607211-5
+    author: liquibase (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: sync_history_pkey
+            name: id
+            remarks: TSID 格式（13 字元 Crockford Base32）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: version_id
+            remarks: 同步的目標函式庫版本 ID（外鍵關聯 library_versions）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: status
+            remarks: '同步狀態: PENDING, RUNNING, SUCCESS, FAILED'
+            type: VARCHAR(20)
+        - column:
+            constraints:
+              nullable: false
+            name: started_at
+            remarks: 同步作業開始時間
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            name: completed_at
+            remarks: 同步作業完成時間（進行中為 NULL）
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            defaultValueNumeric: 0
+            name: documents_processed
+            remarks: 已處理的文件數量
+            type: INTEGER
+        - column:
+            defaultValueNumeric: 0
+            name: chunks_created
+            remarks: 已建立的文件區塊數量
+            type: INTEGER
+        - column:
+            name: error_message
+            remarks: 同步失敗時的錯誤訊息
+            type: TEXT
+        - column:
+            defaultValueComputed: "'{}'::jsonb"
+            name: metadata
+            remarks: 額外元資料（JSONB 格式）
+            type: JSONB
+        - column:
+            defaultValueNumeric: 0
+            name: version
+            remarks: 樂觀鎖版本號，用於併發控制
+            type: BIGINT
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: created_at
+            remarks: 資料建立時間
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: updated_at
+            remarks: 資料最後更新時間
+            type: TIMESTAMP WITH TIME ZONE
+        remarks: 追蹤文件同步歷史記錄
+        tableName: sync_history
+- changeSet:
+    id: 1770271607211-6
+    author: liquibase (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: api_keys_pkey
+            name: id
+            remarks: TSID 格式（13 字元 Crockford Base32）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: name
+            remarks: 金鑰識別名稱（唯一，用於辨識用途）
+            type: VARCHAR(100)
+        - column:
+            constraints:
+              nullable: false
+            name: key_hash
+            remarks: BCrypt 雜湊後的金鑰（永不儲存原始金鑰）
+            type: VARCHAR(255)
+        - column:
+            constraints:
+              nullable: false
+            name: key_prefix
+            remarks: 金鑰前綴（前 12 字元，如 dmcp_a1b2），用於快速查詢識別
+            type: VARCHAR(20)
+        - column:
+            constraints:
+              nullable: false
+            defaultValue: ACTIVE
+            name: status
+            remarks: '金鑰狀態: ACTIVE, REVOKED, EXPIRED'
+            type: VARCHAR(20)
+        - column:
+            defaultValueNumeric: 1000
+            name: rate_limit
+            remarks: 每小時請求上限（預設 1000）
+            type: INTEGER
+        - column:
+            name: expires_at
+            remarks: 金鑰到期時間（NULL 表示永不過期）
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            name: last_used_at
+            remarks: 金鑰最後使用時間
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            defaultValueNumeric: 0
+            name: version
+            remarks: 樂觀鎖版本號，用於併發控制
+            type: BIGINT
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: created_at
+            remarks: 資料建立時間
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: updated_at
+            remarks: 資料最後更新時間
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            name: created_by
+            remarks: 建立者識別資訊
+            type: VARCHAR(100)
+        remarks: 儲存 API 認證金鑰
+        tableName: api_keys
+- changeSet:
+    id: 1770271607211-7
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: category
+        indexName: idx_libraries_category
+        tableName: libraries
+        using: btree
+- changeSet:
+    id: 1770271607211-8
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: source_type
+        indexName: idx_libraries_source_type
+        tableName: libraries
+        using: btree
+- changeSet:
+    id: 1770271607211-9
+    author: liquibase (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: name
+        constraintName: libraries_name_key
+        tableName: libraries
+- changeSet:
+    id: 1770271607211-10
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: library_id
+        indexName: idx_library_versions_library_id
+        tableName: library_versions
+        using: btree
+- changeSet:
+    id: 1770271607211-11
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            defaultValueBoolean: false
+            name: is_latest
+        indexName: idx_library_versions_is_latest
+        tableName: library_versions
+        using: btree
+- changeSet:
+    id: 1770271607211-12
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            defaultValueBoolean: false
+            name: is_lts
+        indexName: idx_library_versions_is_lts
+        tableName: library_versions
+        using: btree
+- changeSet:
+    id: 1770271607211-13
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: status
+        indexName: idx_library_versions_status
+        tableName: library_versions
+        using: btree
+- changeSet:
+    id: 1770271607211-14
+    author: liquibase (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: library_id, version
+        constraintName: library_versions_library_id_version_key
+        tableName: library_versions
+- changeSet:
+    id: 1770271607211-15
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: version_id
+        indexName: idx_documents_version_id
+        tableName: documents
+        using: btree
+- changeSet:
+    id: 1770271607211-16
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: doc_type
+        indexName: idx_documents_doc_type
+        tableName: documents
+        using: btree
+- changeSet:
+    id: 1770271607211-17
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: search_vector
+        indexName: idx_documents_search_vector
+        tableName: documents
+        using: gin
+- changeSet:
+    id: 1770271607211-18
+    author: liquibase (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: version_id, path
+        constraintName: documents_version_id_path_key
+        tableName: documents
+- changeSet:
+    id: 1770271607211-19
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: document_id
+        indexName: idx_code_examples_document_id
+        tableName: code_examples
+        using: btree
+- changeSet:
+    id: 1770271607211-20
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: language
+        indexName: idx_code_examples_language
+        tableName: code_examples
+        using: btree
+- changeSet:
+    id: 1770271607211-21
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: version_id
+        indexName: idx_sync_history_version_id
+        tableName: sync_history
+        using: btree
+- changeSet:
+    id: 1770271607211-22
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: status
+        indexName: idx_sync_history_status
+        tableName: sync_history
+        using: btree
+- changeSet:
+    id: 1770271607211-23
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: status
+        indexName: idx_api_keys_status
+        tableName: api_keys
+        using: btree
+- changeSet:
+    id: 1770271607211-24
+    author: liquibase (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: key_prefix
+        constraintName: api_keys_key_prefix_key
+        tableName: api_keys
+- changeSet:
+    id: 1770271607211-25
+    author: liquibase (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: name
+        constraintName: api_keys_name_key
+        tableName: api_keys
+- changeSet:
+    id: 1770271607211-26
+    author: liquibase (generated)
+    changes:
+    - createTable:
+        columns:
+        - column:
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: document_chunks_pkey
+            name: id
+            remarks: TSID 格式（13 字元 Crockford Base32）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: document_id
+            remarks: 所屬文件 ID（外鍵關聯 documents）
+            type: VARCHAR(13)
+        - column:
+            constraints:
+              nullable: false
+            name: chunk_index
+            remarks: 區塊索引，從 0 開始，表示在原文件中的順序
+            type: INTEGER
+        - column:
+            constraints:
+              nullable: false
+            name: content
+            remarks: 區塊文字內容（典型大小 500-1000 tokens）
+            type: TEXT
+        - column:
+            name: embedding
+            remarks: 768 維度向量嵌入，用於語意搜尋（gemini-embedding-001）
+            type: VECTOR
+        - column:
+            name: token_count
+            remarks: 此區塊的 token 數量
+            type: INTEGER
+        - column:
+            defaultValueComputed: "'{}'::jsonb"
+            name: metadata
+            remarks: 額外元資料（JSONB 格式，含 versionId 等篩選欄位）
+            type: JSONB
+        - column:
+            defaultValueNumeric: 0
+            name: version
+            remarks: 樂觀鎖版本號，用於併發控制
+            type: BIGINT
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: created_at
+            remarks: 資料建立時間
+            type: TIMESTAMP WITH TIME ZONE
+        - column:
+            defaultValueComputed: CURRENT_TIMESTAMP
+            name: updated_at
+            remarks: 資料最後更新時間
+            type: TIMESTAMP WITH TIME ZONE
+        remarks: 儲存分塊的文件內容與向量嵌入
+        tableName: document_chunks
+- changeSet:
+    id: 1770271607211-27
+    author: liquibase (generated)
+    changes:
+    - addUniqueConstraint:
+        columnNames: document_id, chunk_index
+        constraintName: document_chunks_document_id_chunk_index_key
+        tableName: document_chunks
+- changeSet:
+    id: 1770271607211-28
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            name: document_id
+        indexName: idx_document_chunks_document_id
+        tableName: document_chunks
+        using: btree
+- changeSet:
+    id: 1770271607211-29
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            defaultValueComputed: "'{}'::jsonb"
+            name: metadata
+        indexName: idx_document_chunks_metadata
+        tableName: document_chunks
+        using: gin
+- changeSet:
+    id: 1770271607211-30
+    author: liquibase (generated)
+    changes:
+    - createIndex:
+        columns:
+        - column:
+            computed: true
+            name: ((metadata ->> 'versionId'::text))
+        indexName: idx_document_chunks_version_id
+        tableName: document_chunks
+        using: btree
+- changeSet:
+    id: 1770271607211-31
+    author: liquibase (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: document_id
+        baseTableName: code_examples
+        constraintName: code_examples_document_id_fkey
+        deferrable: false
+        initiallyDeferred: false
+        onDelete: CASCADE
+        onUpdate: NO ACTION
+        referencedColumnNames: id
+        referencedTableName: documents
+        validate: true
+- changeSet:
+    id: 1770271607211-32
+    author: liquibase (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: document_id
+        baseTableName: document_chunks
+        constraintName: document_chunks_document_id_fkey
+        deferrable: false
+        initiallyDeferred: false
+        onDelete: CASCADE
+        onUpdate: NO ACTION
+        referencedColumnNames: id
+        referencedTableName: documents
+        validate: true
+- changeSet:
+    id: 1770271607211-33
+    author: liquibase (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: version_id
+        baseTableName: documents
+        constraintName: documents_version_id_fkey
+        deferrable: false
+        initiallyDeferred: false
+        onDelete: CASCADE
+        onUpdate: NO ACTION
+        referencedColumnNames: id
+        referencedTableName: library_versions
+        validate: true
+- changeSet:
+    id: 1770271607211-34
+    author: liquibase (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: library_id
+        baseTableName: library_versions
+        constraintName: library_versions_library_id_fkey
+        deferrable: false
+        initiallyDeferred: false
+        onDelete: CASCADE
+        onUpdate: NO ACTION
+        referencedColumnNames: id
+        referencedTableName: libraries
+        validate: true
+- changeSet:
+    id: 1770271607211-35
+    author: liquibase (generated)
+    changes:
+    - addForeignKeyConstraint:
+        baseColumnNames: version_id
+        baseTableName: sync_history
+        constraintName: sync_history_version_id_fkey
+        deferrable: false
+        initiallyDeferred: false
+        onDelete: CASCADE
+        onUpdate: NO ACTION
+        referencedColumnNames: id
+        referencedTableName: library_versions
+        validate: true

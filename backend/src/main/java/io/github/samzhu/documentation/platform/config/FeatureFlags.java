@@ -38,11 +38,6 @@ public class FeatureFlags {
     private boolean syncScheduling = false;
 
     /**
-     * 是否啟用併發限制功能
-     */
-    private boolean concurrencyLimit = true;
-
-    /**
      * 是否啟用 OAuth2 認證
      * 本地開發時可設為 false
      */
@@ -86,14 +81,6 @@ public class FeatureFlags {
 
     public void setSyncScheduling(boolean syncScheduling) {
         this.syncScheduling = syncScheduling;
-    }
-
-    public boolean isConcurrencyLimit() {
-        return concurrencyLimit;
-    }
-
-    public void setConcurrencyLimit(boolean concurrencyLimit) {
-        this.concurrencyLimit = concurrencyLimit;
     }
 
     public boolean isOauth2() {

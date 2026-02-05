@@ -1,6 +1,5 @@
 package io.github.samzhu.documentation.platform.config;
 
-import io.github.samzhu.documentation.platform.security.ConcurrencyLimitInterceptor;
 import io.github.samzhu.documentation.platform.security.CookieAuthorizationRequestRepository;
 import io.github.samzhu.documentation.platform.security.OAuth2AuthenticationSuccessHandler;
 import io.github.samzhu.documentation.platform.security.TokenCookieAuthenticationFilter;
@@ -18,8 +17,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * 安全配置（無狀態 BFF 模式）
@@ -37,19 +34,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig implements WebMvcConfigurer {
-
-    private final ConcurrencyLimitInterceptor concurrencyLimitInterceptor;
+public class SecurityConfig {
 
     @Autowired(required = false)
     private CookieAuthorizationRequestRepository cookieAuthRequestRepo;
 
     @Autowired(required = false)
     private OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler;
-
-    public SecurityConfig(ConcurrencyLimitInterceptor concurrencyLimitInterceptor) {
-        this.concurrencyLimitInterceptor = concurrencyLimitInterceptor;
-    }
 
     /**
      * 密碼編碼器
@@ -166,13 +157,4 @@ public class SecurityConfig implements WebMvcConfigurer {
         return http.build();
     }
 
-    /**
-     * 註冊併發限制攔截器
-     */
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(concurrencyLimitInterceptor)
-                .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/api-keys/**");  // API Key 管理端點不限制
-    }
 }
