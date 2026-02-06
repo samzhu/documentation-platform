@@ -1,0 +1,72 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.0.2'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.graalvm.buildtools.native' version '0.11.4'
+	id 'org.cyclonedx.bom' version '3.1.0'
+}
+
+group = 'io.github.samzhu'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('datasourceMicrometerVersion', "2.1.0")
+	set('springAiVersion', "2.0.0-M2")
+}
+
+dependencies {
+	// Spring Boot 核心
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// OpenTelemetry 可觀測性（已包含 micrometer-tracing-bridge-otel + micrometer-registry-otlp + opentelemetry-exporter-otlp）
+	// 注意：不可同時使用 micrometer-tracing-bridge-brave，兩者互斥
+	implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
+
+	// JDBC 查詢追蹤（自動配置 + OTel 語意規範：db.operation、db.statement 等標準屬性）
+	implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot'
+	implementation 'net.ttddyy.observation:datasource-micrometer-opentelemetry'
+
+	// MCP Server + Security
+	implementation 'org.springaicommunity:mcp-server-security:0.1.1'
+	implementation 'org.springframework.ai:spring-ai-starter-mcp-server'
+
+	// AI 嵌入模型（查詢向量生成，需與 backend 使用相同模型確保向量空間一致）
+	implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-embedding'
+
+	// 開發工具
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+
+	// 執行期依賴
+	runtimeOnly 'org.postgresql:postgresql'
+
+	// 測試依賴
+	testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-data-jdbc-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-opentelemetry-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+		mavenBom "net.ttddyy.observation:datasource-micrometer-bom:${datasourceMicrometerVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

@@ -1,2 +1,3 @@
 # 部署配置（含敏感資訊）
 deploy/
+.DS_Store

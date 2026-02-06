@@ -26,6 +26,7 @@ repositories {
 }
 
 ext {
+	set('datasourceMicrometerVersion', "2.1.0")
 	set('springAiVersion', "2.0.0-M2")
 }
 
@@ -46,8 +47,9 @@ dependencies {
 	// OpenTelemetry - 可觀測性（Traces, Metrics, Logs）
 	implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
 
-	// JDBC 查詢追蹤 - 在 trace 中顯示每條 SQL 的執行時間
-	implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot:2.0.1'
+	// JDBC 查詢追蹤（自動配置 + OTel 語意規範：db.operation、db.statement 等標準屬性）
+	implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot'
+	implementation 'net.ttddyy.observation:datasource-micrometer-opentelemetry'
 
 	// OAuth2 Resource Server（JWT 驗證）與 Client（前端登入流程）
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
@@ -93,6 +95,7 @@ dependencies {
 dependencyManagement {
 	imports {
 		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+		mavenBom "net.ttddyy.observation:datasource-micrometer-bom:${datasourceMicrometerVersion}"
 	}
 }
 
