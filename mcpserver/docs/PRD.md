@@ -1,6 +1,6 @@
 # Documentation MCP Server - PRD
 
-> **版本**：1.1.0
+> **版本**：1.2.0
 > **狀態**：Draft
 
 ---
@@ -70,9 +70,9 @@ Documentation MCP Server 是基於 **Model Context Protocol (MCP)** 的唯讀文
 | 框架 | Spring Boot | 4.0.2 |
 | MCP Server | spring-ai-starter-mcp-server-webmvc | 2.0.0-M2 |
 | MCP 安全 | org.springaicommunity:mcp-server-security | 0.1.1 |
-| AI 嵌入 | Vertex AI Embedding（gemini-embedding-001） | 2.0.0-M2 |
+| AI 嵌入 | Google GenAI Embedding（gemini-embedding-001） | 2.0.0-M2 |
 | 資料庫 | Spring Data JDBC + PostgreSQL + pgvector | - |
-| 可觀測性 | OpenTelemetry + Micrometer Brave | - |
+| 可觀測性 | OpenTelemetry（spring-boot-starter-opentelemetry） | - |
 | 建構 | Gradle 9.3.0 + GraalVM Native 0.11.4 | - |
 
 > **重要依賴修正**：模板預設的 `spring-ai-starter-mcp-server`（STDIO 傳輸）必須替換為
@@ -87,8 +87,8 @@ Documentation MCP Server 是基於 **Model Context Protocol (MCP)** 的唯讀文
 │                   Documentation MCP Server                          │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Transport Layer                                                    │
-│  └── Streamable-HTTP（POST /mcp）                                   │
-│      spring.ai.mcp.server.protocol=STREAMABLE                      │
+│  └── Stateless Streamable-HTTP（POST /mcp）                         │
+│      spring.ai.mcp.server.protocol=STATELESS                       │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Security Layer（mcp-server-security）                               │
 │  └── API Key 認證（McpServerApiKeyConfigurer）                       │
@@ -101,13 +101,15 @@ Documentation MCP Server 是基於 **Model Context Protocol (MCP)** 的唯讀文
 ├─────────────────────────────────────────────────────────────────────┤
 │  Service Layer                                                      │
 │  ├── SearchService（混合搜尋：全文 + 語意 + RRF）                     │
-│  ├── EmbeddingService（查詢向量生成，Vertex AI）                      │
 │  └── LibraryQueryService（文件庫/版本/文件查詢）                      │
 ├─────────────────────────────────────────────────────────────────────┤
+│  Infrastructure Layer                                                │
+│  └── DocumentChunkVectorStore（唯讀 VectorStore，內部自動 embed）     │
+├─────────────────────────────────────────────────────────────────────┤
 │  Data Access Layer（Read-Only）                                      │
-│  ├── LibraryRepository          ├── DocumentChunkRepository         │
-│  ├── LibraryVersionRepository   ├── CodeExampleRepository           │
-│  ├── DocumentRepository         └── ApiKeyRepository                │
+│  ├── LibraryRepository          ├── CodeExampleRepository           │
+│  ├── LibraryVersionRepository   └── ApiKeyRepository                │
+│  ├── DocumentRepository                                             │
 └─────────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -134,8 +136,8 @@ Documentation MCP Server 是基於 **Model Context Protocol (MCP)** 的唯讀文
 |------|---------|----------|-------------------------|
 | STDIO | `spring-ai-starter-mcp-server` | 嵌入式 CLI 工具 | ❌ 不支援 |
 | SSE | webmvc / webflux | 即時串流（已棄用） | ❌ 不支援（已棄用） |
-| **STREAMABLE** | **webmvc** / webflux | **HTTP + 可選 SSE 串流** | ✅ 支援（僅 WebMVC） |
-| STATELESS | webmvc / webflux | 無狀態微服務 | ✅ 支援（僅 WebMVC） |
+| STREAMABLE | webmvc / webflux | HTTP + 可選 SSE 串流 | ✅ 支援（僅 WebMVC） |
+| **STATELESS** | **webmvc** / webflux | **無狀態微服務（Cloud Run 適用）** | ✅ 支援（僅 WebMVC） |
 
 ---
 
@@ -338,30 +340,47 @@ MCP Server 定義自己的 Entity 類別（對應相同的資料表結構，但�
 | Library | `libraries` | TSID (13 chars) | 文件庫基本資訊 |
 | LibraryVersion | `library_versions` | TSID | 版本資訊查詢 |
 | Document | `documents` | TSID | 文件內容讀取、全文搜尋 |
-| DocumentChunk | `document_chunks` | TSID | 語意搜尋（pgvector 768D） |
 | CodeExample | `code_examples` | TSID | 程式碼範例查詢 |
 | ApiKey | `api_keys` | TSID | API Key 驗證 |
 
+> **注意**：不需要 `DocumentChunk` entity — `DocumentChunkVectorStore` 透過 JdbcTemplate + PGvector 直接操作 `document_chunks` 表，回傳 Spring AI `Document` 物件。
+
 **Entity 設計原則：**
-- 使用 `@Value`（Lombok immutable）+ `@With` + `@Version`，與 backend 一致
+- **無 Lombok**：全部手寫（final fields + constructor + getters + equals/hashCode/toString）
 - 所有 ID 為 TSID（13 字元 Crockford Base32）
-- 不包含寫入用的 factory method（唯讀）
+- 不包含 `@Version`、`@With`、`create()` — 唯讀不需樂觀鎖與寫入方法
+- 與 backend 使用 Lombok `@Value` 的風格不同
 
 ### 4.3 關鍵查詢
 
 #### 語意搜尋（Semantic Search）
 
+透過 `DocumentChunkVectorStore`（實作 Spring AI `VectorStore` 介面）執行：
+
+```java
+SearchRequest request = SearchRequest.builder()
+    .query("搜尋文字")                    // VectorStore 內部自動呼叫 EmbeddingModel.embed()
+    .topK(10)
+    .similarityThreshold(0.5)
+    .filterExpression("versionId == 'abc123'")  // 轉為 JSONPath 過濾
+    .build();
+List<Document> results = vectorStore.similaritySearch(request);
+```
+
+底層 SQL（由 VectorStore 內部執行）：
 ```sql
-SELECT dc.* FROM document_chunks dc
-JOIN documents d ON dc.document_id = d.id
-WHERE d.version_id = :versionId
-  AND dc.embedding IS NOT NULL
-ORDER BY dc.embedding <=> cast(:queryEmbedding as vector)
-LIMIT :limit
+SELECT dc.id, dc.content, dc.metadata, dc.embedding <=> ? AS distance
+FROM document_chunks dc
+WHERE dc.embedding IS NOT NULL
+  AND metadata::jsonb @@ '$.versionId == "abc123"'::jsonpath
+  AND dc.embedding <=> ? < ?
+ORDER BY distance
+LIMIT ?
 ```
 
 - 使用 pgvector `<=>` 運算子（cosine distance）
-- 查詢向量格式：`"[0.1,0.2,...,0.768]"`（768 維浮點數陣列字串）
+- **不需 EmbeddingService** — VectorStore 內部的 `EmbeddingModel` 自動處理查詢向量生成
+- 透過 `DocumentChunkFilterExpressionConverter` 將 filterExpression 轉為 PostgreSQL JSONPath
 
 #### 全文搜尋（Full-Text Search）
 
@@ -487,10 +506,9 @@ public String searchDocuments(...) {
 | 用途 | 文件索引（批量嵌入） | 查詢向量生成（單筆） |
 | 模型 | gemini-embedding-001 | gemini-embedding-001 |
 | 維度 | 768 | 768 |
-| Provider | Google GenAI（`spring-ai-starter-model-google-genai`） | Vertex AI（`spring-ai-starter-model-vertex-ai-embedding`） |
+| Provider | Google GenAI（`spring-ai-starter-model-google-genai-embedding`） | Google GenAI（`spring-ai-starter-model-google-genai-embedding`） |
 
-> **關鍵**：兩端必須使用**相同的嵌入模型與維度**，確保向量空間一致。
-> `gemini-embedding-001` 無論透過 Google GenAI 或 Vertex AI 存取，產生的向量相同。
+> **關鍵**：兩端使用**相同的嵌入模型、維度、API Key**，確保向量空間一致。
 
 ### 6.2 查詢向量生成流程
 
@@ -498,20 +516,20 @@ public String searchDocuments(...) {
 使用者問題（自然語言）
     │
     ▼
-EmbeddingModel（Vertex AI gemini-embedding-001）
+SearchService 呼叫 VectorStore.similaritySearch(SearchRequest)
     │
     ▼
-768 維查詢向量（float[]）
+DocumentChunkVectorStore 內部：
+    ├── EmbeddingModel.embed(query) → 768 維查詢向量（float[]）
+    ├── 轉為 PGvector 物件
+    ├── 建構 SQL（含 JSONPath metadata 過濾）
+    └── JdbcTemplate 執行查詢
     │
     ▼
-轉為 PostgreSQL vector 字串格式："[0.1,0.2,...,0.768]"
-    │
-    ▼
-pgvector cosine distance 查詢（<=> 運算子）
-    │
-    ▼
-排序後的 DocumentChunk 列表
+排序後的 Spring AI Document 列表（含 metadata + score）
 ```
+
+> **注意**：不需獨立的 EmbeddingService — VectorStore 抽象層內部自動處理向量生成。
 
 ---
 
@@ -547,7 +565,7 @@ spring:
         version: 1.0.0
         instructions: "Technical documentation search and retrieval MCP server. Use search_documents to find relevant docs, list_libraries to see available libraries."
         type: SYNC
-        protocol: STREAMABLE
+        protocol: STATELESS
         annotation-scanner:
           enabled: true
         capabilities:
@@ -556,12 +574,15 @@ spring:
           prompt: true
           completion: false
 
-    # Vertex AI 嵌入模型（查詢向量生成用）
-    vertex:
-      ai:
+    # Google GenAI Embedding（與 Backend 使用相同模型與 API Key）
+    google:
+      genai:
         embedding:
-          options:
-            model: gemini-embedding-001
+          api-key: ${platform-google-api-key:}
+          text:
+            options:
+              model: gemini-embedding-001
+              dimensions: 768
 
 # 搜尋配置
 platform:
@@ -580,9 +601,7 @@ platform:
 | `platform-db-url` | PostgreSQL 連線 URL | 是 | `jdbc:postgresql://localhost:5432/mydatabase` |
 | `platform-db-username` | 資料庫使用者名稱 | 是 | `myuser` |
 | `platform-db-password` | 資料庫密碼 | 是 | `secret` |
-| `GOOGLE_CLOUD_PROJECT` | GCP 專案 ID（Vertex AI） | 是 | - |
-| `GOOGLE_CLOUD_LOCATION` | GCP 區域 | 否 | `us-central1` |
-| `GOOGLE_APPLICATION_CREDENTIALS` | GCP 服務帳號金鑰路徑 | 是（生產） | - |
+| `platform-google-api-key` | Google AI API Key（嵌入模型用） | 是 | - |
 
 ### 7.3 Profile 配置
 
@@ -610,7 +629,11 @@ dependencies {
     implementation 'org.springaicommunity:mcp-server-security:0.1.1'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
-    implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-embedding'
+    implementation 'org.springframework.ai:spring-ai-starter-model-google-genai-embedding'
+
+    // ✅ 新增：PgVector 向量儲存（PGvector 類別 + PgVectorStoreProperties）
+    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
+
     // ...其餘不變
 }
 ```
@@ -623,7 +646,8 @@ dependencies {
 mcpserver/
 ├── build.gradle
 ├── settings.gradle
-├── compose.yaml                                # Docker Compose（開發用）
+├── CLAUDE.md                                   # AI 輔助開發指引
+├── compose.yaml                                # Docker Compose（pgvector + Grafana LGTM）
 ├── docs/
 │   └── PRD.md                                  # 本文件
 └── src/
@@ -632,27 +656,38 @@ mcpserver/
     │   │   ├── DocumentationMcpServerApplication.java
     │   │   ├── config/
     │   │   │   ├── SecurityConfig.java               # SecurityFilterChain + API Key
-    │   │   │   └── SearchProperties.java             # 搜尋參數配置
+    │   │   │   ├── SearchProperties.java             # 搜尋參數配置（record）
+    │   │   │   ├── JdbcConfig.java                   # JDBC 型別轉換（JSONB↔Map、Timestamp↔OffsetDateTime）
+    │   │   │   └── VectorStoreConfig.java            # DocumentChunkVectorStore Bean
     │   │   ├── domain/
-    │   │   │   └── model/                            # Entity（唯讀，對應共用表）
+    │   │   │   ├── enums/
+    │   │   │   │   ├── SourceType.java               # GITHUB, LOCAL, MANUAL
+    │   │   │   │   ├── VersionStatus.java            # ACTIVE, DEPRECATED, EOL
+    │   │   │   │   └── ApiKeyStatus.java             # ACTIVE, REVOKED
+    │   │   │   └── model/                            # 唯讀 Entity（無 Lombok、無 @Version）
     │   │   │       ├── Library.java
     │   │   │       ├── LibraryVersion.java
     │   │   │       ├── Document.java
-    │   │   │       ├── DocumentChunk.java
     │   │   │       ├── CodeExample.java
     │   │   │       └── ApiKey.java
+    │   │   ├── infrastructure/
+    │   │   │   └── vectorstore/
+    │   │   │       ├── DocumentChunkVectorStore.java           # 唯讀 VectorStore（pgvector 搜尋）
+    │   │   │       └── DocumentChunkFilterExpressionConverter.java  # Filter → JSONPath
     │   │   ├── repository/                           # Spring Data JDBC Repository
     │   │   │   ├── LibraryRepository.java
     │   │   │   ├── LibraryVersionRepository.java
     │   │   │   ├── DocumentRepository.java
-    │   │   │   ├── DocumentChunkRepository.java
+    │   │   │   ├── CodeExampleRepository.java
     │   │   │   └── ApiKeyRepository.java
     │   │   ├── security/
+    │   │   │   ├── DatabaseApiKeyEntity.java            # mcp-server-security 實體
     │   │   │   └── DatabaseApiKeyEntityRepository.java  # 自訂 API Key 存取
     │   │   ├── service/
     │   │   │   ├── SearchService.java                # 混合搜尋（全文 + 語意 + RRF）
-    │   │   │   ├── EmbeddingService.java             # 查詢向量生成
-    │   │   │   └── LibraryQueryService.java          # 文件庫/版本/文件查詢
+    │   │   │   ├── LibraryQueryService.java          # 文件庫/版本/文件查詢
+    │   │   │   └── dto/
+    │   │   │       └── SearchResultItem.java         # 搜尋結果 record
     │   │   └── mcp/
     │   │       ├── SearchDocumentsTool.java           # @McpTool: search_documents
     │   │       ├── ListLibrariesTool.java             # @McpTool: list_libraries
@@ -662,16 +697,10 @@ mcpserver/
     │   │       ├── DocumentResources.java             # @McpResource: docs://, library://
     │   │       └── DocumentPrompts.java               # @McpPrompt: search-docs, explain-with-docs
     │   └── resources/
-    │       ├── application.yaml
-    │       ├── application-local.yaml
-    │       └── application-dev.yaml
+    │       └── application.yaml
     └── test/
         └── java/io/github/samzhu/documentation/mcp/
-            ├── DocumentationMcpServerApplicationTests.java
-            ├── mcp/
-            │   └── SearchDocumentsToolTest.java
-            └── service/
-                └── SearchServiceTest.java
+            └── DocumentationMcpServerApplicationTests.java
 ```
 
 ---
@@ -704,7 +733,7 @@ services:
       platform-db-url: jdbc:postgresql://db:5432/mydatabase
       platform-db-username: myuser
       platform-db-password: secret
-      GOOGLE_CLOUD_PROJECT: ${GCP_PROJECT_ID}
+      platform-google-api-key: ${PLATFORM_GOOGLE_API_KEY}
     depends_on:
       - db
 
@@ -762,10 +791,10 @@ volumes:
 
 ```bash
 # 編譯為原生執行檔（需要 GraalVM 25+）
-cd mcpserver && ../gradlew nativeCompile
+cd mcpserver && ./gradlew nativeCompile
 
 # 或建構為容器映像
-cd mcpserver && ../gradlew bootBuildImage
+cd mcpserver && ./gradlew bootBuildImage
 ```
 
 ---
@@ -776,11 +805,14 @@ cd mcpserver && ../gradlew bootBuildImage
 
 | 組件 | 技術 | 用途 |
 |------|------|------|
-| 分散式追蹤 | Micrometer Tracing + Brave | 請求追蹤鏈路 |
-| 指標匯出 | Micrometer + OTLP Registry | 效能指標 |
-| DataSource 指標 | datasource-micrometer | 連線池監控 |
+| 分散式追蹤 | OpenTelemetry（spring-boot-starter-opentelemetry） | 請求追蹤鏈路 |
+| 指標匯出 | Micrometer + OTLP Registry（HTTP :4318） | 效能指標 |
+| DataSource 指標 | datasource-micrometer + opentelemetry | 連線池監控 + DB 語意屬性 |
 | 健康檢查 | Spring Boot Actuator | `/actuator/health` |
 | 視覺化 | Grafana LGTM（開發用 compose.yaml） | Logs / Traces / Metrics |
+
+> **注意**：使用 `spring-boot-starter-opentelemetry`（含 bridge-otel + registry-otlp），
+> **不可同時使用** `micrometer-tracing-bridge-brave`，兩者互斥。
 
 ### 11.2 Actuator 端點
 
@@ -798,10 +830,10 @@ cd mcpserver && ../gradlew bootBuildImage
 
 | 任務 | 指令 |
 |------|------|
-| 開發執行 | `cd mcpserver && ../gradlew bootRun` |
-| 執行測試 | `cd mcpserver && ../gradlew test` |
-| 建構 JAR | `cd mcpserver && ../gradlew build` |
-| Native 編譯 | `cd mcpserver && ../gradlew nativeCompile` |
+| 開發執行 | `cd mcpserver && ./gradlew bootRun` |
+| 執行測試 | `cd mcpserver && ./gradlew test` |
+| 建構 JAR | `cd mcpserver && ./gradlew build` |
+| Native 編譯 | `cd mcpserver && ./gradlew nativeCompile` |
 
 ### 12.2 MCP 註解快速參考
 
@@ -882,7 +914,7 @@ Phase 2 將在以下條件滿足後啟動：
 | 社群套件版本 ≥ 1.0 | API 穩定，不再有破壞性變更 | ❌ 目前 0.2.0 |
 | 納入 Spring AI Core | 由 Spring 官方維護，有長期支援保障 | ❌ 社群孵化中 |
 | A2A 協定規格穩定 | Linux Foundation 發布正式版規格 | ❌ 目前 v0.3 |
-| Phase 1 穩定運行 | MCP Server 核心功能無重大 Bug | ⏳ 開發中 |
+| Phase 1 穩定運行 | MCP Server 核心功能無重大 Bug | ✅ 核心功能已實作 |
 
 ### 13.5 Phase 2 預期架構
 
@@ -980,5 +1012,6 @@ Agent Card 是 A2A 協定的身份描述文件，其他 Agent 透過此文件發
 
 | 版本 | 日期 | 變更內容 | 作者 |
 |------|------|----------|------|
+| 1.2.0 | 2026-02-06 | **Phase 1 實作完成**：更新架構圖（移除 EmbeddingService/DocumentChunkRepository、加入 VectorStore 層）、更新 Entity 設計（無 Lombok、無 @Version）、更新語意搜尋為 VectorStore 抽象層、更新專案結構（含 infrastructure/vectorstore/）、修正可觀測性為 OpenTelemetry、新增 CLAUDE.md | Claude |
 | 1.1.0 | 2026-02-05 | 新增 Phase 2：A2A（Agent-to-Agent）協定支援規劃（待套件穩定） | Claude |
 | 1.0.0 | 2026-02-05 | 初始版本：MCP Server PRD 定義（Tools、Resources、Prompts、API Key 安全、架構、部署） | Claude |

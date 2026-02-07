@@ -4,7 +4,6 @@ import io.github.samzhu.documentation.platform.domain.enums.ApiKeyStatus;
 import io.github.samzhu.documentation.platform.domain.model.ApiKey;
 import io.github.samzhu.documentation.platform.repository.ApiKeyRepository;
 import io.github.samzhu.documentation.platform.service.IdService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +33,11 @@ public class ApiKeyService {
     private final PasswordEncoder passwordEncoder;
     private final SecureRandom secureRandom;
 
-    public ApiKeyService(IdService idService, ApiKeyRepository apiKeyRepository) {
+    public ApiKeyService(IdService idService, ApiKeyRepository apiKeyRepository,
+                         PasswordEncoder passwordEncoder) {
         this.idService = idService;
         this.apiKeyRepository = apiKeyRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.passwordEncoder = passwordEncoder;
         this.secureRandom = new SecureRandom();
     }
 

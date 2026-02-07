@@ -11,6 +11,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -38,11 +40,13 @@ class ApiKeyServiceTest {
     @Mock
     private ApiKeyRepository apiKeyRepository;
 
+    private final PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
     private ApiKeyService apiKeyService;
 
     @BeforeEach
     void setUp() {
-        apiKeyService = new ApiKeyService(idService, apiKeyRepository);
+        apiKeyService = new ApiKeyService(idService, apiKeyRepository, passwordEncoder);
     }
 
     @Test
@@ -135,9 +139,11 @@ class ApiKeyServiceTest {
         // Given
         String rawKey = "dmcp_abcdefghijklmnopqrstuvwxyz123456";
         String keyPrefix = rawKey.substring(0, 12);
+        // 使用 DelegatingPasswordEncoder 產生正確格式的 hash（含 {bcrypt} 前綴）
+        String encodedHash = passwordEncoder.encode(rawKey);
 
         ApiKey apiKey = ApiKey.create(
-                "0HZXJ8KYPKA9E", "test", "hash", keyPrefix,
+                "0HZXJ8KYPKA9E", "test", encodedHash, keyPrefix,
                 1000, null, "admin"
         );
 
@@ -146,9 +152,9 @@ class ApiKeyServiceTest {
         // When
         Optional<ApiKey> result = apiKeyService.validateKey(rawKey);
 
-        // Then - 由於我們無法驗證 BCrypt hash，這裡會失敗
-        // 在實際應用中，應該使用完整的 hash 驗證
-        assertThat(result).isEmpty(); // 因為 hash 不匹配
+        // Then - 使用正確的 hash 應驗證成功
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo("0HZXJ8KYPKA9E");
     }
 
     @Test

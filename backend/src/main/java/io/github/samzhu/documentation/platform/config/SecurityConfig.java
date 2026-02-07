@@ -11,7 +11,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
@@ -45,12 +45,13 @@ public class SecurityConfig {
     /**
      * 密碼編碼器
      * <p>
-     * 使用 BCrypt 進行 API Key 雜湊（供 MCP Server 驗證使用）
+     * Spring Security 官方推薦：自帶算法前綴（{bcrypt}、{argon2} 等）
+     * Hash 格式：{bcrypt}$2a$10$... → MCP Server DelegatingPasswordEncoder 直接相容
      * </p>
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
     // ==================== OAuth2 模式（生產環境） ====================

@@ -41,10 +41,14 @@ dependencies {
 
 	// MCP Server + Security
 	implementation 'org.springaicommunity:mcp-server-security:0.1.1'
-	implementation 'org.springframework.ai:spring-ai-starter-mcp-server'
+	// mcp-server-security 僅支援 WebMVC（不支援 STDIO/SSE），故使用 webmvc 版本
+	implementation 'org.springframework.ai:spring-ai-starter-mcp-server-webmvc'
 
 	// AI 嵌入模型（查詢向量生成，需與 backend 使用相同模型確保向量空間一致）
-	implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-embedding'
+	implementation 'org.springframework.ai:spring-ai-starter-model-google-genai-embedding'
+
+	// PgVector 向量儲存（提供 PGvector 類別及 PgVectorStoreProperties 配置）
+	implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
 
 	// 開發工具
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'

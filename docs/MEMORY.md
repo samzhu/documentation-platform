@@ -24,7 +24,7 @@
 
 ### 向量嵌入
 - 模型：gemini-embedding-001，768 維
-- backend 用 Google GenAI，mcpserver 用 Vertex AI（向量相同）
+- backend 和 mcpserver 都用 Google GenAI（`spring-ai-starter-model-google-genai-embedding`），共用同一組 API Key
 
 ## 常見陷阱
 - `datasource-micrometer` 用 BOM 管理版本（`2.1.0`），不要寫死版本號

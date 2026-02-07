@@ -1,3 +1,117 @@
 spring:
   application:
     name: documentation-mcp-server
+  profiles:
+    default: local,dev  # Cloud Run 透過 SPRING_PROFILES_ACTIVE 覆蓋
+  threads:
+    virtual:
+      enabled: true  # Java 25 Virtual Threads
+  sql:
+    init:
+      mode: never
+  liquibase:
+    enabled: false  # Schema 由 Backend Liquibase 管理
+  lifecycle:
+    timeout-per-shutdown-phase: 8s
+
+  # ----- 資料庫配置 -----
+  datasource:
+    url: ${platform-db-url:jdbc:postgresql://localhost:5432/mydatabase}
+    username: ${platform-db-username:myuser}
+    password: ${platform-db-password:secret}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 5
+      connection-timeout: 10000
+      idle-timeout: 600000
+      max-lifetime: 1680000
+      keepalive-time: 300000
+      pool-name: McpServerPool
+
+  # ----- Spring AI 配置 -----
+  ai:
+    # MCP Server 配置
+    mcp:
+      server:
+        name: documentation-mcp-server
+        version: 0.0.1-SNAPSHOT
+        type: SYNC
+        protocol: STATELESS  # 無狀態 Streamable HTTP，端點 POST /mcp
+
+    # Google GenAI Embedding（與 Backend 使用相同模型與 API Key）
+    google:
+      genai:
+        embedding:
+          api-key: ${platform-google-api-key:}
+          text:
+            options:
+              model: gemini-embedding-001
+              dimensions: 768  # 必須與 Backend 一致
+
+    # PgVector 配置（供 PgVectorStoreProperties 讀取）
+    vectorstore:
+      pgvector:
+        dimensions: 768
+        distance-type: COSINE_DISTANCE
+        index-type: HNSW
+        initialize-schema: false  # 不自動建表
+
+# ----- Server 配置 -----
+server:
+  shutdown: graceful
+  tomcat:
+    connection-timeout: 5s
+
+# ----- Actuator + OTel 配置（同 Backend 模式）-----
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+      show-components: when-authorized
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+  logging:
+    export:
+      otlp:
+        enabled: true
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4317
+          transport: grpc
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4317
+          transport: grpc
+    resource-attributes:
+      service.name: documentation-mcp-server
+      service.version: ${project.version:0.0.1-SNAPSHOT}
+      deployment.environment: production
+
+# ----- Platform 配置 -----
+platform:
+  search:
+    hybrid:
+      alpha: 0.3
+      min-similarity: 0.5
+    default-limit: 10
+    max-limit: 20
+
+# ----- 日誌配置 -----
+logging:
+  level:
+    root: INFO
+    io.github.samzhu.documentation.mcp: INFO

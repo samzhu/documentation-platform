@@ -439,7 +439,7 @@ services:
       - db
 
   db:
-    image: pgvector/pgvector:pg17
+    image: pgvector/pgvector:pg18
     environment:
       POSTGRES_DB: mydatabase
       POSTGRES_USER: myuser

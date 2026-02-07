@@ -56,18 +56,20 @@ export default function Setup() {
     }
   };
 
-  // MCP 端點 URL
+  // MCP 端點 URL（STATELESS Streamable HTTP）
   const baseUrl = window.location.origin;
   const mcpEndpoint = `${baseUrl}/mcp`;
 
-  // 各種設定範例
-  const claudeCodeCli = `claude mcp add docmcp -- npx -y supergateway --sse "${mcpEndpoint}/sse"`;
+  // 各種設定範例（Streamable HTTP，需搭配 X-API-Key 認證）
+  const claudeCodeCli = `claude mcp add docmcp --url "${mcpEndpoint}" --header "X-API-Key: <your-api-key>"`;
 
   const claudeCodeJson = `{
   "mcpServers": {
     "docmcp": {
-      "type": "sse",
-      "url": "${mcpEndpoint}/sse"
+      "url": "${mcpEndpoint}",
+      "headers": {
+        "X-API-Key": "<your-api-key>"
+      }
     }
   }
 }`;
@@ -75,8 +77,10 @@ export default function Setup() {
   const vscodeSettings = `{
   "mcpServers": {
     "docmcp": {
-      "type": "sse",
-      "url": "${mcpEndpoint}/sse"
+      "url": "${mcpEndpoint}",
+      "headers": {
+        "X-API-Key": "<your-api-key>"
+      }
     }
   }
 }`;
@@ -84,8 +88,10 @@ export default function Setup() {
   const cursorConfig = `{
   "mcpServers": {
     "docmcp": {
-      "type": "sse",
-      "url": "${mcpEndpoint}/sse"
+      "url": "${mcpEndpoint}",
+      "headers": {
+        "X-API-Key": "<your-api-key>"
+      }
     }
   }
 }`;
@@ -93,16 +99,24 @@ export default function Setup() {
   // 可用工具列表
   const availableTools = [
     {
-      name: 'search_documentation',
-      description: '搜尋文件庫內的文件內容'
+      name: 'search_documents',
+      description: '搜尋技術文件（支援全文、語意、混合三種模式）'
     },
     {
       name: 'list_libraries',
       description: '列出所有可用的文件庫'
     },
     {
+      name: 'list_library_versions',
+      description: '列出指定文件庫的所有版本'
+    },
+    {
       name: 'get_document',
-      description: '取得特定文件的完整內容'
+      description: '取得指定文件的完整內容（含程式碼範例）'
+    },
+    {
+      name: 'list_documents',
+      description: '列出指定版本下的所有文件路徑'
     }
   ];
 
@@ -129,14 +143,14 @@ export default function Setup() {
         <div className="glass-card-static">
           <div className="endpoint-info">
             <div className="endpoint-row">
-              <span className="endpoint-label">SSE Endpoint</span>
+              <span className="endpoint-label">MCP Endpoint</span>
               <div className="endpoint-value-wrapper">
-                <code className="endpoint-value">{mcpEndpoint}/sse</code>
+                <code className="endpoint-value">{mcpEndpoint}</code>
                 <button
                   className="btn btn-sm copy-btn"
-                  onClick={() => handleCopy(`${mcpEndpoint}/sse`, 'sse')}
+                  onClick={() => handleCopy(mcpEndpoint, 'mcp')}
                 >
-                  {copied.sse ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+                  {copied.mcp ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
                 </button>
               </div>
             </div>
@@ -301,8 +315,8 @@ export default function Setup() {
           <InfoIcon size={20} />
         </span>
         <div className="tips-content">
-          <strong>提示：</strong>如果啟用了 OAuth2 認證，您需要在 API Key 頁面建立一個 API Key，
-          並在設定中使用該 Key 作為 Bearer Token 進行認證。
+          <strong>提示：</strong>請先在「API 金鑰」頁面建立金鑰，取得 MCP 客戶端用金鑰（格式：{`{id}.{secret}`}），
+          填入上方設定範例的 X-API-Key 欄位即可使用。
         </div>
       </div>
     </div>

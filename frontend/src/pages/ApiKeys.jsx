@@ -12,7 +12,9 @@ import {
   CopyIcon,
   TrashIcon,
   AlertTriangleIcon,
-  ClockIcon
+  ClockIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
 } from '../components/Icons';
 
 export default function ApiKeys() {
@@ -20,8 +22,9 @@ export default function ApiKeys() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ name: '', expiresIn: 30 });
-  const [newKey, setNewKey] = useState(null);
-  const [copied, setCopied] = useState(false);
+  const [newKeyResult, setNewKeyResult] = useState(null);
+  const [copiedField, setCopiedField] = useState(null);
+  const [showExample, setShowExample] = useState(false);
   const [stats, setStats] = useState({ total: 0, active: 0, revoked: 0, expired: 0 });
 
   useEffect(() => {
@@ -69,7 +72,8 @@ export default function ApiKeys() {
     e.preventDefault();
     try {
       const result = await api.createApiKey(formData);
-      setNewKey(result.rawKey); // 原始金鑰只顯示這一次
+      // 保存完整結果，包含 mcpKey 和 rawKey
+      setNewKeyResult(result);
       setShowForm(false);
       setFormData({ name: '', expiresIn: 30 });
       loadApiKeys();
@@ -92,13 +96,15 @@ export default function ApiKeys() {
   };
 
   /**
-   * 複製金鑰
+   * 複製指定欄位的值
+   * @param {string} text 要複製的文字
+   * @param {string} field 欄位名稱（用於區分複製狀態）
    */
-  const copyKey = async () => {
+  const copyToClipboard = async (text, field) => {
     try {
-      await navigator.clipboard.writeText(newKey);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
     } catch (err) {
       alert('複製失敗，請手動複製');
     }
@@ -210,24 +216,77 @@ export default function ApiKeys() {
       </div>
 
       {/* 新金鑰顯示（只顯示一次） */}
-      {newKey && (
+      {newKeyResult && (
         <div className="warning-box mb-6" style={{ background: 'var(--color-warning-bg)', border: '1px solid rgba(255, 159, 10, 0.3)' }}>
           <AlertTriangleIcon className="warning-icon" size={24} />
           <div className="warning-content" style={{ flex: 1 }}>
             <h4 style={{ marginBottom: '8px', color: 'var(--color-text-primary)' }}>新金鑰已建立</h4>
-            <p style={{ marginBottom: '12px' }}>請立即複製此金鑰，關閉後將無法再次查看！</p>
+            <p style={{ marginBottom: '12px' }}>請立即複製金鑰，關閉後將無法再次查看！</p>
 
-            <div className="key-display">
-              <code style={{ flex: 1, wordBreak: 'break-all' }}>{newKey}</code>
-              <button className="btn btn-sm" onClick={copyKey}>
-                <CopyIcon size={16} />
-                {copied ? '已複製' : '複製'}
+            {/* MCP 客戶端用金鑰（主要） */}
+            <div style={{ marginBottom: '12px' }}>
+              <label className="text-xs text-muted" style={{ display: 'block', marginBottom: '4px' }}>
+                MCP 客戶端用金鑰（設定於 X-API-Key Header）
+              </label>
+              <div className="key-display">
+                <code style={{ flex: 1, wordBreak: 'break-all' }}>{newKeyResult.mcpKey}</code>
+                <button className="btn btn-sm" onClick={() => copyToClipboard(newKeyResult.mcpKey, 'mcpKey')}>
+                  <CopyIcon size={16} />
+                  {copiedField === 'mcpKey' ? '已複製' : '複製'}
+                </button>
+              </div>
+            </div>
+
+            {/* 原始金鑰（次要） */}
+            <div style={{ marginBottom: '12px' }}>
+              <label className="text-xs text-muted" style={{ display: 'block', marginBottom: '4px' }}>
+                原始金鑰
+              </label>
+              <div className="key-display">
+                <code style={{ flex: 1, wordBreak: 'break-all' }}>{newKeyResult.rawKey}</code>
+                <button className="btn btn-sm" onClick={() => copyToClipboard(newKeyResult.rawKey, 'rawKey')}>
+                  <CopyIcon size={16} />
+                  {copiedField === 'rawKey' ? '已複製' : '複製'}
+                </button>
+              </div>
+            </div>
+
+            {/* 可展開的 MCP 客戶端設定範例 */}
+            <div style={{ marginBottom: '12px' }}>
+              <button
+                className="btn btn-sm"
+                onClick={() => setShowExample(!showExample)}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                {showExample ? <ChevronUpIcon size={14} /> : <ChevronDownIcon size={14} />}
+                MCP 客戶端設定範例
               </button>
+              {showExample && (
+                <pre style={{
+                  marginTop: '8px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  background: 'var(--color-bg-secondary)',
+                  fontSize: '13px',
+                  lineHeight: '1.5',
+                  overflow: 'auto',
+                  whiteSpace: 'pre'
+                }}>{`{
+  "mcpServers": {
+    "documentation": {
+      "url": "https://your-mcp-server.example.com/mcp",
+      "headers": {
+        "X-API-Key": "${newKeyResult.mcpKey}"
+      }
+    }
+  }
+}`}</pre>
+              )}
             </div>
 
             <button
               className="btn mt-4"
-              onClick={() => setNewKey(null)}
+              onClick={() => { setNewKeyResult(null); setShowExample(false); }}
             >
               我已安全保存
             </button>
