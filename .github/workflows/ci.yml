@@ -159,8 +159,10 @@ jobs:
   # ===========================================================================
   # mcpserver-check：MCP Server 編譯檢查
   # ===========================================================================
-  # 注意：mcpserver 的 processAot 需要 DB 連線，
+  # 注意：mcpserver 使用 GraalVM Native（processAot 需要 DB 連線），
   # CI 驗證階段不需要完整 build，只做 compileJava 確認語法和依賴正確。
+  # -x processAot：setup-gradle 的 dependency graph 功能會觸發額外的 Gradle invocation，
+  #   連帶執行 classes → processAot 鏈，而 CI 沒有 DB service，必須明確排除。
   mcpserver-check:
     name: MCP Server Check
     runs-on: ubuntu-latest
@@ -181,7 +183,7 @@ jobs:
 
       - name: Compile Java
         working-directory: mcpserver
-        run: ./gradlew compileJava
+        run: ./gradlew compileJava -x processAot
 
   # ===========================================================================
   # ci-passed：聚合所有 CI 結果
