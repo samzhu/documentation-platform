@@ -15,9 +15,9 @@ spring:
     import: "optional:file:./config/application-secrets.properties"
 
   # ----- Liquibase 配置 -----
-  # 本地開發啟動時執行 Liquibase 遷移（正式環境由 Cloud Run Job 執行）
+  # 本地開發停用自動遷移，手動控制遷移時機
   liquibase:
-    enabled: true
+    enabled: false
 
   # ----- OAuth2 配置（覆蓋正式環境設定） -----
   # 使用 Mock OAuth2 Server（compose.yaml 中配置）

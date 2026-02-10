@@ -28,11 +28,11 @@ spring:
       mode: never
 
   # ----- Liquibase 配置 -----
-  # 正式環境由 Cloud Run Job 執行資料庫遷移，應用程式啟動時不執行
-  # 避免多個實例同時啟動造成 DATABASECHANGELOGLOCK 鎖定競爭
-  # 本地開發由 dev profile 覆蓋為 enabled: true
+  # 預設啟用：應用程式啟動時自動執行資料庫遷移
+  # Liquibase 內建 DATABASECHANGELOGLOCK 機制防止並行衝突
+  # 本地開發由 dev profile 覆蓋為 enabled: false（手動控制遷移時機）
   liquibase:
-    enabled: false
+    enabled: true
 
   # ----- 優雅關機超時 -----
   # Cloud Run SIGTERM 後有 10 秒寬限期，預留 2 秒給 JVM 清理
@@ -113,6 +113,13 @@ spring:
 server:
   # 優雅關機：收到 SIGTERM 後停止接收新請求，等待進行中的請求完成
   shutdown: graceful
+  # 信任反向代理的 X-Forwarded-* headers
+  # Cloud Run LB 終止 TLS 後轉發 HTTP 請求，並附上 X-Forwarded-Proto: https
+  # 設定 native 讓 Tomcat RemoteIpValve 將 request scheme 還原為 https
+  # 確保 Spring Security OAuth2 的 {baseUrl} 正確產生 https:// 的 redirect_uri
+  # 注意：Cloud Run 不會被 Spring Boot 自動偵測為 supported Cloud Platform（缺少 KUBERNETES_SERVICE_HOST），
+  # 因此預設值為 NONE，必須明確設定
+  forward-headers-strategy: native
   tomcat:
     # 連線超時
     connection-timeout: 5s
