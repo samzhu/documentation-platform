@@ -118,7 +118,7 @@ server:
   # 設定 native 讓 Tomcat RemoteIpValve 將 request scheme 還原為 https
   # 確保 Spring Security OAuth2 的 {baseUrl} 正確產生 https:// 的 redirect_uri
   # 注意：Cloud Run 不會被 Spring Boot 自動偵測為 supported Cloud Platform（缺少 KUBERNETES_SERVICE_HOST），
-  # 因此預設值為 NONE，必須明確設定
+  # 因此預設值為 NONE，必須明確設定 https://docs.spring.io/spring-boot/how-to/webserver.html#howto.webserver.use-behind-a-proxy-server
   forward-headers-strategy: native
   tomcat:
     # 連線超時

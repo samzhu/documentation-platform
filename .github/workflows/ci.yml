@@ -1,49 +1,114 @@
-# CI Pipeline for Documentation Platform
-# 前端建構 + 後端測試 + Docker Image 推送到 Docker Hub
+# =============================================================================
+# CI Pipeline — PR / push 驗證專用
+# =============================================================================
+#
+# 【設計理念】
+#   這個 workflow 的職責是「快速回饋」：開發者推 code 或發 PR 時，
+#   只驗證程式碼品質（lint、test、compile），不建構 Docker Image。
+#   Image 建構由 platform-image.yml 和 mcpserver-image.yml 負責，
+#   職責分離讓 CI 更快、更容易維護。
+#
+# 【Monorepo 路徑過濾】
+#   使用 dorny/paths-filter 偵測哪些子專案有改動，
+#   只跑有變更的 job，避免浪費 CI 資源。
+#   例如：只改了 frontend/ → 只跑 frontend-build，跳過 backend-test。
+#
+# 【觸發時機】
+#   - push to main：合併後驗證主幹是否健康
+#   - PR to main：合併前驗證 PR 品質
+#   - 不監聽 tag push（那是 image workflow 的職責）
+#
+# 【Job 流程圖】
+#
+#   detect-changes
+#       ├── frontend-build   (若 frontend/ 有變更)
+#       ├── backend-test     (若 backend/ 有變更)
+#       └── mcpserver-check  (若 mcpserver/ 有變更)
+#              └── ci-passed  (聚合所有結果，供 Branch Protection 使用)
+#
+# =============================================================================
 
 name: CI Pipeline
 
 on:
   push:
     branches: [main]
-    tags: ['v*', '[0-9]+.[0-9]+.[0-9]+*']
   pull_request:
     branches: [main]
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Image version tag (e.g., 1.0.0)'
-        required: true
-        default: 'latest'
 
-# 同一 workflow 同一 ref 只執行最新的
+# 【concurrency 說明】
+# 同一個 branch 或 PR 如果有新的 push，自動取消舊的執行。
+# group 用 github.ref 區分不同 branch/PR，避免互相取消。
+# cancel-in-progress: true → CI 驗證場景適合取消舊的，以最新 code 為準。
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# 【共用環境變數】
+# 集中定義版本號，所有 job 都能讀取，修改時只需改一處。
 env:
   DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-  IMAGE_NAME: documentation-platform
-  VERSION: ${{ github.event.inputs.version || github.ref_name }}
-  NODE_VERSION: '22'
   JAVA_VERSION: '25'
+  NODE_VERSION: '22'
 
 jobs:
-  # ===== Job 1: 前端建構 =====
+  # ===========================================================================
+  # detect-changes：偵測哪些子專案目錄有檔案變更
+  # ===========================================================================
+  # dorny/paths-filter 會比較 PR 的 diff（或 push 的 commit），
+  # 輸出每個 filter 名稱的 boolean（'true' / 'false'），
+  # 後續 job 用 if 條件判斷是否需要執行。
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    # paths-filter 在 PR 場景需要讀取 PR 資訊
+    permissions:
+      pull-requests: read
+    # 透過 outputs 把結果傳給後續 job
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      mcpserver: ${{ steps.filter.outputs.mcpserver }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          # 定義三個 filter，分別對應三個子專案目錄
+          # 只要該目錄下任何檔案有變更，對應的 output 就是 'true'
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+            mcpserver:
+              - 'mcpserver/**'
+
+  # ===========================================================================
+  # frontend-build：前端 lint + 建構驗證
+  # ===========================================================================
   frontend-build:
     name: Frontend Build
     runs-on: ubuntu-latest
+    needs: detect-changes
+    # 只在 frontend/ 有變更時執行
+    if: needs.detect-changes.outputs.frontend == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          # 快取 npm 依賴，加速後續執行（根據 package-lock.json 的 hash 決定是否命中快取）
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
+      # npm ci 比 npm install 更適合 CI：嚴格依照 lock file 安裝，確保可重現
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
@@ -51,23 +116,19 @@ jobs:
       - name: Run linting
         working-directory: frontend
         run: npm run lint
-        continue-on-error: true
 
       - name: Build frontend
         working-directory: frontend
         run: npm run build
 
-      - name: Upload frontend artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist/
-          retention-days: 1
-
-  # ===== Job 2: 後端測試 =====
+  # ===========================================================================
+  # backend-test：後端單元測試
+  # ===========================================================================
   backend-test:
     name: Backend Test
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -78,6 +139,7 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
 
+      # gradle/actions/setup-gradle 提供 Gradle 快取（依賴 + build cache）
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
 
@@ -85,22 +147,25 @@ jobs:
         working-directory: backend
         run: ./gradlew test
 
+      # if: always() → 即使測試失敗也上傳報告，方便開發者查看失敗原因
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: test-results
           path: backend/build/reports/tests/
           retention-days: 7
 
-  # ===== Job 3: 建構並推送 Docker Image =====
-  build-and-push:
-    name: Build and Push Docker Image
+  # ===========================================================================
+  # mcpserver-check：MCP Server 編譯檢查
+  # ===========================================================================
+  # 注意：mcpserver 的 processAot 需要 DB 連線，
+  # CI 驗證階段不需要完整 build，只做 compileJava 確認語法和依賴正確。
+  mcpserver-check:
+    name: MCP Server Check
     runs-on: ubuntu-latest
-    needs: [frontend-build, backend-test]
-    # 僅在 tag 或手動觸發時執行
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-
+    needs: detect-changes
+    if: needs.detect-changes.outputs.mcpserver == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -114,44 +179,40 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
 
-      - name: Download frontend artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-dist
-          path: backend/src/main/resources/static/
+      - name: Compile Java
+        working-directory: mcpserver
+        run: ./gradlew compileJava
 
-      - name: Verify frontend files
+  # ===========================================================================
+  # ci-passed：聚合所有 CI 結果
+  # ===========================================================================
+  #
+  # 【為什麼需要這個 job？】
+  #   GitHub Branch Protection 的 required checks 有個問題：
+  #   如果把 frontend-build、backend-test、mcpserver-check 都設為 required，
+  #   當某個 job 被 skipped（因為沒有對應目錄的變更）時，
+  #   GitHub 會把 skipped 視為「未完成」，導致 PR 無法合併。
+  #
+  #   解法：只把 ci-passed 這一個 job 設為 required check，
+  #   由它統一判斷：所有上游 job 都是 success 或 skipped 才算通過。
+  #
+  # 【if: always() 的作用】
+  #   即使上游 job 失敗或被取消，ci-passed 也會執行，
+  #   確保它能正確回報最終狀態（而不是因為上游失敗而自己也被跳過）。
+  #
+  ci-passed:
+    name: CI Passed
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [frontend-build, backend-test, mcpserver-check]
+    steps:
+      - name: Check job results
         run: |
-          echo "Frontend files in static directory:"
-          ls -la backend/src/main/resources/static/
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ env.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and Push Docker Image
-        working-directory: backend
-        env:
-          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          ./gradlew bootBuildImage \
-            --imageName=docker.io/${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
-            --publishImage
-
-      - name: Output image info
-        run: |
-          echo "### Docker Image Published" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Item | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Image | \`docker.io/${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Java | ${{ env.JAVA_VERSION }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build Tool | Spring Boot Buildpacks |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Pull command:**" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull docker.io/${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          results=("${{ needs.frontend-build.result }}" "${{ needs.backend-test.result }}" "${{ needs.mcpserver-check.result }}")
+          for result in "${results[@]}"; do
+            if [[ "$result" != "success" && "$result" != "skipped" ]]; then
+              echo "❌ CI failed: job result is '$result'"
+              exit 1
+            fi
+          done
+          echo "✅ All CI checks passed or skipped"

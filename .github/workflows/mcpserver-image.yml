@@ -1,0 +1,139 @@
+# =============================================================================
+# MCP Server — 建構並推送 GraalVM Native Image 到 Docker Hub
+# =============================================================================
+#
+# 【設計理念】
+#   MCP Server 使用 Spring Native（GraalVM）編譯為原生執行檔，
+#   啟動速度快、記憶體用量低，適合 serverless 或 sidecar 場景。
+#
+# 【與 platform-image.yml 的差異】
+#   - backend：JVM image（bootBuildImage 預設模式）
+#   - mcpserver：Native image（GraalVM AOT 編譯）
+#   - mcpserver 的 processAot 階段需要 PostgreSQL 連線（分析 Bean 定義），
+#     所以 services 區塊啟動了一個 PostgreSQL container。
+#
+# 【觸發時機】
+#   - tag push（格式：1.0.0）：與 platform-image.yml 共用同一個 tag
+#   - workflow_dispatch：手動觸發，可指定任意版本號
+#
+# 【Job 流程圖】
+#
+#   build-and-push（含 PostgreSQL service）
+#   (processAot → native compile → bootBuildImage → push to Docker Hub)
+#
+# =============================================================================
+
+name: MCP Server - Build and Push Native Image
+
+on:
+  push:
+    # 與 platform-image.yml 共用相同的 tag 格式
+    # 推一個 tag 會同時觸發兩個 workflow，分別建構 backend 和 mcpserver 的 image
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Image version tag (e.g., 1.0.0)'
+        required: true
+        default: 'latest'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcpserver-image
+  cancel-in-progress: false
+
+env:
+  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+  IMAGE_NAME: documentation-mcp-server
+  JAVA_VERSION: '25'
+
+jobs:
+  # ===========================================================================
+  # build-and-push：Native Image 建構與推送
+  # ===========================================================================
+  build-and-push:
+    name: Build and Push Native Image
+    runs-on: ubuntu-latest
+
+    # 【為什麼需要 PostgreSQL service？】
+    # Spring Native 的 AOT 編譯（processAot）會啟動完整的 ApplicationContext，
+    # 掃描所有 Bean 定義，包括 DataSource、JPA Repository 等。
+    # 如果沒有可用的 DB 連線，processAot 會失敗。
+    # 這裡的 DB 只在編譯期使用，不會寫入任何資料。
+    #
+    # 【DB 配置一致性】
+    # 帳密與 mcpserver/compose.yaml 的預設值一致（mydatabase/myuser/secret），
+    # 所以 mcpserver 的 application.yaml 預設值可直接連線，不需要額外設定環境變數。
+    services:
+      postgres:
+        image: pgvector/pgvector:pg18
+        env:
+          POSTGRES_DB: mydatabase
+          POSTGRES_USER: myuser
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        # 健康檢查確保 DB 就緒後才開始建構，避免 processAot 階段連線失敗
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Compute version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> "$GITHUB_ENV"
+          else
+            VERSION="${{ github.ref_name }}"
+            echo "VERSION=${VERSION#v}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 【SPRING_PROFILES_ACTIVE: aot】
+      # mcpserver 本地開發預設載入 local,dev profile，
+      # AOT 編譯時需要覆蓋為 aot profile，避免載入開發用配置（如 local DB URL）。
+      - name: Build and Push Native Docker Image
+        working-directory: mcpserver
+        env:
+          SPRING_PROFILES_ACTIVE: aot
+        run: |
+          ./gradlew bootBuildImage \
+            --imageName=docker.io/${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
+            --publishImage
+
+      - name: Output image info
+        run: |
+          echo "### Docker Image Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Item | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | \`docker.io/${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Type | Spring Native (GraalVM) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Java | ${{ env.JAVA_VERSION }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Pull command:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull docker.io/${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
