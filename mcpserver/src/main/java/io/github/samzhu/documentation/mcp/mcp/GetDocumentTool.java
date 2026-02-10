@@ -1,6 +1,6 @@
 package io.github.samzhu.documentation.mcp.mcp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.github.samzhu.documentation.mcp.domain.model.CodeExample;
 import io.github.samzhu.documentation.mcp.domain.model.Document;
 import io.github.samzhu.documentation.mcp.service.LibraryQueryService;

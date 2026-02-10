@@ -1,7 +1,7 @@
 package io.github.samzhu.documentation.mcp.infrastructure.vectorstore;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.pgvector.PGvector;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
@@ -211,7 +211,7 @@ public class DocumentChunkVectorStore implements VectorStore {
             String source = pgObject.getValue();
             try {
                 return (Map<String, Object>) objectMapper.readValue(source, Map.class);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("JSON 解析失敗", e);
             }
         }

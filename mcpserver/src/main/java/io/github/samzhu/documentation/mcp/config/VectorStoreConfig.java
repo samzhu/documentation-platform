@@ -1,6 +1,6 @@
 package io.github.samzhu.documentation.mcp.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.github.samzhu.documentation.mcp.infrastructure.vectorstore.DocumentChunkVectorStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

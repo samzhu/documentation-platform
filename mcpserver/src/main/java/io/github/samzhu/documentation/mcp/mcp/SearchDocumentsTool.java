@@ -1,6 +1,6 @@
 package io.github.samzhu.documentation.mcp.mcp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.github.samzhu.documentation.mcp.config.SearchProperties;
 import io.github.samzhu.documentation.mcp.service.SearchService;
 import io.github.samzhu.documentation.mcp.service.dto.SearchResultItem;

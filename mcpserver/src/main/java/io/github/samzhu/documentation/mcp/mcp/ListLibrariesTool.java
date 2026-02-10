@@ -1,6 +1,6 @@
 package io.github.samzhu.documentation.mcp.mcp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.github.samzhu.documentation.mcp.domain.model.Library;
 import io.github.samzhu.documentation.mcp.service.LibraryQueryService;
 import org.slf4j.Logger;

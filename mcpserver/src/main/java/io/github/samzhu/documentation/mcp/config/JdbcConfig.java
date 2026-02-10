@@ -1,8 +1,8 @@
 package io.github.samzhu.documentation.mcp.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import org.postgresql.util.PGobject;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -50,7 +50,7 @@ public class JdbcConfig extends AbstractJdbcConfiguration {
             jsonObject.setType("jsonb");
             try {
                 jsonObject.setValue(source == null ? "{}" : OBJECT_MAPPER.writeValueAsString(source));
-            } catch (SQLException | JsonProcessingException e) {
+            } catch (SQLException | JacksonException e) {
                 throw new RuntimeException("Error converting Map to JSONB", e);
             }
             return jsonObject;
@@ -70,7 +70,7 @@ public class JdbcConfig extends AbstractJdbcConfiguration {
             try {
                 return OBJECT_MAPPER.readValue(source.getValue(),
                         new TypeReference<Map<String, Object>>() {});
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException("Error converting JSONB to Map", e);
             }
         }

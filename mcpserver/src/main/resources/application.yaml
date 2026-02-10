@@ -42,7 +42,7 @@ spring:
     google:
       genai:
         embedding:
-          api-key: ${platform-google-api-key:}
+          api-key: ${platform-google-api-key:test-key}
           text:
             options:
               model: gemini-embedding-001
