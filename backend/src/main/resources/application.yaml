@@ -45,18 +45,21 @@ spring:
     username: ${platform-db-username:myuser}
     password: ${platform-db-password:secret}
     hikari:
-      # 連線池大小：Cloud Run 1-2 vCPU 建議 5（公式：core_count * 2 + 1）
-      maximum-pool-size: 5
-      # 固定連線池：最小空閒數 = 最大值（HikariCP 官方建議最佳效能配置）
-      minimum-idle: 5
-      # 等待連線的最大毫秒數
+      # ----- 連線池大小 -----
+      # 資料庫：Cloud SQL db-f1-micro（max_connections=25，可用≈22）
+      # 服務規格：1 vCPU / 1 GB，公式 cores×2+1=3
+      # 預算：backend(3) + mcpserver(3) = 6/instance，各 scale 3 份 = 18 < 22
+      maximum-pool-size: 3
+      # 動態連線池：閒置時縮回 1 條，釋放連線給其他 instance scale out
+      minimum-idle: 1
+      # 等待連線的最大毫秒數（Virtual Threads 下請求會排隊等連線）
       connection-timeout: 10000
-      # 空閒連線超時（10 分鐘）
-      idle-timeout: 600000
+      # 閒置連線超時（5 分鐘後釋放多餘連線，加速歸還給 DB）
+      idle-timeout: 300000
       # 連線最大存活時間（28 分鐘，須小於 Cloud SQL idle timeout 30 分鐘）
       max-lifetime: 1680000
-      # 連線保活間隔（5 分鐘，防止 Auth Proxy 關閉閒置連線）
-      keepalive-time: 300000
+      # 連線保活間隔（4 分鐘，防止 Cloud SQL Proxy 關閉閒置連線）
+      keepalive-time: 240000
       # 連線池名稱（便於監控識別）
       pool-name: DocPlatformPool
 
@@ -75,7 +78,6 @@ spring:
             scope:
               - openid
               - profile
-              - email
         provider:
           omnihubs:
             # 僅設定 issuer-uri，其餘端點由 OIDC Discovery 自動取得

@@ -4,11 +4,14 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 import org.postgresql.util.PGobject;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.jdbc.core.convert.JdbcCustomConversions;
+import org.springframework.data.jdbc.core.dialect.JdbcDialect;
+import org.springframework.data.jdbc.core.dialect.JdbcPostgresDialect;
 import org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration;
 
 import java.sql.SQLException;
@@ -23,12 +26,24 @@ import java.util.Map;
  * <p>
  * 配置自訂的型別轉換器，支援 Map 和 JSONB 之間的轉換。
  * 不含 Vector 轉換器（VectorStore 自行處理）。
+ * <p>
+ * 明確宣告 JdbcDialect 為 PostgreSQL，避免 AOT 階段透過
+ * {@code AbstractJdbcConfiguration.jdbcDialect()} 自動偵測時強制實例化 DataSource。
+ * 參考：Spring Boot Issue #48240、#47781
  * </p>
  */
 @Configuration
 public class JdbcConfig extends AbstractJdbcConfiguration {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    /**
+     * 明確指定 PostgreSQL 方言，避免 AOT 處理時自動偵測觸發 DataSource 實例化
+     */
+    @Bean
+    JdbcDialect jdbcDialect() {
+        return JdbcPostgresDialect.INSTANCE;
+    }
 
     @Override
     public JdbcCustomConversions jdbcCustomConversions() {
