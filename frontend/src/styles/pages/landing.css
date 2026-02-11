@@ -245,7 +245,7 @@
     width: 100%;
     max-width: 500px;
     margin-bottom: var(--spacing-2xl);
-    animation: fadeInUp 700ms var(--ease-out-expo) 700ms backwards;
+    animation: fadeInUp 700ms var(--ease-out-expo) 1100ms backwards;
   }
 
   /* 贊助卡片 - 複用 glass-layered 效果 */

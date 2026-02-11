@@ -86,6 +86,31 @@ export default function Landing() {
           </button>
         </section>
 
+        {/* 功能卡片區塊 */}
+        <section className="landing-features">
+          <div className="feature-card glass-layered">
+            <div className="feature-icon">
+              <GitHubIcon />
+            </div>
+            <h3>GitHub 同步</h3>
+            <p>自動從 GitHub Repository 同步文件，支援多版本管理</p>
+          </div>
+          <div className="feature-card glass-layered">
+            <div className="feature-icon">
+              <SearchIcon />
+            </div>
+            <h3>語意搜尋</h3>
+            <p>基於 AI 的語意搜尋，快速找到相關文件</p>
+          </div>
+          <div className="feature-card glass-layered">
+            <div className="feature-icon">
+              <ApiIcon />
+            </div>
+            <h3>API 整合</h3>
+            <p>提供 REST API，輕鬆整合到您的工作流程</p>
+          </div>
+        </section>
+
         {/* 贊助區塊 */}
         <section className="landing-sponsor">
           <div className="sponsor-card glass-layered">
@@ -158,31 +183,6 @@ export default function Landing() {
                 錢包才能進行贊助
               </p>
             )}
-          </div>
-        </section>
-
-        {/* 功能卡片區塊 */}
-        <section className="landing-features">
-          <div className="feature-card glass-layered">
-            <div className="feature-icon">
-              <GitHubIcon />
-            </div>
-            <h3>GitHub 同步</h3>
-            <p>自動從 GitHub Repository 同步文件，支援多版本管理</p>
-          </div>
-          <div className="feature-card glass-layered">
-            <div className="feature-icon">
-              <SearchIcon />
-            </div>
-            <h3>語意搜尋</h3>
-            <p>基於 AI 的語意搜尋，快速找到相關文件</p>
-          </div>
-          <div className="feature-card glass-layered">
-            <div className="feature-icon">
-              <ApiIcon />
-            </div>
-            <h3>API 整合</h3>
-            <p>提供 REST API，輕鬆整合到您的工作流程</p>
           </div>
         </section>
       </div>
