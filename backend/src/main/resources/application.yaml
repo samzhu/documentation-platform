@@ -225,6 +225,15 @@ platform:
     # API Key 認證
     api-key-auth: true
 
+  # ----- x402 贊助配置 -----
+  x402:
+    pay-to: ${platform-x402-pay-to:}
+    asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    network: "base"
+    facilitator-url: "https://x402.org/facilitator"
+    description: "Sponsor Documentation Platform"
+    max-timeout-seconds: 60
+
   # ----- 搜尋配置 -----
   search:
     hybrid:

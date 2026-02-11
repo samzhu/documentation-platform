@@ -85,7 +85,7 @@ public class SecurityConfig {
                         // Actuator 端點 - 公開（Cloud Run 健康檢查）
                         .requestMatchers("/actuator/**").permitAll()
                         // 公開 API 端點
-                        .requestMatchers("/api/search/**", "/api/dashboard/stats", "/api/config").permitAll()
+                        .requestMatchers("/api/search/**", "/api/dashboard/stats", "/api/config", "/api/sponsor").permitAll()
                         // ✅ 用戶資訊端點 - 需認證（用於前端判斷登入狀態）
                         .requestMatchers("/api/me").authenticated()
                         // ✅ 登出端點 - 需認證

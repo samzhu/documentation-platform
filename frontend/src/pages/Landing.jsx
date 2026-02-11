@@ -1,16 +1,24 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { sponsor, isWalletAvailable } from '../services/sponsorService';
 // CSS 透過 index.css @import 引入，確保 CSS layer 順序正確
 
 /**
  * Landing Page - 首頁
  * 沉浸式深空體驗 + Apple Liquid Glass 材質設計
- * 提供專案介紹和「開始使用」入口
+ * 提供專案介紹、「開始使用」入口和 x402 贊助功能
  * 不需要認證即可訪問
  */
 export default function Landing() {
   const navigate = useNavigate();
   const { isAuthenticated, oauth2Enabled, login } = useAuth();
+
+  // 贊助相關狀態
+  const [selectedAmount, setSelectedAmount] = useState(null);
+  const [sponsorState, setSponsorState] = useState('idle');
+  // sponsorState: 'idle' | 'processing' | 'success' | 'error'
+  const [sponsorError, setSponsorError] = useState(null);
 
   // 處理「開始使用」按鈕點擊
   const handleGetStarted = () => {
@@ -22,6 +30,31 @@ export default function Landing() {
       login();
     }
   };
+
+  // 處理贊助按鈕點擊
+  const handleSponsor = async () => {
+    if (!selectedAmount) return;
+
+    setSponsorState('processing');
+    setSponsorError(null);
+
+    try {
+      await sponsor(selectedAmount);
+      setSponsorState('success');
+
+      // 3 秒後重置狀態
+      setTimeout(() => {
+        setSponsorState('idle');
+        setSelectedAmount(null);
+      }, 3000);
+    } catch (e) {
+      setSponsorState('error');
+      setSponsorError(e.message || '贊助失敗，請稍後再試');
+    }
+  };
+
+  // 贊助金額選項
+  const amounts = [1, 5, 10];
 
   return (
     <div className="landing-page">
@@ -51,6 +84,81 @@ export default function Landing() {
             開始使用
             <ArrowIcon />
           </button>
+        </section>
+
+        {/* 贊助區塊 */}
+        <section className="landing-sponsor">
+          <div className="sponsor-card glass-layered">
+            <div className="sponsor-icon">
+              <HeartIcon />
+            </div>
+            <h2 className="sponsor-title">贊助此專案</h2>
+            <p className="sponsor-subtitle">
+              透過 USDC 贊助支持此開源專案的持續開發（Base 鏈）
+            </p>
+
+            {/* 金額選擇按鈕 */}
+            <div className="sponsor-amounts">
+              {amounts.map((amt) => (
+                <button
+                  key={amt}
+                  className={`btn btn-ghost sponsor-amount-btn${
+                    selectedAmount === amt ? ' sponsor-amount-active' : ''
+                  }`}
+                  onClick={() => setSelectedAmount(amt)}
+                  disabled={sponsorState === 'processing'}
+                >
+                  ${amt}
+                </button>
+              ))}
+            </div>
+
+            {/* 主 CTA 按鈕 */}
+            <button
+              className="btn btn-aurora sponsor-cta"
+              onClick={handleSponsor}
+              disabled={!selectedAmount || sponsorState === 'processing' || sponsorState === 'success'}
+            >
+              {sponsorState === 'processing' && (
+                <>
+                  <WalletIcon />
+                  處理中...
+                </>
+              )}
+              {sponsorState === 'success' && (
+                <>
+                  <CheckIcon />
+                  感謝贊助！
+                </>
+              )}
+              {(sponsorState === 'idle' || sponsorState === 'error') && (
+                <>
+                  <WalletIcon />
+                  {selectedAmount ? `贊助 $${selectedAmount}` : '選擇金額'}
+                </>
+              )}
+            </button>
+
+            {/* 錯誤訊息 */}
+            {sponsorState === 'error' && sponsorError && (
+              <p className="sponsor-error">{sponsorError}</p>
+            )}
+
+            {/* 無錢包提示 */}
+            {!isWalletAvailable() && (
+              <p className="sponsor-hint">
+                需要安裝{' '}
+                <a
+                  href="https://metamask.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  MetaMask
+                </a>{' '}
+                錢包才能進行贊助
+              </p>
+            )}
+          </div>
         </section>
 
         {/* 功能卡片區塊 */}
@@ -157,6 +265,68 @@ function ApiIcon() {
     >
       <path d="M4 17l6-6-6-6" />
       <path d="M12 19h8" />
+    </svg>
+  );
+}
+
+/**
+ * 愛心圖示 - 贊助卡片用
+ */
+function HeartIcon() {
+  return (
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
+
+/**
+ * 錢包圖示 - 贊助 CTA 按鈕用
+ */
+function WalletIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+      <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
+    </svg>
+  );
+}
+
+/**
+ * 勾選圖示 - 贊助成功狀態用
+ */
+function CheckIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
     </svg>
   );
 }

@@ -236,6 +236,108 @@
     margin: 0;
   }
 
+  /* ===== 贊助區塊 ===== */
+
+  /* 贊助區塊容器 */
+  .landing-sponsor {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: var(--spacing-2xl);
+    animation: fadeInUp 700ms var(--ease-out-expo) 700ms backwards;
+  }
+
+  /* 贊助卡片 - 複用 glass-layered 效果 */
+  .sponsor-card {
+    padding: var(--spacing-xl);
+    text-align: center;
+    width: 100%;
+  }
+
+  /* 贊助圖示容器 */
+  .sponsor-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--spacing-md);
+    color: var(--color-aurora-pink);
+  }
+
+  /* 贊助標題 */
+  .sponsor-title {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--ink-black);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  /* 贊助說明文字 */
+  .sponsor-subtitle {
+    font-family: var(--font-text);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--ink-cloud);
+    margin: 0 0 var(--spacing-lg);
+  }
+
+  /* 金額選擇按鈕群組 */
+  .sponsor-amounts {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  /* 金額按鈕 */
+  .sponsor-amount-btn {
+    min-width: 80px;
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    transition: all var(--transition-normal);
+  }
+
+  /* 金額按鈕選中狀態 - cyan 邊框 + 背景光暈 */
+  .sponsor-amount-active {
+    border-color: var(--color-aurora-cyan);
+    color: var(--color-aurora-cyan);
+    background: rgba(0, 184, 230, 0.1);
+    box-shadow: 0 0 16px rgba(0, 184, 230, 0.2);
+  }
+
+  /* 贊助主 CTA 按鈕 */
+  .sponsor-cta {
+    width: 100%;
+    max-width: 280px;
+    gap: var(--spacing-xs);
+  }
+
+  /* 贊助錯誤訊息 */
+  .sponsor-error {
+    font-size: 0.875rem;
+    color: var(--ink-red);
+    margin-top: var(--spacing-sm);
+  }
+
+  /* 無錢包安裝提示 */
+  .sponsor-hint {
+    font-size: 0.8125rem;
+    color: var(--ink-fog);
+    margin-top: var(--spacing-sm);
+  }
+
+  .sponsor-hint a {
+    color: var(--color-aurora-cyan);
+    text-decoration: none;
+  }
+
+  .sponsor-hint a:hover {
+    text-decoration: underline;
+  }
+
   /* ===== 認證載入狀態 ===== */
   .auth-loading {
     display: flex;
@@ -318,6 +420,11 @@
       padding: var(--spacing-lg);
     }
 
+    /* 贊助區塊 - 縮小金額按鈕 */
+    .sponsor-amount-btn {
+      min-width: 64px;
+    }
+
     /* 簡化極光光球 - 減少數量和大小 */
     .aurora-orb {
       filter: blur(60px);
@@ -362,7 +469,8 @@
     .landing-hero,
     .hero-subtitle,
     .hero-cta,
-    .feature-card {
+    .feature-card,
+    .landing-sponsor {
       animation: none;
       opacity: 1;
     }

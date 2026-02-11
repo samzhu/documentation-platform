@@ -11,10 +11,13 @@
     "lint": "eslint . --ext .jsx,.js"
   },
   "dependencies": {
+    "@x402/evm": "^2.3.0",
+    "@x402/fetch": "^2.3.0",
     "oidc-client-ts": "^3.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.1.0"
+    "react-router-dom": "^7.1.0",
+    "viem": "^2.45.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
