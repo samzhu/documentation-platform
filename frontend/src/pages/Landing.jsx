@@ -93,21 +93,21 @@ export default function Landing() {
               <GitHubIcon />
             </div>
             <h3>GitHub 同步</h3>
-            <p>自動從 GitHub Repository 同步文件，支援多版本管理</p>
+            <p>從 GitHub Repository 自動拉取文件，支援多版本管理與狀態追蹤（Active / Deprecated / EOL），內容自動分塊並產生向量嵌入</p>
           </div>
           <div className="feature-card glass-layered">
             <div className="feature-icon">
               <SearchIcon />
             </div>
-            <h3>語意搜尋</h3>
-            <p>基於 AI 的語意搜尋，快速找到相關文件</p>
+            <h3>混合式語意搜尋</h3>
+            <p>結合全文檢索與 768 維向量語意搜尋，透過 RRF 排序融合演算法取得最佳結果，支援跨文件庫、指定版本查詢</p>
           </div>
           <div className="feature-card glass-layered">
             <div className="feature-icon">
-              <ApiIcon />
+              <McpIcon />
             </div>
-            <h3>API 整合</h3>
-            <p>提供 REST API，輕鬆整合到您的工作流程</p>
+            <h3>MCP Server</h3>
+            <p>提供標準 Model Context Protocol 服務，讓 Claude Desktop、Cursor、VS Code Copilot 等 AI 工具直接查詢文件</p>
           </div>
         </section>
 
@@ -249,9 +249,9 @@ function SearchIcon() {
 }
 
 /**
- * API 圖示 - 功能卡片用
+ * MCP 圖示 - 功能卡片用（節點連接，象徵協議整合）
  */
-function ApiIcon() {
+function McpIcon() {
   return (
     <svg
       width="24"
@@ -263,8 +263,11 @@ function ApiIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M4 17l6-6-6-6" />
-      <path d="M12 19h8" />
+      <circle cx="12" cy="5" r="3" />
+      <circle cx="5" cy="19" r="3" />
+      <circle cx="19" cy="19" r="3" />
+      <line x1="12" y1="8" x2="5" y2="16" />
+      <line x1="12" y1="8" x2="19" y2="16" />
     </svg>
   );
 }
