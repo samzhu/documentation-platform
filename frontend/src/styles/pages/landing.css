@@ -244,7 +244,7 @@
     justify-content: center;
     width: 100%;
     max-width: 500px;
-    margin-bottom: var(--spacing-2xl);
+    margin-top: var(--spacing-2xl);
     animation: fadeInUp 700ms var(--ease-out-expo) 1100ms backwards;
   }
 
