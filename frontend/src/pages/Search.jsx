@@ -98,7 +98,7 @@ export default function Search() {
         version: selectedVersion,
         limit: 20
       });
-      setResults(data.results || []);
+      setResults(data.items || []);
     } catch (err) {
       alert('搜尋失敗: ' + err.message);
     } finally {
@@ -230,14 +230,11 @@ export default function Search() {
                 <div key={index} className="result-card glass-card">
                   <div className="result-header">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="badge badge-primary">{result.libraryName}</span>
-                      {result.version && (
-                        <span className="badge badge-default">{result.version}</span>
-                      )}
-                      {result.documentPath && (
+                      <span className="badge badge-primary">{result.title}</span>
+                      {result.path && (
                         <span className="text-xs text-muted">
                           <FileTextIcon size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                          {result.documentPath}
+                          {result.path}
                         </span>
                       )}
                     </div>
@@ -249,25 +246,6 @@ export default function Search() {
                   <p className="result-content">
                     {highlightContent(result.content)}
                   </p>
-
-                  {result.metadata && (
-                    <div className="result-meta text-xs text-muted mt-2">
-                      {result.metadata.section && (
-                        <span>Section: {result.metadata.section}</span>
-                      )}
-                    </div>
-                  )}
-
-                  {result.sourceUrl && (
-                    <a
-                      href={result.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-muted flex items-center gap-2 mt-2"
-                    >
-                      View source <ExternalLinkIcon size={14} />
-                    </a>
-                  )}
                 </div>
               ))
             )}
