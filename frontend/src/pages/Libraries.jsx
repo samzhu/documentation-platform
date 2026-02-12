@@ -1,6 +1,7 @@
 /**
  * 文件庫頁面
- * 顯示文件庫列表，管理刪除和同步
+ * 顯示文件庫列表，提供詳情連結和刪除功能
+ * 同步功能在詳情頁操作（選擇 GitHub Release 版本後批次同步）
  */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -9,7 +10,6 @@ import {
   PlusIcon,
   GithubIcon,
   FolderIcon,
-  SyncIcon,
   TrashIcon,
   ExternalLinkIcon,
   ChevronRightIcon
@@ -18,8 +18,6 @@ import {
 export default function Libraries() {
   const [libraries, setLibraries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState({});
-
   useEffect(() => {
     loadLibraries();
   }, []);
@@ -49,21 +47,6 @@ export default function Libraries() {
       loadLibraries();
     } catch (err) {
       alert('刪除失敗: ' + err.message);
-    }
-  };
-
-  /**
-   * 觸發同步
-   */
-  const handleSync = async (id) => {
-    try {
-      setSyncing(prev => ({ ...prev, [id]: true }));
-      await api.triggerSync(id);
-      alert('同步已開始，請稍後查看同步記錄');
-    } catch (err) {
-      alert('同步失敗: ' + err.message);
-    } finally {
-      setSyncing(prev => ({ ...prev, [id]: false }));
     }
   };
 
@@ -176,14 +159,6 @@ export default function Libraries() {
                   <ChevronRightIcon size={16} />
                   詳情
                 </Link>
-                <button
-                  className={`btn btn-sm btn-sync ${syncing[lib.id] ? 'syncing' : ''}`}
-                  onClick={() => handleSync(lib.id)}
-                  disabled={syncing[lib.id]}
-                >
-                  <SyncIcon size={16} />
-                  {syncing[lib.id] ? '同步中...' : '同步'}
-                </button>
                 <button
                   className="btn btn-sm btn-danger"
                   onClick={() => handleDelete(lib.id)}

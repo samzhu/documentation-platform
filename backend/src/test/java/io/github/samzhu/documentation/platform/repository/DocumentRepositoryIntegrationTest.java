@@ -240,6 +240,7 @@ class DocumentRepositoryIntegrationTest {
         // 注意：全文搜尋依賴 PostgreSQL search_vector trigger，
         // 在某些測試環境中可能需要額外配置
         List<Document> results = documentRepository.fullTextSearch(
+                null,
                 testVersion.getId(),
                 "spring",
                 10
@@ -268,6 +269,7 @@ class DocumentRepositoryIntegrationTest {
 
         // When - 搜尋並限制結果數量
         List<Document> results = documentRepository.fullTextSearch(
+                null,
                 testVersion.getId(),
                 "spring",
                 3
@@ -295,6 +297,7 @@ class DocumentRepositoryIntegrationTest {
 
         // When - 搜尋不存在的關鍵字
         List<Document> results = documentRepository.fullTextSearch(
+                null,
                 testVersion.getId(),
                 "nonexistentword",
                 10

@@ -1,6 +1,5 @@
 package io.github.samzhu.documentation.platform.web.api;
 
-import io.github.samzhu.documentation.platform.service.LibraryService;
 import io.github.samzhu.documentation.platform.service.SearchService;
 import io.github.samzhu.documentation.platform.service.dto.SearchResultItem;
 import io.github.samzhu.documentation.platform.web.dto.SearchResultDto;
@@ -29,17 +28,14 @@ public class SearchApiController {
     private static final double DEFAULT_SEMANTIC_THRESHOLD = 0.5;
 
     private final SearchService searchService;
-    private final LibraryService libraryService;
 
     /**
      * 建構函式
      *
-     * @param searchService  搜尋服務
-     * @param libraryService 函式庫服務
+     * @param searchService 搜尋服務
      */
-    public SearchApiController(SearchService searchService, LibraryService libraryService) {
+    public SearchApiController(SearchService searchService) {
         this.searchService = searchService;
-        this.libraryService = libraryService;
     }
 
     /**
@@ -73,14 +69,9 @@ public class SearchApiController {
             return new SearchResultDto(query, mode, 0, List.of());
         }
 
-        // 如果沒有指定 libraryId，取得第一個函式庫作為預設
-        // libraryId 為 TSID 格式（13 字元）
-        if (libraryId == null || libraryId.isBlank()) {
-            var libraries = libraryService.listLibraries(null);
-            if (libraries.isEmpty()) {
-                return new SearchResultDto(query, mode, 0, List.of());
-            }
-            libraryId = libraries.getFirst().getId();
+        // libraryId 為空字串時視為 null（搜尋所有函式庫）
+        if (libraryId != null && libraryId.isBlank()) {
+            libraryId = null;
         }
 
         // 依搜尋模式執行對應的搜尋方法

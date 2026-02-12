@@ -72,12 +72,12 @@ public class SearchService {
     /**
      * 全文檢索
      * <p>
-     * 使用 PostgreSQL tsvector 進行全文搜尋，
-     * 在文件標題和內容中搜尋關鍵字。
+     * 使用 PostgreSQL tsvector 進行全文搜尋。
+     * libraryId 和 version 皆為可選，未指定則不篩選。
      * </p>
      *
-     * @param libraryId 函式庫 ID（TSID 格式）
-     * @param version   版本（可選，null 表示最新版本）
+     * @param libraryId 函式庫 ID（可選，null 表示所有函式庫）
+     * @param version   版本字串（可選，null 表示所有版本）
      * @param query     搜尋關鍵字
      * @param limit     結果數量上限
      * @return 搜尋結果列表
@@ -88,14 +88,11 @@ public class SearchService {
             return List.of();
         }
 
-        // 解析版本
+        // 解析 versionId（有指定 libraryId + version 時才查）
         String versionId = resolveVersionId(libraryId, version);
-        if (versionId == null) {
-            return List.of();
-        }
 
-        // 執行全文搜尋
-        List<Document> documents = documentRepository.fullTextSearch(versionId, query, limit);
+        // 動態查詢：libraryId / versionId 為 null 時不篩選
+        List<Document> documents = documentRepository.fullTextSearch(libraryId, versionId, query, limit);
 
         // 轉換為搜尋結果
         return documents.stream()
@@ -129,20 +126,33 @@ public class SearchService {
             return List.of();
         }
 
-        // 解析版本
+        // 解析 versionId（有指定 libraryId + version 時才查）
         String versionId = resolveVersionId(libraryId, version);
-        if (versionId == null) {
-            return List.of();
-        }
 
-        // 使用 VectorStore 執行語意搜尋
-        // 透過 filterExpression 限制搜尋範圍為特定版本
-        SearchRequest request = SearchRequest.builder()
+        // 動態建立 filterExpression：有條件才加，沒有就搜全部
+        var builder = SearchRequest.builder()
                 .query(query)
                 .topK(limit)
-                .similarityThreshold(threshold)
-                .filterExpression(METADATA_VERSION_ID + " == '" + versionId + "'")
-                .build();
+                .similarityThreshold(threshold);
+
+        if (versionId != null) {
+            // 指定了特定版本
+            builder.filterExpression(METADATA_VERSION_ID + " == '" + versionId + "'");
+        } else if (libraryId != null) {
+            // 指定了函式庫但未指定版本：用該函式庫所有版本的 ID 過濾
+            List<String> versionIds = versionRepository.findByLibraryId(libraryId).stream()
+                    .map(v -> v.getId())
+                    .toList();
+            if (!versionIds.isEmpty()) {
+                String filterExpression = versionIds.stream()
+                        .map(id -> METADATA_VERSION_ID + " == '" + id + "'")
+                        .collect(Collectors.joining(" || "));
+                builder.filterExpression(filterExpression);
+            }
+        }
+        // libraryId 和 version 都沒指定 → 不加 filter，搜尋全部
+
+        SearchRequest request = builder.build();
 
         List<org.springframework.ai.document.Document> results = vectorStore.similaritySearch(request);
 
@@ -255,17 +265,18 @@ public class SearchService {
 
     /**
      * 解析版本 ID
+     * <p>
+     * 只在同時指定 libraryId 和 version 時才查詢，
+     * 其他情況回傳 null（表示不限制版本）。
+     * </p>
      */
     private String resolveVersionId(String libraryId, String version) {
-        if (version != null && !version.isBlank()) {
+        if (libraryId != null && version != null && !version.isBlank()) {
             return versionRepository.findByLibraryIdAndVersion(libraryId, version)
                     .map(v -> v.getId())
                     .orElse(null);
-        } else {
-            return versionRepository.findLatestByLibraryId(libraryId)
-                    .map(v -> v.getId())
-                    .orElse(null);
         }
+        return null;
     }
 
     /**
