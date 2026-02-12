@@ -74,7 +74,10 @@ spring:
             client-id: ${platform-oauth2-client-id:}
             client-secret: ${platform-oauth2-client-secret:}
             authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/api/oauth2/callback/{registrationId}"
+            # 使用 Spring Security 預設 callback 路徑，避免需額外設定 redirectionEndpoint
+            # OAuth Server 的 allowed redirect URI 須對應設為：
+            #   {baseUrl}/login/oauth2/code/omnihubs
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - openid
               - profile
