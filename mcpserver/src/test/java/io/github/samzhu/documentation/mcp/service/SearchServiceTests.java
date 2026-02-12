@@ -90,9 +90,9 @@ class SearchServiceTests {
         @Test
         @DisplayName("空查詢回傳空列表")
         void emptyQueryReturnsEmpty() {
-            assertThat(searchService.fullTextSearch(VERSION_ID, "", 10)).isEmpty();
-            assertThat(searchService.fullTextSearch(VERSION_ID, null, 10)).isEmpty();
-            assertThat(searchService.fullTextSearch(VERSION_ID, "   ", 10)).isEmpty();
+            assertThat(searchService.fullTextSearch(null, VERSION_ID, "", 10)).isEmpty();
+            assertThat(searchService.fullTextSearch(null, VERSION_ID, null, 10)).isEmpty();
+            assertThat(searchService.fullTextSearch(null, VERSION_ID, "   ", 10)).isEmpty();
         }
 
         @Test
@@ -102,10 +102,10 @@ class SearchServiceTests {
             String longContent = "x".repeat(600);
             var doc = createDocument(DOC_ID_1, "標題一", "/path/one", longContent);
 
-            given(documentRepository.fullTextSearch(VERSION_ID, "spring", 10))
+            given(documentRepository.fullTextSearch(null, VERSION_ID, "spring", 10))
                     .willReturn(List.of(doc));
 
-            List<SearchResultItem> results = searchService.fullTextSearch(VERSION_ID, "spring", 10);
+            List<SearchResultItem> results = searchService.fullTextSearch(null, VERSION_ID, "spring", 10);
 
             assertThat(results).hasSize(1);
             assertThat(results.getFirst().documentId()).isEqualTo(DOC_ID_1);
@@ -127,8 +127,8 @@ class SearchServiceTests {
         @Test
         @DisplayName("空查詢回傳空列表")
         void emptyQueryReturnsEmpty() {
-            assertThat(searchService.semanticSearch(VERSION_ID, "", 10, 0.5)).isEmpty();
-            assertThat(searchService.semanticSearch(VERSION_ID, null, 10, 0.5)).isEmpty();
+            assertThat(searchService.semanticSearch(null, VERSION_ID, "", 10, 0.5)).isEmpty();
+            assertThat(searchService.semanticSearch(null, VERSION_ID, null, 10, 0.5)).isEmpty();
         }
 
         @Test
@@ -154,7 +154,7 @@ class SearchServiceTests {
             given(documentRepository.findAllById(List.of(DOC_ID_1)))
                     .willReturn(List.of(dbDoc));
 
-            List<SearchResultItem> results = searchService.semanticSearch(VERSION_ID, "如何開始使用", 10, 0.5);
+            List<SearchResultItem> results = searchService.semanticSearch(null, VERSION_ID, "如何開始使用", 10, 0.5);
 
             assertThat(results).hasSize(1);
             var result = results.getFirst();
@@ -172,7 +172,7 @@ class SearchServiceTests {
             given(vectorStore.similaritySearch(any(SearchRequest.class)))
                     .willReturn(List.of());
 
-            List<SearchResultItem> results = searchService.semanticSearch(VERSION_ID, "查詢", 10, 0.5);
+            List<SearchResultItem> results = searchService.semanticSearch(null, VERSION_ID, "查詢", 10, 0.5);
 
             assertThat(results).isEmpty();
             // 不應查詢 DocumentRepository
@@ -189,30 +189,30 @@ class SearchServiceTests {
         @Test
         @DisplayName("空查詢回傳空列表")
         void emptyQueryReturnsEmpty() {
-            assertThat(searchService.hybridSearch(VERSION_ID, "", 10)).isEmpty();
+            assertThat(searchService.hybridSearch(null, VERSION_ID, "", 10)).isEmpty();
         }
 
         @Test
         @DisplayName("兩種搜尋都無結果時回傳空列表")
         void bothEmptyReturnsEmpty() {
-            given(documentRepository.fullTextSearch(eq(VERSION_ID), anyString(), anyInt()))
+            given(documentRepository.fullTextSearch(isNull(), eq(VERSION_ID), anyString(), anyInt()))
                     .willReturn(List.of());
             given(vectorStore.similaritySearch(any(SearchRequest.class)))
                     .willReturn(List.of());
 
-            assertThat(searchService.hybridSearch(VERSION_ID, "spring", 10)).isEmpty();
+            assertThat(searchService.hybridSearch(null, VERSION_ID, "spring", 10)).isEmpty();
         }
 
         @Test
         @DisplayName("僅全文有結果時 fallback 至全文結果")
         void fallbackToFulltextWhenSemanticEmpty() {
             var doc = createDocument(DOC_ID_1, "標題", "/path", "內容");
-            given(documentRepository.fullTextSearch(eq(VERSION_ID), anyString(), anyInt()))
+            given(documentRepository.fullTextSearch(isNull(), eq(VERSION_ID), anyString(), anyInt()))
                     .willReturn(List.of(doc));
             given(vectorStore.similaritySearch(any(SearchRequest.class)))
                     .willReturn(List.of());
 
-            List<SearchResultItem> results = searchService.hybridSearch(VERSION_ID, "spring", 10);
+            List<SearchResultItem> results = searchService.hybridSearch(null, VERSION_ID, "spring", 10);
 
             assertThat(results).hasSize(1);
             assertThat(results.getFirst().documentId()).isEqualTo(DOC_ID_1);
@@ -221,7 +221,7 @@ class SearchServiceTests {
         @Test
         @DisplayName("僅語意有結果時 fallback 至語意結果")
         void fallbackToSemanticWhenFulltextEmpty() {
-            given(documentRepository.fullTextSearch(eq(VERSION_ID), anyString(), anyInt()))
+            given(documentRepository.fullTextSearch(isNull(), eq(VERSION_ID), anyString(), anyInt()))
                     .willReturn(List.of());
 
             var aiDoc = createAiDocument(CHUNK_ID_1, DOC_ID_1, "語意結果", 0.9);
@@ -232,7 +232,7 @@ class SearchServiceTests {
             given(documentRepository.findAllById(List.of(DOC_ID_1)))
                     .willReturn(List.of(dbDoc));
 
-            List<SearchResultItem> results = searchService.hybridSearch(VERSION_ID, "如何開始", 10);
+            List<SearchResultItem> results = searchService.hybridSearch(null, VERSION_ID, "如何開始", 10);
 
             assertThat(results).hasSize(1);
             assertThat(results.getFirst().chunkId()).isEqualTo(CHUNK_ID_1);
@@ -244,7 +244,7 @@ class SearchServiceTests {
             // 全文搜尋結果：key 為 "doc:DOC_ID"
             var ftDoc1 = createDocument(DOC_ID_1, "文件一", "/one", "短內容");
             var ftDoc2 = createDocument(DOC_ID_2, "文件二", "/two", "短內容");
-            given(documentRepository.fullTextSearch(eq(VERSION_ID), anyString(), anyInt()))
+            given(documentRepository.fullTextSearch(isNull(), eq(VERSION_ID), anyString(), anyInt()))
                     .willReturn(List.of(ftDoc1, ftDoc2));
 
             // 語意搜尋結果：key 為 "chunk:CHUNK_ID"
@@ -257,7 +257,7 @@ class SearchServiceTests {
             given(documentRepository.findAllById(anyList()))
                     .willReturn(List.of(ftDoc1, ftDoc2));
 
-            List<SearchResultItem> results = searchService.hybridSearch(VERSION_ID, "spring boot", 10);
+            List<SearchResultItem> results = searchService.hybridSearch(null, VERSION_ID, "spring boot", 10);
 
             // 全文產生 2 筆 (doc:xxx)，語意產生 2 筆 (chunk:xxx) → RRF 合計 4 筆
             assertThat(results).hasSize(4);
@@ -286,8 +286,8 @@ class SearchServiceTests {
         }
 
         @Test
-        @DisplayName("指定 libraryName 時搜尋單一函式庫")
-        void searchInSpecificLibrary() {
+        @DisplayName("指定 libraryName 和 version 時搜尋特定版本")
+        void searchInSpecificLibraryVersion() {
             var library = createLibrary(LIBRARY_ID, "spring-boot");
             var version = createVersion(VERSION_ID, LIBRARY_ID, "3.2.0");
 
@@ -295,8 +295,8 @@ class SearchServiceTests {
             given(versionRepository.findByLibraryIdAndVersion(LIBRARY_ID, "3.2.0"))
                     .willReturn(Optional.of(version));
 
-            // fulltext 模式
-            given(documentRepository.fullTextSearch(eq(VERSION_ID), eq("query"), anyInt()))
+            // fulltext 模式：動態查詢帶入 libraryId 和 versionId
+            given(documentRepository.fullTextSearch(eq(LIBRARY_ID), eq(VERSION_ID), eq("query"), anyInt()))
                     .willReturn(List.of());
 
             List<SearchResultItem> results = searchService.search(
@@ -318,24 +318,18 @@ class SearchServiceTests {
         }
 
         @Test
-        @DisplayName("未指定 libraryName 時搜尋所有函式庫的最新版本")
+        @DisplayName("未指定 libraryName 時搜尋所有函式庫（動態查詢）")
         void searchAcrossAllLibraries() {
-            var lib1 = createLibrary(LIBRARY_ID, "spring-boot");
-            var ver1 = createVersion(VERSION_ID, LIBRARY_ID, "3.2.0");
-
-            given(libraryRepository.findAll()).willReturn(List.of(lib1));
-            given(versionRepository.findLatestByLibraryId(LIBRARY_ID))
-                    .willReturn(Optional.of(ver1));
-
-            // fulltext 模式
-            given(documentRepository.fullTextSearch(eq(VERSION_ID), eq("test"), anyInt()))
+            // 不指定 libraryName → libraryId 和 versionId 都為 null，搜尋全部
+            given(documentRepository.fullTextSearch(isNull(), isNull(), eq("test"), anyInt()))
                     .willReturn(List.of());
 
             List<SearchResultItem> results = searchService.search(
                     null, null, "test", "fulltext", 10);
 
             assertThat(results).isEmpty();
-            verify(libraryRepository).findAll();
+            // 不應再逐一查詢每個 library
+            verify(libraryRepository, never()).findAll();
         }
 
         @Test
@@ -347,14 +341,14 @@ class SearchServiceTests {
             given(libraryRepository.findByName("spring-boot")).willReturn(Optional.of(library));
             given(versionRepository.findByLibraryIdAndVersion(LIBRARY_ID, "3.2.0"))
                     .willReturn(Optional.of(version));
-            given(documentRepository.fullTextSearch(eq(VERSION_ID), anyString(), anyInt()))
+            given(documentRepository.fullTextSearch(eq(LIBRARY_ID), eq(VERSION_ID), anyString(), anyInt()))
                     .willReturn(List.of());
 
             // maxLimit 是 20，傳入 100 應被截斷
             searchService.search("spring-boot", "3.2.0", "query", "fulltext", 100);
 
             // 驗證傳給 repository 的 limit 是 20（被 maxLimit 截斷）
-            verify(documentRepository).fullTextSearch(VERSION_ID, "query", 20);
+            verify(documentRepository).fullTextSearch(LIBRARY_ID, VERSION_ID, "query", 20);
         }
     }
 

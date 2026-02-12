@@ -7,7 +7,6 @@ import io.github.samzhu.documentation.platform.domain.model.DocumentChunk;
 import io.github.samzhu.documentation.platform.repository.CodeExampleRepository;
 import io.github.samzhu.documentation.platform.repository.DocumentChunkRepository;
 import io.github.samzhu.documentation.platform.repository.DocumentRepository;
-import io.github.samzhu.documentation.platform.repository.LibraryVersionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,16 +26,13 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentChunkRepository chunkRepository;
     private final CodeExampleRepository codeExampleRepository;
-    private final LibraryVersionRepository versionRepository;
 
     public DocumentService(DocumentRepository documentRepository,
                            DocumentChunkRepository chunkRepository,
-                           CodeExampleRepository codeExampleRepository,
-                           LibraryVersionRepository versionRepository) {
+                           CodeExampleRepository codeExampleRepository) {
         this.documentRepository = documentRepository;
         this.chunkRepository = chunkRepository;
         this.codeExampleRepository = codeExampleRepository;
-        this.versionRepository = versionRepository;
     }
 
     /**
@@ -91,22 +87,14 @@ public class DocumentService {
      * 取得程式碼範例
      *
      * @param libraryId 函式庫 ID（TSID 格式）
-     * @param version   版本（可選）
+     * @param version   版本號
      * @param language  程式語言篩選（可選）
      * @param limit     結果數量上限
      * @return 程式碼範例列表
      */
     public List<CodeExample> getCodeExamples(String libraryId, String version,
                                               String language, int limit) {
-        // 如果沒有指定版本，使用最新版本
-        String resolvedVersion = version;
-        if (version == null || version.isBlank()) {
-            resolvedVersion = versionRepository.findLatestByLibraryId(libraryId)
-                    .map(v -> v.getVersion())
-                    .orElse(null);
-        }
-
-        return codeExampleRepository.findByLibraryAndLanguage(libraryId, resolvedVersion, language, limit);
+        return codeExampleRepository.findByLibraryAndLanguage(libraryId, version, language, limit);
     }
 
     /**

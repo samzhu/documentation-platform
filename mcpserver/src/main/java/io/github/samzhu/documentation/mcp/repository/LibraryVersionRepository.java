@@ -19,15 +19,6 @@ import java.util.Optional;
 public interface LibraryVersionRepository extends CrudRepository<LibraryVersion, String> {
 
     /**
-     * 查找指定函式庫的最新版本
-     *
-     * @param libraryId 函式庫 ID（TSID 格式）
-     * @return 最新版本（若存在）
-     */
-    @Query("SELECT * FROM library_versions WHERE library_id = :libraryId AND is_latest = true")
-    Optional<LibraryVersion> findLatestByLibraryId(@Param("libraryId") String libraryId);
-
-    /**
      * 查找指定函式庫的特定版本
      *
      * @param libraryId 函式庫 ID（TSID 格式）

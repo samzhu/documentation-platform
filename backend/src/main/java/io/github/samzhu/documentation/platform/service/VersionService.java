@@ -79,16 +79,6 @@ public class VersionService {
     }
 
     /**
-     * 取得函式庫的最新版本
-     *
-     * @param libraryId 函式庫 ID（TSID 格式）
-     * @return 最新版本（若存在）
-     */
-    public Optional<LibraryVersion> getLatestVersion(String libraryId) {
-        return versionRepository.findLatestByLibraryId(libraryId);
-    }
-
-    /**
      * 取得函式庫的特定版本
      *
      * @param libraryId 函式庫 ID（TSID 格式）
@@ -102,24 +92,23 @@ public class VersionService {
     /**
      * 解析版本
      * <p>
-     * 若指定版本號，則返回該版本；否則返回最新版本。
+     * 版本號為必填，不提供「自動取最新版」的 fallback 邏輯。
+     * 呼叫端應先透過 list_library_versions 取得可用版本。
      * </p>
      *
      * @param libraryId 函式庫 ID（TSID 格式）
-     * @param version   版本號（可選，null 表示最新版本）
+     * @param version   版本號（必填）
      * @return 解析後的版本
+     * @throws IllegalArgumentException  若版本號為空
      * @throws LibraryNotFoundException 若版本不存在
      */
     public LibraryVersion resolveVersion(String libraryId, String version) {
-        if (version != null && !version.isBlank()) {
-            return versionRepository.findByLibraryIdAndVersion(libraryId, version)
-                    .orElseThrow(() -> new LibraryNotFoundException(
-                            "版本 " + version + " 不存在於函式庫 ID: " + libraryId));
-        } else {
-            return versionRepository.findLatestByLibraryId(libraryId)
-                    .orElseThrow(() -> new LibraryNotFoundException(
-                            "函式庫 ID " + libraryId + " 沒有可用的版本"));
+        if (version == null || version.isBlank()) {
+            throw new IllegalArgumentException("請指定版本號");
         }
+        return versionRepository.findByLibraryIdAndVersion(libraryId, version)
+                .orElseThrow(() -> new LibraryNotFoundException(
+                        "版本 " + version + " 不存在於函式庫 ID: " + libraryId));
     }
 
     /**

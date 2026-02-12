@@ -13,6 +13,8 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.github.samzhu.documentation.mcp.domain.model.LibraryVersion;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -57,19 +59,21 @@ public class SearchService {
     }
 
     /**
-     * 全文檢索
+     * 全文檢索（支援動態篩選）
      *
-     * @param versionId 版本 ID
+     * @param libraryId 函式庫 ID（null 表示所有函式庫）
+     * @param versionId 版本 ID（null 表示所有版本）
      * @param query     搜尋關鍵字
      * @param limit     結果數量上限
      * @return 搜尋結果列表
      */
-    public List<SearchResultItem> fullTextSearch(String versionId, String query, int limit) {
+    public List<SearchResultItem> fullTextSearch(String libraryId, String versionId,
+                                                  String query, int limit) {
         if (query == null || query.isBlank()) {
             return List.of();
         }
 
-        var documents = documentRepository.fullTextSearch(versionId, query, limit);
+        var documents = documentRepository.fullTextSearch(libraryId, versionId, query, limit);
         return documents.stream()
                 .map(doc -> SearchResultItem.fromDocument(
                         doc.getId(), doc.getTitle(), doc.getPath(),
@@ -80,28 +84,44 @@ public class SearchService {
     }
 
     /**
-     * 語意搜尋
+     * 語意搜尋（支援動態篩選）
      *
-     * @param versionId 版本 ID
+     * @param libraryId 函式庫 ID（null 表示所有函式庫）
+     * @param versionId 版本 ID（null 表示所有版本）
      * @param query     自然語言查詢
      * @param limit     結果數量上限
      * @param threshold 相似度閾值
      * @return 搜尋結果列表
      */
-    public List<SearchResultItem> semanticSearch(String versionId, String query,
-                                                  int limit, double threshold) {
+    public List<SearchResultItem> semanticSearch(String libraryId, String versionId,
+                                                  String query, int limit, double threshold) {
         if (query == null || query.isBlank()) {
             return List.of();
         }
 
-        // 使用 VectorStore 執行語意搜尋，透過 filterExpression 限制搜尋範圍
-        SearchRequest request = SearchRequest.builder()
+        // 動態建構 SearchRequest，依指定條件篩選搜尋範圍
+        var builder = SearchRequest.builder()
                 .query(query)
                 .topK(limit)
-                .similarityThreshold(threshold)
-                .filterExpression(METADATA_VERSION_ID + " == '" + versionId + "'")
-                .build();
+                .similarityThreshold(threshold);
 
+        // 動態建構 filterExpression：指定 versionId > 指定 libraryId > 全部搜尋
+        if (versionId != null) {
+            builder.filterExpression(METADATA_VERSION_ID + " == '" + versionId + "'");
+        } else if (libraryId != null) {
+            // 指定函式庫但未指定版本 → 搜尋該函式庫所有版本
+            List<String> versionIds = versionRepository.findByLibraryId(libraryId).stream()
+                    .map(LibraryVersion::getId).toList();
+            if (!versionIds.isEmpty()) {
+                String filterExpression = versionIds.stream()
+                        .map(id -> METADATA_VERSION_ID + " == '" + id + "'")
+                        .collect(Collectors.joining(" || "));
+                builder.filterExpression(filterExpression);
+            }
+        }
+        // libraryId 和 versionId 都為 null → 不設 filterExpression，搜尋全部
+
+        SearchRequest request = builder.build();
         List<org.springframework.ai.document.Document> results = vectorStore.similaritySearch(request);
 
         if (results.isEmpty()) {
@@ -134,12 +154,14 @@ public class SearchService {
     /**
      * 混合搜尋（使用 RRF 演算法融合全文搜尋與語意搜尋結果）
      *
-     * @param versionId 版本 ID
+     * @param libraryId 函式庫 ID（null 表示所有函式庫）
+     * @param versionId 版本 ID（null 表示所有版本）
      * @param query     搜尋查詢
      * @param limit     結果數量上限
      * @return 融合後的搜尋結果列表（依 RRF 分數排序）
      */
-    public List<SearchResultItem> hybridSearch(String versionId, String query, int limit) {
+    public List<SearchResultItem> hybridSearch(String libraryId, String versionId,
+                                                String query, int limit) {
         if (query == null || query.isBlank()) {
             return List.of();
         }
@@ -147,13 +169,15 @@ public class SearchService {
         double alpha = searchProperties.hybrid().alpha();
         double minSimilarity = searchProperties.hybrid().minSimilarity();
 
-        log.debug("執行混合搜尋: query='{}', versionId={}, alpha={}", query, versionId, alpha);
+        log.debug("執行混合搜尋: query='{}', libraryId={}, versionId={}, alpha={}",
+                query, libraryId, versionId, alpha);
 
         // 取得更多結果以確保融合後有足夠的資料
         int fetchLimit = limit * 2;
 
-        List<SearchResultItem> keywordResults = fullTextSearch(versionId, query, fetchLimit);
-        List<SearchResultItem> semanticResults = semanticSearch(versionId, query, fetchLimit, minSimilarity);
+        List<SearchResultItem> keywordResults = fullTextSearch(libraryId, versionId, query, fetchLimit);
+        List<SearchResultItem> semanticResults = semanticSearch(
+                libraryId, versionId, query, fetchLimit, minSimilarity);
 
         log.debug("關鍵字搜尋結果: {} 筆, 語意搜尋結果: {} 筆",
                 keywordResults.size(), semanticResults.size());
@@ -195,10 +219,13 @@ public class SearchService {
     }
 
     /**
-     * 搜尋文件（統一入口，支援跨 Library 搜尋）
+     * 搜尋文件（統一入口，支援動態篩選）
+     * <p>
+     * 使用動態查詢，未指定的條件不會加入 WHERE。
+     * </p>
      *
-     * @param libraryName 函式庫名稱（null 表示搜尋所有函式庫的最新版本）
-     * @param version     版本號（null 表示最新版本）
+     * @param libraryName 函式庫名稱（null 表示搜尋所有函式庫）
+     * @param version     版本號（null 表示所有版本）
      * @param query       搜尋查詢
      * @param mode        搜尋模式（hybrid/fulltext/semantic）
      * @param limit       結果數量上限
@@ -214,82 +241,40 @@ public class SearchService {
         int effectiveLimit = Math.min(limit, searchProperties.maxLimit());
         String effectiveMode = (mode != null && !mode.isBlank()) ? mode : "hybrid";
 
-        // 指定了函式庫 → 搜尋單一函式庫
+        // 解析 libraryId（libraryName → libraryId）
+        String libraryId = null;
         if (libraryName != null && !libraryName.isBlank()) {
-            return searchInLibrary(libraryName, version, query, effectiveMode, effectiveLimit);
+            Library library = libraryRepository.findByName(libraryName)
+                    .orElseThrow(() -> new IllegalArgumentException("找不到函式庫: " + libraryName));
+            libraryId = library.getId();
         }
 
-        // 未指定函式庫 → 搜尋所有函式庫的 latest version
-        return searchAcrossLibraries(query, effectiveMode, effectiveLimit);
+        // 只在同時指定 libraryId 和 version 時解析 versionId
+        String versionId = resolveVersionId(libraryId, version);
+
+        return switch (effectiveMode) {
+            case "fulltext" -> fullTextSearch(libraryId, versionId, query, effectiveLimit);
+            case "semantic" -> semanticSearch(libraryId, versionId, query, effectiveLimit,
+                    searchProperties.hybrid().minSimilarity());
+            default -> hybridSearch(libraryId, versionId, query, effectiveLimit);
+        };
     }
 
     // ========== 私有輔助方法 ==========
 
     /**
-     * 搜尋單一函式庫
-     */
-    private List<SearchResultItem> searchInLibrary(String libraryName, String version,
-                                                    String query, String mode, int limit) {
-        Library library = libraryRepository.findByName(libraryName)
-                .orElseThrow(() -> new IllegalArgumentException("找不到函式庫: " + libraryName));
-
-        String versionId = resolveVersionId(library.getId(), version);
-
-        return switch (mode) {
-            case "fulltext" -> fullTextSearch(versionId, query, limit);
-            case "semantic" -> semanticSearch(versionId, query, limit,
-                    searchProperties.hybrid().minSimilarity());
-            default -> hybridSearch(versionId, query, limit);
-        };
-    }
-
-    /**
-     * 搜尋所有函式庫的最新版本
-     */
-    private List<SearchResultItem> searchAcrossLibraries(String query, String mode, int limit) {
-        List<Library> libraries = libraryRepository.findAll();
-        List<SearchResultItem> allResults = new ArrayList<>();
-
-        for (Library library : libraries) {
-            try {
-                var latestVersion = versionRepository.findLatestByLibraryId(library.getId());
-                if (latestVersion.isEmpty()) continue;
-
-                String versionId = latestVersion.get().getId();
-                List<SearchResultItem> results = switch (mode) {
-                    case "fulltext" -> fullTextSearch(versionId, query, limit);
-                    case "semantic" -> semanticSearch(versionId, query, limit,
-                            searchProperties.hybrid().minSimilarity());
-                    default -> hybridSearch(versionId, query, limit);
-                };
-                allResults.addAll(results);
-            } catch (Exception e) {
-                log.warn("搜尋函式庫 {} 時發生錯誤: {}", library.getName(), e.getMessage());
-            }
-        }
-
-        // 依分數排序並限制結果數量
-        return allResults.stream()
-                .sorted(Comparator.comparingDouble(SearchResultItem::score).reversed())
-                .limit(limit)
-                .toList();
-    }
-
-    /**
-     * 解析版本 ID
+     * 解析版本 ID（僅在同時指定 libraryId 和 version 時解析）
+     * <p>
+     * 未指定的條件回傳 null，交由動態查詢處理。
+     * </p>
      */
     private String resolveVersionId(String libraryId, String version) {
-        if (version != null && !version.isBlank()) {
+        if (libraryId != null && version != null && !version.isBlank()) {
             return versionRepository.findByLibraryIdAndVersion(libraryId, version)
-                    .map(v -> v.getId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "找不到版本: libraryId=%s, version=%s".formatted(libraryId, version)));
-        } else {
-            return versionRepository.findLatestByLibraryId(libraryId)
-                    .map(v -> v.getId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "找不到最新版本: libraryId=%s".formatted(libraryId)));
+                    .map(LibraryVersion::getId)
+                    .orElse(null);
         }
+        return null;
     }
 
     /**

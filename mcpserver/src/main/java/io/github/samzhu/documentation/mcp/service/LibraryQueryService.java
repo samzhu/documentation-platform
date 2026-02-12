@@ -83,22 +83,20 @@ public class LibraryQueryService {
     /**
      * 解析版本 ID
      * <p>
-     * 若 version 為 null，取最新版本；否則取指定版本。
+     * MCP 工具（list_documents、get_document）的 version 為必填參數，
+     * 不提供「自動取最新版」的 fallback 邏輯。
      * </p>
      *
      * @param libraryId 函式庫 ID
-     * @param version   版本號（可為 null）
+     * @param version   版本號（必填）
      * @return 版本 ID
-     * @throws IllegalArgumentException 找不到版本時拋出
+     * @throws IllegalArgumentException 版本號為空或找不到版本時拋出
      */
     public String resolveVersionId(String libraryId, String version) {
-        Optional<LibraryVersion> versionOpt;
-        if (version != null && !version.isBlank()) {
-            versionOpt = versionRepository.findByLibraryIdAndVersion(libraryId, version);
-        } else {
-            versionOpt = versionRepository.findLatestByLibraryId(libraryId);
+        if (version == null || version.isBlank()) {
+            throw new IllegalArgumentException("請指定版本號");
         }
-        return versionOpt
+        return versionRepository.findByLibraryIdAndVersion(libraryId, version)
                 .map(LibraryVersion::getId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "找不到版本: libraryId=%s, version=%s".formatted(libraryId, version)));
@@ -108,7 +106,7 @@ public class LibraryQueryService {
      * 取得指定函式庫版本下的文件列表
      *
      * @param libraryName 函式庫名稱
-     * @param version     版本號（null 表示最新版）
+     * @param version     版本號（必填）
      * @return 文件列表
      */
     public List<Document> findDocuments(String libraryName, String version) {

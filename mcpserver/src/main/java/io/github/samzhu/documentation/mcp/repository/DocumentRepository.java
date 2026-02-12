@@ -41,25 +41,29 @@ public interface DocumentRepository extends CrudRepository<Document, String> {
     );
 
     /**
-     * 全文搜尋文件
+     * 全文搜尋文件（動態條件）
      * <p>
-     * 使用 PostgreSQL 的 tsvector 進行全文搜尋，
-     * 標題權重較高（A），內容權重次之（B）。
+     * 使用 PostgreSQL 的 tsvector 進行全文搜尋。
+     * libraryId 和 versionId 為可選篩選條件，傳 null 表示不篩選。
      * </p>
      *
-     * @param versionId 版本 ID（TSID 格式）
+     * @param libraryId 函式庫 ID（可選，null 表示所有函式庫）
+     * @param versionId 版本 ID（可選，null 表示所有版本）
      * @param query     搜尋關鍵字
      * @param limit     最大回傳筆數
      * @return 符合條件的文件列表（依相關性排序）
      */
     @Query("""
-            SELECT * FROM documents
-            WHERE version_id = :versionId
-            AND search_vector @@ plainto_tsquery('english', :query)
-            ORDER BY ts_rank(search_vector, plainto_tsquery('english', :query)) DESC
+            SELECT d.* FROM documents d
+            JOIN library_versions lv ON d.version_id = lv.id
+            WHERE d.search_vector @@ plainto_tsquery('english', :query)
+            AND (:libraryId IS NULL OR lv.library_id = :libraryId)
+            AND (:versionId IS NULL OR d.version_id = :versionId)
+            ORDER BY ts_rank(d.search_vector, plainto_tsquery('english', :query)) DESC
             LIMIT :limit
             """)
     List<Document> fullTextSearch(
+            @Param("libraryId") String libraryId,
             @Param("versionId") String versionId,
             @Param("query") String query,
             @Param("limit") int limit
