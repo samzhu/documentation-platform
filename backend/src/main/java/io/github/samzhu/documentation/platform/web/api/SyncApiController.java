@@ -9,9 +9,11 @@ import io.github.samzhu.documentation.platform.service.SyncService;
 import io.github.samzhu.documentation.platform.web.dto.SyncHistoryDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,13 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
- * 同步狀態 REST API
+ * 同步 REST API
  * <p>
- * 提供同步歷史查詢功能，用於追蹤文件同步的執行狀態和結果。
+ * 提供同步觸發和同步歷史查詢功能。
  * </p>
  */
 @RestController
@@ -34,6 +38,13 @@ import java.util.stream.StreamSupport;
 public class SyncApiController {
 
     private static final Logger log = LoggerFactory.getLogger(SyncApiController.class);
+
+    /**
+     * GitHub URL 解析正規表達式
+     */
+    private static final Pattern GITHUB_URL_PATTERN = Pattern.compile(
+            "^https://github\\.com/([^/]+)/([^/]+)(?:/.*)?$"
+    );
 
     private final SyncService syncService;
     private final LibraryVersionRepository versionRepository;
@@ -52,6 +63,56 @@ public class SyncApiController {
         this.syncService = syncService;
         this.versionRepository = versionRepository;
         this.libraryRepository = libraryRepository;
+    }
+
+    /**
+     * 觸發指定版本的文件同步
+     * <p>
+     * 根據函式庫 ID 和版本 ID 觸發非同步同步任務，
+     * 從 GitHub 抓取文件並更新向量嵌入。
+     * </p>
+     *
+     * @param libraryId 函式庫 ID（TSID 格式，13 字元）
+     * @param versionId 版本 ID（TSID 格式，13 字元）
+     * @return 同步歷史（HTTP 202 Accepted）
+     */
+    @PostMapping("/libraries/{libraryId}/versions/{versionId}")
+    public ResponseEntity<SyncHistoryDto> triggerVersionSync(
+            @PathVariable String libraryId,
+            @PathVariable String versionId) {
+
+        log.info("收到版本同步請求: libraryId={}, versionId={}", libraryId, versionId);
+
+        // 查詢函式庫
+        Library library = libraryRepository.findById(libraryId)
+                .orElseThrow(() -> new IllegalArgumentException("找不到函式庫: " + libraryId));
+
+        // 查詢版本
+        LibraryVersion version = versionRepository.findById(versionId)
+                .orElseThrow(() -> new IllegalArgumentException("找不到版本: " + versionId));
+
+        // 解析 GitHub URL，擷取 owner 和 repo
+        Matcher matcher = GITHUB_URL_PATTERN.matcher(library.getSourceUrl());
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("無效的 GitHub URL: " + library.getSourceUrl());
+        }
+
+        String owner = matcher.group(1);
+        String repo = matcher.group(2);
+        String docsPath = version.getDocsPath() != null ? version.getDocsPath() : "docs";
+
+        // 觸發同步（非同步執行）
+        SyncHistory syncHistory = syncService.syncFromGitHub(
+                versionId,
+                owner,
+                repo,
+                docsPath,
+                "v" + version.getVersion()
+        ).join();
+
+        String libraryName = library.getDisplayName() != null ? library.getDisplayName() : library.getName();
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(SyncHistoryDto.from(syncHistory, libraryId, libraryName, version.getVersion()));
     }
 
     /**

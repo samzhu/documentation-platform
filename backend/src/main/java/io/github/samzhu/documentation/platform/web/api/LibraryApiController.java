@@ -5,6 +5,7 @@ import io.github.samzhu.documentation.platform.domain.model.LibraryVersion;
 import io.github.samzhu.documentation.platform.domain.model.SyncHistory;
 import io.github.samzhu.documentation.platform.repository.DocumentChunkRepository;
 import io.github.samzhu.documentation.platform.repository.DocumentRepository;
+import io.github.samzhu.documentation.platform.repository.SyncHistoryRepository;
 import io.github.samzhu.documentation.platform.service.LibraryService;
 import io.github.samzhu.documentation.platform.service.SyncService;
 import io.github.samzhu.documentation.platform.web.dto.BatchSyncRequest;
@@ -17,6 +18,7 @@ import io.github.samzhu.documentation.platform.web.dto.TriggerSyncRequest;
 import io.github.samzhu.documentation.platform.web.dto.UpdateLibraryRequest;
 import io.github.samzhu.documentation.platform.web.dto.WebLibraryDto;
 import jakarta.validation.Valid;
+import java.time.OffsetDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -60,6 +62,7 @@ public class LibraryApiController {
     private final SyncService syncService;
     private final DocumentRepository documentRepository;
     private final DocumentChunkRepository documentChunkRepository;
+    private final SyncHistoryRepository syncHistoryRepository;
 
     /**
      * 建構函式
@@ -68,15 +71,18 @@ public class LibraryApiController {
      * @param syncService               同步服務
      * @param documentRepository        文件資料存取介面
      * @param documentChunkRepository   文件區塊資料存取介面
+     * @param syncHistoryRepository     同步歷史資料存取介面
      */
     public LibraryApiController(LibraryService libraryService,
                                  SyncService syncService,
                                  DocumentRepository documentRepository,
-                                 DocumentChunkRepository documentChunkRepository) {
+                                 DocumentChunkRepository documentChunkRepository,
+                                 SyncHistoryRepository syncHistoryRepository) {
         this.libraryService = libraryService;
         this.syncService = syncService;
         this.documentRepository = documentRepository;
         this.documentChunkRepository = documentChunkRepository;
+        this.syncHistoryRepository = syncHistoryRepository;
     }
 
     /**
@@ -196,7 +202,16 @@ public class LibraryApiController {
     @GetMapping("/{id}/versions")
     public List<LibraryVersionDto> listVersions(@PathVariable String id) {
         return libraryService.getLibraryVersionsById(id).stream()
-                .map(LibraryVersionDto::from)
+                .map(version -> {
+                    // 查詢該版本的文件數量
+                    long docCount = documentRepository.countByVersionId(version.getId());
+                    // 查詢最後同步完成時間
+                    OffsetDateTime lastSync = syncHistoryRepository
+                            .findLatestByVersionId(version.getId())
+                            .map(SyncHistory::getCompletedAt)
+                            .orElse(null);
+                    return LibraryVersionDto.from(version, docCount, lastSync);
+                })
                 .toList();
     }
 

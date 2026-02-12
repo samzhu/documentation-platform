@@ -281,3 +281,7 @@ logging:
   level:
     root: INFO
     io.github.samzhu.documentation.platform: INFO
+  # Production 關閉 console 輸出，所有 logs 透過 OTLP 匯出至 OTel Collector
+  # 避免 Cloud Run stdout 擷取產生無 trace 關聯的 textPayload 重複 logs
+  console:
+    enabled: false

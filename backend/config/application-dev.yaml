@@ -94,6 +94,9 @@ logging:
     io.github.samzhu.documentation.platform: DEBUG
     org.springframework.ai: DEBUG
     org.springframework.security: DEBUG
+  # 本地開發需要 console 輸出（本地無 OTel Collector，覆蓋正式環境的 false）
+  console:
+    enabled: true
 
 # ----- 功能開關配置 -----
 platform:

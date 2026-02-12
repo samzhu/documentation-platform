@@ -117,6 +117,15 @@ public interface DocumentRepository extends CrudRepository<Document, String> {
     int backfillSearchVectors();
 
     /**
+     * 統計指定版本的文件數量
+     *
+     * @param versionId 版本 ID（TSID 格式）
+     * @return 文件數量
+     */
+    @Query("SELECT COUNT(d.id) FROM documents d WHERE d.version_id = :versionId")
+    long countByVersionId(@Param("versionId") String versionId);
+
+    /**
      * 統計指定 Library 的文件數量（透過 LibraryVersion JOIN）
      *
      * @param libraryId 函式庫 ID（TSID 格式）
