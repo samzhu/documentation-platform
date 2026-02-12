@@ -149,10 +149,18 @@ public class DocumentChunkVectorStore implements VectorStore {
             List<String> texts = batch.stream()
                     .map(Document::getText)
                     .toList();
-            List<float[]> embeddings = embeddingModel.embed(texts);
+            List<float[]> embeddings;
+            try {
+                embeddings = embeddingModel.embed(texts);
+            } catch (Exception e) {
+                // 嵌入模型生成向量失敗，記錄錯誤後重新拋出
+                log.error("嵌入模型生成向量失敗，批次 {}-{}", batchStart + 1, batchEnd, e);
+                throw e;
+            }
 
             // 使用 JdbcTemplate.batchUpdate 進行批次插入
             // 參考 Spring AI PgVectorStore，使用 StatementCreatorUtils 設定參數
+            try {
             jdbcTemplate.batchUpdate(SQL_INSERT, new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -190,6 +198,11 @@ public class DocumentChunkVectorStore implements VectorStore {
                     return batch.size();
                 }
             });
+            } catch (Exception e) {
+                // 批次寫入資料庫失敗，記錄錯誤後重新拋出
+                log.error("批次寫入 document_chunks 失敗，批次大小: {}", batch.size(), e);
+                throw e;
+            }
         }
 
         log.debug("成功新增 {} 個文件", documents.size());
@@ -282,7 +295,14 @@ public class DocumentChunkVectorStore implements VectorStore {
                 request.getQuery(), request.getTopK(), request.getSimilarityThreshold());
 
         // 將查詢文字轉換為向量
-        float[] queryEmbedding = embeddingModel.embed(request.getQuery());
+        float[] queryEmbedding;
+        try {
+            queryEmbedding = embeddingModel.embed(request.getQuery());
+        } catch (Exception e) {
+            // 查詢向量轉換失敗，記錄錯誤後重新拋出
+            log.error("查詢向量轉換失敗", e);
+            throw e;
+        }
         PGvector queryVector = new PGvector(queryEmbedding);
 
         // 處理過濾條件 - 使用 JSONPath 格式
@@ -302,14 +322,21 @@ public class DocumentChunkVectorStore implements VectorStore {
         String sql = String.format(SQL_SIMILARITY_SEARCH, jsonPathFilter);
 
         // 執行查詢 - 參考 Spring AI，直接傳遞 PGvector 物件
-        List<Document> results = jdbcTemplate.query(
-                sql,
-                documentRowMapper,
-                queryVector,      // 用於計算 distance
-                queryVector,      // 用於 WHERE 條件
-                distanceThreshold,
-                topK
-        );
+        List<Document> results;
+        try {
+            results = jdbcTemplate.query(
+                    sql,
+                    documentRowMapper,
+                    queryVector,      // 用於計算 distance
+                    queryVector,      // 用於 WHERE 條件
+                    distanceThreshold,
+                    topK
+            );
+        } catch (Exception e) {
+            // 語意搜尋資料庫查詢失敗，記錄錯誤後重新拋出
+            log.error("語意搜尋資料庫查詢失敗，topK: {}", topK, e);
+            throw e;
+        }
 
         log.debug("語意搜尋完成，找到 {} 個結果", results.size());
         return results;

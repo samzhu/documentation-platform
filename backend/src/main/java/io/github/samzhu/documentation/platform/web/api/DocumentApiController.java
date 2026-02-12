@@ -4,6 +4,8 @@ import io.github.samzhu.documentation.platform.domain.model.Document;
 import io.github.samzhu.documentation.platform.service.DocumentService;
 import io.github.samzhu.documentation.platform.web.dto.DocumentDto;
 import io.github.samzhu.documentation.platform.web.dto.DocumentDetailDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +24,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/documents")
 public class DocumentApiController {
+
+    private static final Logger log = LoggerFactory.getLogger(DocumentApiController.class);
 
     private final DocumentService documentService;
 
@@ -47,6 +51,7 @@ public class DocumentApiController {
     public ResponseEntity<List<DocumentDto>> listDocuments(
             @RequestParam(required = true) String versionId) {
 
+        log.debug("查詢文件列表: versionId={}", versionId);
         List<Document> documents = documentService.getDocumentsByVersionId(versionId);
 
         List<DocumentDto> dtos = documents.stream()
@@ -67,6 +72,7 @@ public class DocumentApiController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<DocumentDetailDto> getDocument(@PathVariable String id) {
+        log.debug("查詢文件詳情: id={}", id);
         DocumentService.DocumentContent content = documentService.getDocumentContent(id);
 
         return ResponseEntity.ok(DocumentDetailDto.from(content));

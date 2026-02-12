@@ -103,6 +103,7 @@ public class VersionService {
      * @throws LibraryNotFoundException 若版本不存在
      */
     public LibraryVersion resolveVersion(String libraryId, String version) {
+        log.debug("解析版本: libraryId={}, version={}", libraryId, version);
         if (version == null || version.isBlank()) {
             throw new IllegalArgumentException("請指定版本號");
         }
@@ -178,6 +179,7 @@ public class VersionService {
     @Transactional
     public LibraryVersion updateVersion(String versionId, String docsPath, VersionStatus status,
                                          Boolean isLatest, Boolean isLts) {
+        log.info("更新版本: versionId={}", versionId);
         LibraryVersion existing = getVersionById(versionId);
 
         // 若設為最新版本，需先清除其他版本的 isLatest 標記
@@ -226,6 +228,8 @@ public class VersionService {
     @Transactional
     public LibraryVersion setLatestVersion(String versionId) {
         LibraryVersion version = getVersionById(versionId);
+
+        log.info("設定最新版本: versionId={}, version={}", versionId, version.getVersion());
 
         // 清除同函式庫其他版本的 isLatest 標記
         clearLatestFlag(version.getLibraryId());

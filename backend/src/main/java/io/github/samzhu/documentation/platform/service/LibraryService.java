@@ -163,7 +163,9 @@ public class LibraryService {
         String id = idService.generateId();
         Library library = Library.create(id, name, displayName, description,
                 sourceType, sourceUrl, category, tags);
-        return libraryRepository.save(library);
+        Library saved = libraryRepository.save(library);
+        log.info("建立新函式庫: name={}, sourceType={}", name, sourceType);
+        return saved;
     }
 
     /**
@@ -183,6 +185,7 @@ public class LibraryService {
     public Library updateLibrary(String id, String displayName, String description,
                                   SourceType sourceType, String sourceUrl,
                                   String category, List<String> tags) {
+        log.info("更新函式庫: id={}", id);
         Library existing = getLibraryById(id);
 
         Library updated = new Library(
@@ -210,6 +213,7 @@ public class LibraryService {
      */
     @Transactional
     public void deleteLibrary(String id) {
+        log.info("刪除函式庫: id={}", id);
         Library library = getLibraryById(id);
         libraryRepository.delete(library);
     }

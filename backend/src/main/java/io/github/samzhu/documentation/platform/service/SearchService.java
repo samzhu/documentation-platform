@@ -88,11 +88,15 @@ public class SearchService {
             return List.of();
         }
 
+        log.debug("執行全文搜尋: query='{}', libraryId={}, version={}", query, libraryId, version);
+
         // 解析 versionId（有指定 libraryId + version 時才查）
         String versionId = resolveVersionId(libraryId, version);
 
         // 動態查詢：libraryId / versionId 為 null 時不篩選
         List<Document> documents = documentRepository.fullTextSearch(libraryId, versionId, query, limit);
+
+        log.debug("全文搜尋完成: {} 筆結果", documents.size());
 
         // 轉換為搜尋結果
         return documents.stream()
@@ -126,6 +130,8 @@ public class SearchService {
             return List.of();
         }
 
+        log.debug("執行語意搜尋: query='{}', libraryId={}, threshold={}", query, libraryId, threshold);
+
         // 解析 versionId（有指定 libraryId + version 時才查）
         String versionId = resolveVersionId(libraryId, version);
 
@@ -155,6 +161,8 @@ public class SearchService {
         SearchRequest request = builder.build();
 
         List<org.springframework.ai.document.Document> results = vectorStore.similaritySearch(request);
+
+        log.debug("語意搜尋完成: {} 筆結果", results.size());
 
         if (results.isEmpty()) {
             return List.of();

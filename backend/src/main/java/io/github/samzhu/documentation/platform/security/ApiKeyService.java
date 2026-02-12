@@ -4,6 +4,8 @@ import io.github.samzhu.documentation.platform.domain.enums.ApiKeyStatus;
 import io.github.samzhu.documentation.platform.domain.model.ApiKey;
 import io.github.samzhu.documentation.platform.repository.ApiKeyRepository;
 import io.github.samzhu.documentation.platform.service.IdService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,8 @@ import java.util.Optional;
 @Service
 @Transactional(readOnly = true)
 public class ApiKeyService {
+
+    private static final Logger log = LoggerFactory.getLogger(ApiKeyService.class);
 
     private static final String KEY_PREFIX = "dmcp_";
     private static final int KEY_LENGTH = 32;
@@ -84,6 +88,9 @@ public class ApiKeyService {
                 expiresAt, createdBy);
         apiKey = apiKeyRepository.save(apiKey);
 
+        // 記錄新 API Key 建立（不記錄 rawKey 或 keyHash）
+        log.info("已產生新 API Key: name={}, keyPrefix={}", name, keyPrefix);
+
         return new GeneratedApiKey(apiKey.getId(), name, rawKey, keyPrefix);
     }
 
@@ -95,6 +102,7 @@ public class ApiKeyService {
      */
     public Optional<ApiKey> validateKey(String rawKey) {
         if (rawKey == null || !rawKey.startsWith(KEY_PREFIX)) {
+            log.debug("API Key 驗證失敗：格式無效");
             return Optional.empty();
         }
 
@@ -103,6 +111,7 @@ public class ApiKeyService {
         Optional<ApiKey> apiKeyOpt = apiKeyRepository.findByKeyPrefix(keyPrefix);
 
         if (apiKeyOpt.isEmpty()) {
+            log.debug("API Key 驗證失敗：前綴不存在, keyPrefix={}", keyPrefix);
             return Optional.empty();
         }
 
@@ -110,14 +119,17 @@ public class ApiKeyService {
 
         // 檢查狀態和過期
         if (!apiKey.isValid()) {
+            log.debug("API Key 驗證失敗：金鑰無效, keyPrefix={}", apiKey.getKeyPrefix());
             return Optional.empty();
         }
 
         // 驗證雜湊
         if (!passwordEncoder.matches(rawKey, apiKey.getKeyHash())) {
+            log.debug("API Key 驗證失敗：雜湊不匹配, keyPrefix={}", keyPrefix);
             return Optional.empty();
         }
 
+        log.debug("API Key 驗證成功, keyPrefix={}", apiKey.getKeyPrefix());
         return Optional.of(apiKey);
     }
 
@@ -143,6 +155,7 @@ public class ApiKeyService {
                 .orElseThrow(() -> new IllegalArgumentException("找不到 API Key: " + keyId));
 
         apiKeyRepository.save(apiKey.revoke());
+        log.info("已撤銷 API Key: id={}", keyId);
     }
 
     /**

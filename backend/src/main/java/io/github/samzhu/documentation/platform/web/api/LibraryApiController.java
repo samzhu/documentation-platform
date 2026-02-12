@@ -17,6 +17,8 @@ import io.github.samzhu.documentation.platform.web.dto.TriggerSyncRequest;
 import io.github.samzhu.documentation.platform.web.dto.UpdateLibraryRequest;
 import io.github.samzhu.documentation.platform.web.dto.WebLibraryDto;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,6 +45,8 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping("/api/libraries")
 public class LibraryApiController {
+
+    private static final Logger log = LoggerFactory.getLogger(LibraryApiController.class);
 
     /**
      * GitHub URL 解析正規表達式
@@ -107,6 +111,7 @@ public class LibraryApiController {
      */
     @PostMapping
     public ResponseEntity<WebLibraryDto> createLibrary(@RequestBody @Valid CreateLibraryRequest request) {
+        log.info("收到建立函式庫請求: name={}", request.name());
         Library library = libraryService.createLibrary(
                 request.name(),
                 request.displayName(),
@@ -150,6 +155,7 @@ public class LibraryApiController {
     @PutMapping("/{id}")
     public WebLibraryDto updateLibrary(@PathVariable String id,
                                         @RequestBody @Valid UpdateLibraryRequest request) {
+        log.info("收到更新函式庫請求: id={}", id);
         Library library = libraryService.updateLibrary(
                 id,
                 request.displayName(),
@@ -173,6 +179,7 @@ public class LibraryApiController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLibrary(@PathVariable String id) {
+        log.info("收到刪除函式庫請求: id={}", id);
         libraryService.deleteLibrary(id);
         return ResponseEntity.noContent().build();
     }
@@ -206,6 +213,7 @@ public class LibraryApiController {
     @PostMapping("/{id}/sync")
     public ResponseEntity<SyncHistoryDto> triggerSync(@PathVariable String id,
                                                        @RequestBody @Valid TriggerSyncRequest request) {
+        log.info("收到同步觸發請求: libraryId={}, version={}", id, request.version());
         Library library = libraryService.getLibraryById(id);
 
         // 解析 GitHub URL，擷取 owner 和 repo
@@ -262,6 +270,7 @@ public class LibraryApiController {
     @PostMapping("/{id}/batch-sync")
     public ResponseEntity<BatchSyncResponse> batchSync(@PathVariable String id,
                                                         @RequestBody @Valid BatchSyncRequest request) {
+        log.info("收到批次同步請求: libraryId={}, 版本數量={}", id, request.versions().size());
         BatchSyncResponse response = libraryService.batchCreateAndSync(id, request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }

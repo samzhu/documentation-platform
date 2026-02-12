@@ -2,6 +2,8 @@ package io.github.samzhu.documentation.platform.web.api;
 
 import io.github.samzhu.documentation.platform.security.OAuth2AuthenticationSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,6 +29,8 @@ import java.util.Map;
 @ConditionalOnProperty(name = "platform.features.oauth2", havingValue = "true")
 public class UserApiController {
 
+    private static final Logger log = LoggerFactory.getLogger(UserApiController.class);
+
     /**
      * 取得當前用戶資訊
      * <p>
@@ -44,6 +48,7 @@ public class UserApiController {
     public ResponseEntity<Map<String, Object>> getCurrentUser(Authentication authentication) {
         // 未認證（無 Token 或 Token 無效）
         if (authentication == null || !authentication.isAuthenticated()) {
+            log.debug("未認證的使用者資訊請求");
             return ResponseEntity.status(401).build();
         }
 
@@ -70,6 +75,7 @@ public class UserApiController {
 
         userInfo.put("authenticated", true);
 
+        log.debug("取得用戶資訊: sub={}", userInfo.get("sub"));
         return ResponseEntity.ok(userInfo);
     }
 
@@ -86,6 +92,7 @@ public class UserApiController {
      */
     @PostMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout(HttpServletResponse response) {
+        log.info("用戶登出");
         // 清除 Token Cookie
         OAuth2AuthenticationSuccessHandler.clearTokenCookie(response);
 

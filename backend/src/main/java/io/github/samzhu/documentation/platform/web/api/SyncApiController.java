@@ -7,6 +7,8 @@ import io.github.samzhu.documentation.platform.repository.LibraryRepository;
 import io.github.samzhu.documentation.platform.repository.LibraryVersionRepository;
 import io.github.samzhu.documentation.platform.service.SyncService;
 import io.github.samzhu.documentation.platform.web.dto.SyncHistoryDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +32,8 @@ import java.util.stream.StreamSupport;
 @RestController
 @RequestMapping("/api/sync")
 public class SyncApiController {
+
+    private static final Logger log = LoggerFactory.getLogger(SyncApiController.class);
 
     private final SyncService syncService;
     private final LibraryVersionRepository versionRepository;
@@ -68,6 +72,8 @@ public class SyncApiController {
             @RequestParam(required = false) String versionId,
             @RequestParam(defaultValue = "10") int limit
     ) {
+        log.debug("查詢同步歷史: libraryId={}, versionId={}", libraryId, versionId);
+
         // 如果指定了 versionId，直接使用；否則查詢所有
         String targetVersionId = versionId;
 

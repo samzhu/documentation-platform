@@ -7,6 +7,8 @@ import io.github.samzhu.documentation.platform.domain.model.DocumentChunk;
 import io.github.samzhu.documentation.platform.repository.CodeExampleRepository;
 import io.github.samzhu.documentation.platform.repository.DocumentChunkRepository;
 import io.github.samzhu.documentation.platform.repository.DocumentRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,8 @@ import java.util.Optional;
 @Service
 @Transactional(readOnly = true)
 public class DocumentService {
+
+    private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
 
     private final DocumentRepository documentRepository;
     private final DocumentChunkRepository chunkRepository;
@@ -43,11 +47,15 @@ public class DocumentService {
      * @throws DocumentNotFoundException 若文件不存在
      */
     public DocumentContent getDocumentContent(String documentId) {
+        log.debug("查詢文件內容: documentId={}", documentId);
+
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> DocumentNotFoundException.byId(documentId));
 
         List<DocumentChunk> chunks = chunkRepository.findByDocumentIdOrderByChunkIndex(documentId);
         List<CodeExample> codeExamples = codeExampleRepository.findByDocumentId(documentId);
+
+        log.debug("文件內容載入完成: documentId={}, chunks={}", documentId, chunks.size());
 
         return new DocumentContent(document, chunks, codeExamples);
     }
@@ -80,6 +88,7 @@ public class DocumentService {
      * @return 文件列表
      */
     public List<Document> getDocumentsByVersionId(String versionId) {
+        log.debug("查詢版本所有文件: versionId={}", versionId);
         return documentRepository.findByVersionIdOrderByPathAsc(versionId);
     }
 

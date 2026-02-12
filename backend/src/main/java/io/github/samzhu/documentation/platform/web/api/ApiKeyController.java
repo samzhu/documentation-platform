@@ -5,6 +5,8 @@ import io.github.samzhu.documentation.platform.web.dto.ApiKeyDto;
 import io.github.samzhu.documentation.platform.web.dto.CreateApiKeyRequest;
 import io.github.samzhu.documentation.platform.web.dto.GeneratedApiKeyDto;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,6 +32,8 @@ import java.util.List;
 @RequestMapping("/api/api-keys")
 public class ApiKeyController {
 
+    private static final Logger log = LoggerFactory.getLogger(ApiKeyController.class);
+
     private final ApiKeyService apiKeyService;
 
     public ApiKeyController(ApiKeyService apiKeyService) {
@@ -47,6 +51,8 @@ public class ApiKeyController {
     public ResponseEntity<GeneratedApiKeyDto> createKey(
             @RequestBody @Valid CreateApiKeyRequest request,
             Authentication authentication) {
+
+        log.info("收到建立 API Key 請求: name={}", request.name());
 
         // 從 JWT 取得建立者名稱
         String createdBy = getUsername(authentication);
@@ -88,6 +94,7 @@ public class ApiKeyController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> revokeKey(@PathVariable String id) {
+        log.info("收到撤銷 API Key 請求: id={}", id);
         apiKeyService.revokeKey(id);
         return ResponseEntity.noContent().build();
     }

@@ -6,6 +6,8 @@ import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.ast.NodeVisitor;
 import com.vladsch.flexmark.util.ast.VisitHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,6 +23,8 @@ import java.util.Map;
 @Service
 public class MarkdownParser implements DocumentParser {
 
+    private static final Logger log = LoggerFactory.getLogger(MarkdownParser.class);
+
     private final Parser parser;
 
     public MarkdownParser() {
@@ -33,6 +37,8 @@ public class MarkdownParser implements DocumentParser {
             return new ParsedDocument("", "", List.of(), Map.of());
         }
 
+        log.debug("解析 Markdown 文件: path={}", path);
+
         Node document = parser.parse(content);
 
         // 擷取標題
@@ -40,6 +46,8 @@ public class MarkdownParser implements DocumentParser {
 
         // 擷取程式碼區塊
         List<ParsedDocument.CodeBlock> codeBlocks = extractCodeBlocks(document);
+
+        log.debug("Markdown 解析完成: path={}, codeBlocks={}", path, codeBlocks.size());
 
         // 元資料
         Map<String, Object> metadata = Map.of(

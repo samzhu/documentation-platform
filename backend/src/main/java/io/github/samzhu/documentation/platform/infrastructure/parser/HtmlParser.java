@@ -5,6 +5,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,6 +22,8 @@ import java.util.Map;
 @Service
 public class HtmlParser implements DocumentParser {
 
+    private static final Logger log = LoggerFactory.getLogger(HtmlParser.class);
+
     private final FlexmarkHtmlConverter htmlToMarkdownConverter;
 
     public HtmlParser() {
@@ -31,6 +35,8 @@ public class HtmlParser implements DocumentParser {
         if (content == null || content.isBlank()) {
             return new ParsedDocument("", "", List.of(), Map.of());
         }
+
+        log.debug("解析 HTML 文件: path={}", path);
 
         try {
             Document document = Jsoup.parse(content);
@@ -54,6 +60,8 @@ public class HtmlParser implements DocumentParser {
 
             return new ParsedDocument(title, markdownContent, codeBlocks, metadata);
         } catch (Exception e) {
+            // HTML 文件解析失敗，記錄警告後回傳基本資訊
+            log.warn("HTML 文件解析失敗: path={}", path, e);
             return new ParsedDocument(
                     extractFileNameWithoutExtension(path),
                     content,

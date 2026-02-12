@@ -5,6 +5,8 @@ import org.asciidoctor.Options;
 import org.asciidoctor.ast.Block;
 import org.asciidoctor.ast.Document;
 import org.asciidoctor.ast.StructuralNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,6 +22,8 @@ import java.util.Map;
 @Service
 public class AsciiDocParser implements DocumentParser {
 
+    private static final Logger log = LoggerFactory.getLogger(AsciiDocParser.class);
+
     private final Asciidoctor asciidoctor;
 
     public AsciiDocParser() {
@@ -31,6 +35,8 @@ public class AsciiDocParser implements DocumentParser {
         if (content == null || content.isBlank()) {
             return new ParsedDocument("", "", List.of(), Map.of());
         }
+
+        log.debug("解析 AsciiDoc 文件: path={}", path);
 
         try {
             Document document = asciidoctor.load(content, Options.builder().build());
@@ -53,7 +59,8 @@ public class AsciiDocParser implements DocumentParser {
 
             return new ParsedDocument(title, content, codeBlocks, metadata);
         } catch (Exception e) {
-            // 解析失敗時，回傳基本資訊
+            // AsciiDoc 文件解析失敗，記錄警告後回傳基本資訊
+            log.warn("AsciiDoc 文件解析失敗: path={}", path, e);
             return new ParsedDocument(
                     extractFileNameWithoutExtension(path),
                     content,

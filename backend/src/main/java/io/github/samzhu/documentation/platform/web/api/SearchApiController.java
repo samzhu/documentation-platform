@@ -3,6 +3,8 @@ package io.github.samzhu.documentation.platform.web.api;
 import io.github.samzhu.documentation.platform.service.SearchService;
 import io.github.samzhu.documentation.platform.service.dto.SearchResultItem;
 import io.github.samzhu.documentation.platform.web.dto.SearchResultDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,6 +22,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/search")
 public class SearchApiController {
+
+    private static final Logger log = LoggerFactory.getLogger(SearchApiController.class);
 
     /**
      * 語意搜尋預設相似度閾值
@@ -74,6 +78,8 @@ public class SearchApiController {
             libraryId = null;
         }
 
+        log.info("搜尋請求: query='{}', mode={}, libraryId={}", query, mode, libraryId);
+
         // 依搜尋模式執行對應的搜尋方法
         List<SearchResultItem> results = switch (mode.toLowerCase()) {
             case "fulltext" -> searchService.fullTextSearch(libraryId, version, query, limit);
@@ -81,6 +87,8 @@ public class SearchApiController {
             case "hybrid" -> searchService.hybridSearch(libraryId, version, query, limit);
             default -> throw new IllegalArgumentException("不支援的搜尋模式: " + mode);
         };
+
+        log.debug("搜尋完成: {} 筆結果", results.size());
 
         return SearchResultDto.from(query, mode, results);
     }
