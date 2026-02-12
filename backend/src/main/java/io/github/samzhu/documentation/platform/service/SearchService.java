@@ -203,7 +203,8 @@ public class SearchService {
         // 取得 chunk ID 和其他資訊
         String chunkId = doc.getId();
         int chunkIndex = getMetadataInt(metadata, METADATA_CHUNK_INDEX, 0);
-        double score = getMetadataDouble(metadata, "score", 0.0);
+        // 使用 Document.getScore() 取得向量相似度分數（與 mcpserver 一致）
+        double score = doc.getScore() != null ? doc.getScore() : 0.0;
 
         return SearchResultItem.fromChunk(
                 dbDoc.getId(),

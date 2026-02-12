@@ -1,6 +1,7 @@
 package io.github.samzhu.documentation.platform.repository;
 
 import io.github.samzhu.documentation.platform.domain.model.Document;
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -78,6 +79,42 @@ public interface DocumentRepository extends CrudRepository<Document, String> {
             @Param("query") String query,
             @Param("limit") int limit
     );
+
+    /**
+     * 更新指定文件的全文搜尋向量
+     * <p>
+     * 使用 PostgreSQL to_tsvector 產生 tsvector，
+     * 標題權重為 'A'，內容權重為 'B'。
+     * </p>
+     *
+     * @param id      文件 ID（TSID 格式）
+     * @param title   文件標題
+     * @param content 文件內容
+     */
+    @Modifying
+    @Query("""
+            UPDATE documents SET search_vector =
+                setweight(to_tsvector('english', COALESCE(:title, '')), 'A') ||
+                setweight(to_tsvector('english', COALESCE(:content, '')), 'B')
+            WHERE id = :id
+            """)
+    void updateSearchVector(@Param("id") String id,
+                            @Param("title") String title,
+                            @Param("content") String content);
+
+    /**
+     * 批次回填所有尚未建立搜尋向量的文件
+     *
+     * @return 更新的文件數量
+     */
+    @Modifying
+    @Query("""
+            UPDATE documents SET search_vector =
+                setweight(to_tsvector('english', COALESCE(title, '')), 'A') ||
+                setweight(to_tsvector('english', COALESCE(content, '')), 'B')
+            WHERE search_vector IS NULL
+            """)
+    int backfillSearchVectors();
 
     /**
      * 統計指定 Library 的文件數量（透過 LibraryVersion JOIN）

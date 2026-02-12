@@ -299,6 +299,9 @@ public class SyncService {
                 content, contentHash, parser.getDocType());
         document = documentRepository.save(document);
 
+        // 更新全文搜尋向量（PostgreSQL tsvector）
+        documentRepository.updateSearchVector(documentId, parsed.title(), content);
+
         // 分塊並使用 VectorStore 批次建立嵌入
         List<DocumentChunker.ChunkResult> chunks = chunker.chunk(content);
 
@@ -383,6 +386,9 @@ public class SyncService {
         Document document = Document.create(documentId, versionId, parsed.title(), file.path(),
                 content, contentHash, parser.getDocType());
         document = documentRepository.save(document);
+
+        // 更新全文搜尋向量（PostgreSQL tsvector）
+        documentRepository.updateSearchVector(documentId, parsed.title(), content);
 
         // 分塊並使用 VectorStore 批次建立嵌入
         List<DocumentChunker.ChunkResult> chunks = chunker.chunk(content);
