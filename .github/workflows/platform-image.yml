@@ -141,6 +141,15 @@ jobs:
           echo "Frontend files in static directory:"
           ls -la backend/src/main/resources/static/
 
+      # 【關閉 containerd image store】
+      # Docker 29+ 預設啟用 containerd snapshotter，與 Cloud Native Buildpacks
+      # 的 imgutil 不完全相容，creator 階段會發生 "No such image" 錯誤。
+      # 參考：https://github.com/buildpacks/pack/issues/2270
+      - name: Setup Docker (disable containerd snapshotter)
+        uses: docker/setup-docker-action@v4
+        with:
+          daemon-config: '{"features":{"containerd-snapshotter":false}}'
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
