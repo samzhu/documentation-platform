@@ -96,7 +96,8 @@ public class LibraryApiController {
      */
     @GetMapping
     public List<WebLibraryDto> listLibraries(@RequestParam(required = false) String category) {
-        return libraryService.listLibraries(category).stream()
+        log.debug("查詢函式庫列表: category={}", category);
+        List<WebLibraryDto> result = libraryService.listLibraries(category).stream()
                 .map(library -> {
                     // 統計該函式庫的文件數量和區塊數量
                     long docCount = documentRepository.countByLibraryId(library.getId());
@@ -104,6 +105,8 @@ public class LibraryApiController {
                     return WebLibraryDto.from(library, docCount, chunkCount);
                 })
                 .toList();
+        log.debug("查詢函式庫列表完成: 共 {} 筆", result.size());
+        return result;
     }
 
     /**
@@ -117,7 +120,7 @@ public class LibraryApiController {
      */
     @PostMapping
     public ResponseEntity<WebLibraryDto> createLibrary(@RequestBody @Valid CreateLibraryRequest request) {
-        log.info("收到建立函式庫請求: name={}", request.name());
+        log.info("收到建立函式庫請求: name={}, sourceType={}", request.name(), request.sourceType());
         Library library = libraryService.createLibrary(
                 request.name(),
                 request.displayName(),
@@ -127,6 +130,7 @@ public class LibraryApiController {
                 request.category(),
                 request.tags()
         );
+        log.info("函式庫建立完成: id={}, name={}", library.getId(), library.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(WebLibraryDto.from(library));
     }
 
@@ -141,10 +145,12 @@ public class LibraryApiController {
      */
     @GetMapping("/{id}")
     public WebLibraryDto getLibrary(@PathVariable String id) {
+        log.debug("查詢函式庫: id={}", id);
         Library library = libraryService.getLibraryById(id);
         // 統計該函式庫的文件數量和區塊數量
         long docCount = documentRepository.countByLibraryId(library.getId());
         long chunkCount = documentChunkRepository.countByLibraryId(library.getId());
+        log.debug("查詢函式庫完成: id={}, name={}, docCount={}, chunkCount={}", id, library.getName(), docCount, chunkCount);
         return WebLibraryDto.from(library, docCount, chunkCount);
     }
 
@@ -171,6 +177,7 @@ public class LibraryApiController {
                 request.category(),
                 request.tags()
         );
+        log.info("函式庫更新完成: id={}, name={}", id, library.getName());
         return WebLibraryDto.from(library);
     }
 
@@ -187,6 +194,7 @@ public class LibraryApiController {
     public ResponseEntity<Void> deleteLibrary(@PathVariable String id) {
         log.info("收到刪除函式庫請求: id={}", id);
         libraryService.deleteLibrary(id);
+        log.info("函式庫刪除完成: id={}", id);
         return ResponseEntity.noContent().build();
     }
 
@@ -201,7 +209,8 @@ public class LibraryApiController {
      */
     @GetMapping("/{id}/versions")
     public List<LibraryVersionDto> listVersions(@PathVariable String id) {
-        return libraryService.getLibraryVersionsById(id).stream()
+        log.debug("查詢函式庫版本列表: libraryId={}", id);
+        List<LibraryVersionDto> result = libraryService.getLibraryVersionsById(id).stream()
                 .map(version -> {
                     // 查詢該版本的文件數量
                     long docCount = documentRepository.countByVersionId(version.getId());
@@ -213,6 +222,8 @@ public class LibraryApiController {
                     return LibraryVersionDto.from(version, docCount, lastSync);
                 })
                 .toList();
+        log.debug("查詢函式庫版本列表完成: libraryId={}, 共 {} 個版本", id, result.size());
+        return result;
     }
 
     /**
@@ -234,14 +245,17 @@ public class LibraryApiController {
         // 解析 GitHub URL，擷取 owner 和 repo
         Matcher matcher = GITHUB_URL_PATTERN.matcher(library.getSourceUrl());
         if (!matcher.matches()) {
+            log.warn("無效的 GitHub URL: libraryId={}, sourceUrl={}", id, library.getSourceUrl());
             throw new IllegalArgumentException("無效的 GitHub URL: " + library.getSourceUrl());
         }
 
         String owner = matcher.group(1);
         String repo = matcher.group(2);
+        log.info("解析 GitHub 來源: owner={}, repo={}", owner, repo);
 
         // 取得或建立版本
         LibraryVersion version = libraryService.resolveLibrary(library.getName(), request.version()).version();
+        log.info("版本解析完成: versionId={}, docsPath={}", version.getId(), version.getDocsPath());
 
         // 觸發同步（非同步執行）
         SyncHistory syncHistory = syncService.syncFromGitHub(
@@ -252,6 +266,7 @@ public class LibraryApiController {
                 "v" + request.version()
         ).join();
 
+        log.info("同步完成: syncId={}, status={}, 處理文件數={}", syncHistory.getId(), syncHistory.getStatus(), syncHistory.getDocumentsProcessed());
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(SyncHistoryDto.from(syncHistory));
     }
 
@@ -269,7 +284,10 @@ public class LibraryApiController {
     @GetMapping("/{id}/github-releases")
     public GitHubReleasesResponse getGitHubReleases(@PathVariable String id,
                                                      @RequestParam(defaultValue = "20") int limit) {
-        return libraryService.getGitHubReleases(id, limit);
+        log.debug("查詢 GitHub Releases: libraryId={}, limit={}", id, limit);
+        GitHubReleasesResponse response = libraryService.getGitHubReleases(id, limit);
+        log.debug("查詢 GitHub Releases 完成: libraryId={}, 共 {} 筆", id, response.releases().size());
+        return response;
     }
 
     /**
@@ -287,6 +305,7 @@ public class LibraryApiController {
                                                         @RequestBody @Valid BatchSyncRequest request) {
         log.info("收到批次同步請求: libraryId={}, 版本數量={}", id, request.versions().size());
         BatchSyncResponse response = libraryService.batchCreateAndSync(id, request);
+        log.info("批次同步已排程: libraryId={}, 同步項目數={}", id, response.syncedItems().size());
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 }
